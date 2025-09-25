@@ -3,175 +3,179 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Simulador Virtual NR-35 • Treinamento Profissional em Segurança</title>
+  <title>Simulador Virtual NR-35 – Ancoragens</title>
   <style>
     :root{
       --bg1:#0a0f1c;--bg2:#1a1f35;--bg3:#252b42;
       --c1:#00d4ff;--c2:#00ff88;--cy:#ffb800;--cr:#ff4757;
-      --t1:#fff;--t2:#b8c2cc;--t3:#6c7b7f;--glass:rgba(255,255,255,.1);--glassb:rgba(255,255,255,.2)
+      --t1:#fff;--t2:#b8c2cc;--t3:#7d8b96;--glass:rgba(255,255,255,.08);--glassb:rgba(255,255,255,.18)
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2) 50%,var(--bg3));color:var(--t1);min-height:100vh;overflow-x:hidden}
-    .header{padding:24px;background:linear-gradient(90deg,rgba(0,212,255,.1),rgba(0,255,136,.1));border-bottom:1px solid var(--glassb);backdrop-filter:blur(18px)}
-    .header-content{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
-    .logo-section{display:flex;gap:16px;align-items:center}
-    .logo{width:50px;height:50px;border-radius:16px;background:conic-gradient(from 0deg,var(--c1),var(--c2),var(--cy),var(--cr),var(--c1));display:grid;place-items:center;animation:f 3s ease-in-out infinite}
-    .logo:before{content:"⚡";font-size:22px}
-    @keyframes f{50%{transform:translateY(-4px) rotate(5deg)}}
-    h1{font-size:28px;font-weight:800;background:linear-gradient(45deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .subtitle{color:var(--t2);font-size:14px}
-    .status-badge{padding:10px 16px;border-radius:22px;border:1px solid rgba(255,184,0,.3);color:var(--cy);background:rgba(255,184,0,.1);font-weight:700}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2) 55%,var(--bg3));color:var(--t1);min-height:100vh}
+    .header{padding:20px 24px;border-bottom:1px solid var(--glassb);backdrop-filter:blur(18px)}
+    .header>div{max-width:1400px;margin:0 auto;display:flex;gap:14px;align-items:center;justify-content:space-between}
+    h1{font-size:24px;font-weight:900;background:linear-gradient(45deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .badge{padding:8px 14px;border-radius:999px;border:1px solid rgba(255,184,0,.35);color:var(--cy);background:rgba(255,184,0,.12);font-weight:800}
 
-    .main{max-width:1400px;margin:0 auto;padding:24px;display:grid;grid-template-columns:420px 1fr;gap:24px}
+    .main{max-width:1400px;margin:0 auto;padding:22px;display:grid;grid-template-columns:420px 1fr;gap:22px}
     @media(max-width:1200px){.main{grid-template-columns:1fr}}
-
-    .panel{background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--glassb);border-radius:20px;padding:24px}
-    .section-title{display:flex;gap:10px;align-items:center;margin-bottom:16px;font-size:18px;font-weight:800}
-    .section-title:before{content:"";width:4px;height:20px;border-radius:2px;background:linear-gradient(45deg,var(--c1),var(--c2))}
-    .row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-bottom:16px}
-    .label{font-size:14px;font-weight:700}
+    .panel{background:var(--glass);border:1px solid var(--glassb);border-radius:18px;padding:18px}
+    .title{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-weight:900}
+    .title:before{content:"";width:4px;height:18px;border-radius:2px;background:linear-gradient(45deg,var(--c1),var(--c2))}
+    .row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin:10px 0}
+    .label{font-size:14px;font-weight:800}
     .hint{font-size:12px;color:var(--t3)}
-    .slider{-webkit-appearance:none;width:100%;height:6px;border-radius:4px;background:linear-gradient(90deg,var(--bg2),var(--bg3));outline:none}
-    .slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:linear-gradient(45deg,var(--c1),var(--c2));box-shadow:0 4px 12px rgba(0,212,255,.4);cursor:pointer}
-    .input{width:120px;padding:10px 12px;border-radius:10px;border:1px solid var(--glassb);background:rgba(255,255,255,.05);color:var(--t1);text-align:center;font-weight:700}
-    .select{width:100%;padding:12px 16px;border-radius:12px;border:1px solid var(--glassb);background:rgba(255,255,255,.05);color:var(--t1);font-weight:700;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300d4ff' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+    .slider{-webkit-appearance:none;width:100%;height:6px;border-radius:4px;background:linear-gradient(90deg,#1a2237,#141a2c);outline:none}
+    .slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(45deg,var(--c1),var(--c2));box-shadow:0 4px 12px rgba(0,212,255,.35);cursor:pointer}
+    .input{width:110px;padding:10px;border-radius:10px;border:1px solid var(--glassb);background:rgba(255,255,255,.05);color:var(--t1);font-weight:800;text-align:center}
+    .select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--glassb);background:rgba(255,255,255,.05);color:var(--t1);font-weight:800}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .btn{border:0;border-radius:12px;padding:14px 16px;font-weight:900;cursor:pointer}
+    .btn-primary{background:linear-gradient(45deg,var(--c1),var(--c2));color:#07131a}
+    .btn-ghost{background:rgba(255,255,255,.08);border:1px solid var(--glassb);color:var(--t1)}
 
-    .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:10px}
-    .kpi{background:var(--glass);border:1px solid var(--glassb);border-radius:14px;padding:16px;text-align:center}
-    .kpi .t{font-size:11px;color:var(--t3);text-transform:uppercase;font-weight:800;letter-spacing:.4px;margin-bottom:6px}
-    .kpi .v{font-size:22px;font-weight:900}
-    .tag{display:inline-block;margin-top:4px;font-size:10px;padding:4px 8px;border-radius:14px;border:1px solid}
-    .safe{color:#00ff88;border-color:#00ff88;background:rgba(0,255,136,.18)}
-    .warn{color:#ffb800;border-color:#ffb800;background:rgba(255,184,0,.18)}
+    .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px}
+    .kpi{background:rgba(0,0,0,.18);border:1px solid var(--glassb);border-radius:12px;padding:14px;text-align:center}
+    .kpi .t{font-size:11px;color:var(--t3);text-transform:uppercase;font-weight:900;letter-spacing:.4px;margin-bottom:6px}
+    .kpi .v{font-size:20px;font-weight:900}
+    .tag{display:inline-block;margin-top:4px;font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid}
+    .safe{color:#00ff88;border-color:#00ff88;background:rgba(0,255,136,.16)}
+    .warn{color:#ffb800;border-color:#ffb800;background:rgba(255,184,0,.16)}
     .dang{color:#ff4757;border-color:#ff4757;background:rgba(255,71,87,.18)}
 
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-    .btn{border:0;border-radius:14px;padding:14px 16px;font-weight:900;cursor:pointer}
-    .btn-primary{background:linear-gradient(45deg,var(--c1),var(--c2));color:#001018}
-    .btn-ghost{background:rgba(255,255,255,.1);border:1px solid var(--glassb);color:var(--t1)}
-
     /* Palco */
-    .stage{position:relative;height:700px;border-radius:24px;border:2px solid var(--glassb);overflow:hidden;background:linear-gradient(180deg,#87ceeb 0%,#5f9ea0 22%,#4682b4 45%,#2f4f4f 70%,#1c1c1c 100%)}
-    .building{position:absolute;right:0;top:0;width:42%;height:100%;background:linear-gradient(45deg,#2c3e50,#34495e);clip-path:polygon(18% 0,100% 0,100% 100%,0 100%);opacity:.75}
-    .windows{position:absolute;right:5%;top:10%;width:30%;height:80%;background:
-      repeating-linear-gradient(0deg,transparent 0,transparent 40px,rgba(255,255,200,.28) 40px,rgba(255,255,200,.28) 45px),
-      repeating-linear-gradient(90deg,transparent 0,transparent 30px,rgba(255,255,200,.28) 30px,rgba(255,255,200,.28) 35px)}
+    .stage{position:relative;height:720px;border-radius:20px;border:1px solid var(--glassb);overflow:hidden;background:linear-gradient(180deg,#8fd3ff 0%,#6aa7c5 42%,#3a6786 64%,#243b4a 78%,#1a1a1a 100%)}
+    .building{position:absolute;right:0;top:0;width:42%;height:100%;background:linear-gradient(45deg,#2c3e50,#34495e);clip-path:polygon(16% 0,100% 0,100% 100%,0 100%);opacity:.78}
+    .grid{position:absolute;right:7.5%;top:8%;width:28%;height:84%;
+      background:
+       repeating-linear-gradient(0deg,transparent 0,transparent 52px,rgba(255,255,255,.22) 52px,rgba(255,255,255,.22) 54px),
+       repeating-linear-gradient(90deg,transparent 0,transparent 52px,rgba(255,255,255,.22) 52px,rgba(255,255,255,.22) 54px);
+    }
     .ground{position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(#8b4513,#654321 55%,#3e2723)}
 
-    .platform{position:absolute;left:15%;width:40%;height:16px;background:linear-gradient(90deg,#1e88e5,#42a5f5);border-radius:8px;box-shadow:0 4px 15px rgba(30,136,229,.4),inset 0 2px 0 rgba(255,255,255,.3);z-index:7}
-    .platform:before{content:"PLATAFORMA";position:absolute;bottom:24px;left:0;font-size:12px;font-weight:800;color:var(--c1);text-shadow:0 2px 8px rgba(0,0,0,.7);letter-spacing:.8px}
+    .platform{position:absolute;left:15%;width:40%;height:16px;background:linear-gradient(90deg,#1e88e5,#42a5f5);border-radius:8px;box-shadow:0 4px 16px rgba(30,136,229,.36),inset 0 2px 0 rgba(255,255,255,.28);z-index:6}
+    .platform:before{content:"PLATAFORMA";position:absolute;bottom:22px;left:0;font-size:12px;font-weight:900;color:#7fd3ff;text-shadow:0 2px 8px rgba(0,0,0,.7)}
 
-    .worker{position:absolute;width:120px;height:240px;z-index:10;transform-origin:50% 15%;transition:all .6s cubic-bezier(.25,.46,.45,.94)}
-    .svg{width:100%;height:100%;filter:drop-shadow(0 8px 20px rgba(0,0,0,.4))}
+    .worker{position:absolute;width:118px;height:238px;z-index:12;transform-origin:50% 15%;transition:all .6s cubic-bezier(.25,.46,.45,.94)}
+    .svg{width:100%;height:100%;filter:drop-shadow(0 10px 24px rgba(0,0,0,.45))}
 
-    /* Sistema de ancoragem: container absoluto; os cartões serão posicionados via JS */
-    .anchor-system{position:absolute;right:15%;top:5%;width:120px;height:80%;z-index:15}
-    .anchor{position:absolute;width:100px;height:100px;border-radius:18px;background:rgba(10,15,28,.8);border:2px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s,border-color .25s,background .25s}
+    /* Ancoragens: cartões posicionados via JS */
+    .anchors{position:absolute;right:15%;top:6%;width:120px;height:82%;z-index:15}
+    .anchor{position:absolute;width:100px;height:100px;border-radius:16px;background:rgba(10,15,28,.82);border:2px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s,border-color .25s,background .25s}
     .anchor:hover{transform:scale(1.06) translateX(-4px);border-color:var(--c1)}
-    .anchor.selected{transform:scale(1.12) translateX(-6px);box-shadow:0 0 26px rgba(0,212,255,.45);background:rgba(0,212,255,.16);border-color:var(--c1)}
-    .anchor .icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(45deg,var(--c1),var(--c2));margin-bottom:8px}
-    .anchor .icon:before{content:"⚓";font-size:20px;color:#fff}
-    .anchor .label{font-size:13px;font-weight:900;text-align:center}
+    .anchor.selected{transform:scale(1.1) translateX(-6px);box-shadow:0 0 24px rgba(0,212,255,.4);background:rgba(0,212,255,.15);border-color:var(--c1)}
+    .anchor .icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(45deg,var(--c1),var(--c2));margin-bottom:8px}
+    .anchor .icon:before{content:"⚓";font-size:19px;color:#fff}
+    .anchor .label{font-size:12px;font-weight:900;text-align:center;line-height:1.1}
 
-    .line{position:absolute;height:4px;border-radius:2px;background:linear-gradient(45deg,var(--cy),#ffa726);box-shadow:0 0 14px rgba(255,184,0,.6);opacity:0;transform-origin:0 50%;transition:opacity .3s,width .3s,transform .3s;z-index:8}
-    .line.active{opacity:1}
+    /* SVG rope + badge distância */
+    .ropeSvg{position:absolute;inset:0;z-index:10;pointer-events:none}
+    .dist-badge{position:absolute;z-index:11;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;background:rgba(0,0,0,.35);border:1px solid var(--glassb)}
 
-    .traj{position:absolute;border-left:4px dashed var(--cr);opacity:.85;z-index:6;transform-origin:top center}
-    .traj.safe{border-color:#00ff88}
+    .result{position:absolute;right:24px;top:18px;padding:10px 14px;border-radius:999px;font-weight:900;border:2px solid;backdrop-filter:blur(10px)}
+    .r-safe{color:#00ff88;border-color:#00ff88;background:rgba(0,255,136,.12)}
+    .r-warn{color:#ffb800;border-color:#ffb800;background:rgba(255,184,0,.12)}
+    .r-dang{color:#ff4757;border-color:#ff4757;background:rgba(255,71,87,.12)}
 
-    .result{position:absolute;left:50%;top:20px;transform:translate(-50%,-80px);opacity:0;padding:14px 18px;border-radius:20px;font-weight:900;letter-spacing:.8px;backdrop-filter:blur(18px);transition:all .5s}
-    .result.show{opacity:1;transform:translate(-50%,10px)}
-    .r-safe{background:rgba(0,255,136,.2);border:2px solid #00ff88;color:#00ff88}
-    .r-warn{background:rgba(255,184,0,.2);border:2px solid #ffb800;color:#ffb800}
-    .r-dang{background:rgba(255,71,87,.2);border:2px solid #ff4757;color:#ff4757}
-
-    /* Quedas */
+    /* Animações de queda */
     .worker.fall-safe{animation:fallSafe 2s cubic-bezier(.1,.7,.5,1) forwards}
-    .worker.fall-warn{animation:fallWarn 2.3s cubic-bezier(.2,.8,.4,1) forwards}
-    .worker.fall-dang{animation:fallDang 2.6s cubic-bezier(.5,.05,.6,.2) forwards}
-    @keyframes fallSafe{0%{transform:translateY(0)}30%{transform:translateY(var(--fall)) rotate(15deg)}80%{transform:translateY(calc(var(--fall)*.92))}100%{transform:translateY(calc(var(--fall)*.9))}}
-    @keyframes fallWarn{0%{transform:translateY(0)}40%{transform:translateY(var(--fall)) rotate(22deg)}100%{transform:translateY(calc(var(--fall)*.92))}}
+    .worker.fall-warn{animation:fallWarn 2.2s cubic-bezier(.2,.8,.4,1) forwards}
+    .worker.fall-dang{animation:fallDang 2.5s cubic-bezier(.5,.05,.6,.2) forwards}
+    @keyframes fallSafe{0%{transform:translateY(0)}30%{transform:translateY(var(--fall)) rotate(12deg)}80%{transform:translateY(calc(var(--fall)*.9))}100%{transform:translateY(calc(var(--fall)*.86))}}
+    @keyframes fallWarn{0%{transform:translateY(0)}40%{transform:translateY(var(--fall)) rotate(22deg)}100%{transform:translateY(calc(var(--fall)*.9))}}
     @keyframes fallDang{0%{transform:translateY(0)}100%{transform:translateY(var(--fall)) rotate(90deg)}}
   </style>
 </head>
 <body>
   <header class="header">
-    <div class="header-content">
-      <div class="logo-section">
-        <div class="logo"></div>
-        <div>
-          <h1>Simulador Virtual NR-35</h1>
-          <div class="subtitle">Treinamento Profissional em Segurança</div>
-        </div>
-      </div>
-      <div id="status" class="status-badge">CENÁRIO SEGURO</div>
+    <div>
+      <h1>Simulador Virtual NR-35</h1>
+      <div id="hdrStatus" class="badge">CENÁRIO SEGURO</div>
     </div>
   </header>
 
   <main class="main">
     <aside class="panel">
-      <h2 class="section-title">Parâmetros da Simulação</h2>
+      <div class="title">Parâmetros da Simulação</div>
 
       <div class="label">Altura do Trabalho</div>
       <div class="row">
-        <input id="altura" type="range" class="slider" min="2" max="20" step="0.5" value="8">
-        <input id="alturaIn" type="number" class="input" min="2" max="20" step="0.5" value="8">
+        <input id="altura" class="slider" type="range" min="2" max="20" step="0.5" value="8">
+        <input id="alturaIn" class="input" type="number" min="2" max="20" step="0.5" value="8">
       </div>
-      <div class="hint">Altura dos pés do trabalhador em relação ao nível do chão.</div>
+      <div class="hint">Altura dos pés do trabalhador em relação ao chão.</div>
 
-      <div class="label" style="margin-top:14px">Comprimento do Talabarte</div>
+      <div class="label" style="margin-top:10px">Comprimento do Talabarte</div>
       <div class="row">
-        <input id="talabarte" type="range" class="slider" min="0.9" max="2.0" step="0.1" value="1.3">
-        <input id="talabarteIn" type="number" class="input" min="0.9" max="2.0" step="0.1" value="1.3">
+        <input id="talabarte" class="slider" type="range" min="0.9" max="2.0" step="0.1" value="1.3">
+        <input id="talabarteIn" class="input" type="number" min="0.9" max="2.0" step="0.1" value="1.3">
       </div>
-      <div class="hint">Comprimento do talabarte de segurança em metros.</div>
+      <div class="hint">Em metros (para SRL, é ignorado no cálculo da distância).</div>
 
-      <div class="label" style="margin-top:14px">Tipo de EPI</div>
+      <div class="label" style="margin-top:10px">Tipo de EPI</div>
       <select id="epi" class="select">
         <option value="completo">Cinto Paraquedista + Talabarte com Absorvedor</option>
         <option value="sem">Cinto Paraquedista + Talabarte sem Absorvedor</option>
         <option value="abd">Cinto Abdominal (inadequado)</option>
+        <option value="srl">SRL (Trava-Quedas Retrátil)</option>
       </select>
 
-      <h2 class="section-title" style="margin-top:22px">Indicadores de Segurança</h2>
+      <div class="label" style="margin-top:10px">Tipo de Ancoragem</div>
+      <select id="ancoragem" class="select">
+        <option value="overhead">Sobre a Cabeça (linha de vida)</option>
+        <option value="srl">SRL Vertical (ponto alto fixo)</option>
+        <option value="lateral">Lateral Próxima (≤ 0,6 m)</option>
+      </select>
+
+      <div class="title" style="margin-top:14px">Indicadores de Segurança</div>
       <div class="kpis">
-        <div class="kpi" id="kpiZLQ"><div class="t">Zona Livre de Queda</div><div class="v" id="vZLQ">4.2m</div><div class="tag safe" id="sZLQ">SEGURO</div></div>
-        <div class="kpi" id="kpiFQ"><div class="t">Fator de Queda</div><div class="v" id="vFQ">1.0</div><div class="tag warn" id="sFQ">MÉDIO</div></div>
-        <div class="kpi" id="kpiFI"><div class="t">Força de Impacto</div><div class="v" id="vFI">4.2kN</div><div class="tag safe" id="sFI">ACEITÁVEL</div></div>
-        <div class="kpi" id="kpiR"><div class="t">Nível de Risco</div><div class="v" id="vR">BAIXO</div><div class="tag safe" id="sR">SEGURO</div></div>
+        <div class="kpi"><div class="t">Zona Livre de Queda</div><div class="v" id="vZLQ">4.1m</div><div class="tag safe" id="sZLQ">SEGURO</div></div>
+        <div class="kpi"><div class="t">Fator de Queda</div><div class="v" id="vFQ">1.0</div><div class="tag warn" id="sFQ">MÉDIO</div></div>
+        <div class="kpi"><div class="t">Força de Impacto</div><div class="v" id="vFI">4.2kN</div><div class="tag safe" id="sFI">ACEITÁVEL</div></div>
+        <div class="kpi"><div class="t">Nível de Risco</div><div class="v" id="vR">BAIXO</div><div class="tag safe" id="sR">SEGURO</div></div>
       </div>
 
       <div class="grid2">
-        <button id="simular" class="btn btn-primary">⚡ SIMULAR QUEDA</button>
-        <button id="reset" class="btn btn-ghost">🔄 RESETAR</button>
+        <button id="btSim" class="btn btn-primary">⚡ SIMULAR QUEDA</button>
+        <button id="btReset" class="btn btn-ghost">🔄 RESETAR</button>
       </div>
     </aside>
 
     <section class="panel" style="padding:0">
-      <div class="stage" id="stage">
+      <div id="stage" class="stage">
         <div class="building"></div>
-        <div class="windows"></div>
+        <div class="grid"></div>
         <div class="ground"></div>
 
         <div id="platform" class="platform"></div>
 
-        <!-- Sistema de ancoragens (posicionadas via JS) -->
-        <div class="anchor-system" id="anchors">
-          <div id="aSup"  class="anchor"><div class="icon"></div><div class="label">ACIMA<br>FQ &lt; 1</div></div>
-          <div id="aMed"  class="anchor selected"><div class="icon"></div><div class="label">NÍVEL<br>FQ = 1</div></div>
-          <div id="aInf"  class="anchor"><div class="icon"></div><div class="label">ABAIXO<br>FQ = 2</div></div>
+        <!-- Cartões das ancoragens (JS posiciona para colar FQ=1 no cinto) -->
+        <div id="anchors" class="anchors">
+          <div id="aSup" class="anchor"><div class="icon"></div><div class="label">ACIMA<br>FQ &lt; 1</div></div>
+          <div id="aMed" class="anchor selected"><div class="icon"></div><div class="label">NÍVEL<br>FQ = 1</div></div>
+          <div id="aInf" class="anchor"><div class="icon"></div><div class="label">ABAIXO<br>FQ = 2</div></div>
         </div>
 
-        <div id="linha" class="line"></div>
-        <div id="traj" class="traj safe"></div>
+        <!-- SVG da “corda” com Bezier -->
+        <svg id="ropeSvg" class="ropeSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path id="ropePath" d="M0,0 Q0,0 0,0" stroke="#ffb800" stroke-width="4" fill="none" filter="url(#glow)"/>
+        </svg>
+        <div id="distBadge" class="dist-badge" style="display:none">0.0 m</div>
 
-        <div id="worker" class="worker">
-          <svg class="svg" viewBox="0 0 80 180" xmlns="http://www.w3.org/2000/svg" aria-label="Trabalhador com EPI">
+        <!-- Trabalhador -->
+        <div id="worker" class="worker" aria-label="Trabalhador">
+          <svg class="svg" viewBox="0 0 80 180" xmlns="http://www.w3.org/2000/svg">
             <circle cx="40" cy="25" r="12" fill="#ffdbac" stroke="#d4a574" stroke-width="2"/>
             <ellipse cx="40" cy="20" rx="14" ry="8" fill="#ff6b35" stroke="#d4531f" stroke-width="2"/>
             <rect x="30" y="35" width="20" height="40" rx="5" fill="#4a90e2" stroke="#2e5c8a" stroke-width="2"/>
-            <!-- Cinta/harness (ponto de conexão está a ~y=52) -->
-            <rect x="28" y="45" width="24" height="15" rx="3" fill="#ffd700" stroke="#ccaa00" stroke-width="2" opacity=".85"/>
+            <!-- Cinta / ponto de conexão (~ y=52) -->
+            <rect x="28" y="45" width="24" height="15" rx="3" fill="#ffd700" stroke="#ccaa00" stroke-width="2" opacity=".9"/>
             <rect x="20" y="40" width="8" height="25" rx="4" fill="#ffdbac" stroke="#d4a574" stroke-width="2"/>
             <rect x="52" y="40" width="8" height="25" rx="4" fill="#ffdbac" stroke="#d4a574" stroke-width="2"/>
             <rect x="32" y="75" width="6" height="35" rx="3" fill="#2c3e50" stroke="#1a252f" stroke-width="2"/>
@@ -182,40 +186,43 @@
           </svg>
         </div>
 
-        <div id="result" class="result r-safe">SIMULAÇÃO SEGURA</div>
+        <div id="result" class="result r-safe">CENÁRIO SEGURO</div>
       </div>
     </section>
   </main>
 
   <script>
-    // Utilitários
+    // utilitários
     const clamp=(v,min,max)=>Math.min(Math.max(v,min),max);
     const map=(v,a,b,c,d)=>c+((clamp(v,a,b)-a)*(d-c))/(b-a);
 
     class Simulador{
       constructor(){
-        // Controles
+        // inputs
         this.altura=document.getElementById('altura');
         this.alturaIn=document.getElementById('alturaIn');
         this.talabarte=document.getElementById('talabarte');
         this.talabarteIn=document.getElementById('talabarteIn');
         this.epi=document.getElementById('epi');
+        this.ancoragem=document.getElementById('ancoragem');
 
-        // Cena
+        // cena
         this.stage=document.getElementById('stage');
         this.platform=document.getElementById('platform');
         this.worker=document.getElementById('worker');
-        this.line=document.getElementById('linha');
-        this.traj=document.getElementById('traj');
+        this.ropeSvg=document.getElementById('ropeSvg');
+        this.ropePath=document.getElementById('ropePath');
+        this.distBadge=document.getElementById('distBadge');
         this.result=document.getElementById('result');
-        this.status=document.getElementById('status');
+        this.hdrStatus=document.getElementById('hdrStatus');
 
-        // Âncoras
+        // ancoragens
         this.aSup=document.getElementById('aSup');
         this.aMed=document.getElementById('aMed');
         this.aInf=document.getElementById('aInf');
-        this.anchors=[this.aSup,this.aMed,this.aInf];
-        this.ponto=1; // 0 sup, 1 nível, 2 inf
+        this.cards=[this.aSup,this.aMed,this.aInf];
+        this.ponto=1; // 0=sup, 1=nível, 2=inf
+        this.cards.forEach((el,i)=>el.addEventListener('click',()=>{this.ponto=i;this.cards.forEach(c=>c.classList.remove('selected'));el.classList.add('selected');this.update()}));
 
         // KPIs
         this.vZLQ=document.getElementById('vZLQ'); this.sZLQ=document.getElementById('sZLQ');
@@ -223,155 +230,197 @@
         this.vFI =document.getElementById('vFI');  this.sFI =document.getElementById('sFI');
         this.vR  =document.getElementById('vR');   this.sR  =document.getElementById('sR');
 
-        // Eventos
-        const sync=(a,b)=>a.addEventListener('input',e=>{b.value=a.value;this.update()});
+        // botões
+        document.getElementById('btSim').addEventListener('click',()=>this.simular());
+        document.getElementById('btReset').addEventListener('click',()=>this.reset());
+
+        // sincronização de inputs
+        const sync=(a,b)=>a.addEventListener('input',()=>{b.value=a.value;this.update()});
         sync(this.altura,this.alturaIn); sync(this.alturaIn,this.altura);
         sync(this.talabarte,this.talabarteIn); sync(this.talabarteIn,this.talabarte);
         this.epi.addEventListener('change',()=>this.update());
-        this.anchors.forEach((el,i)=>el.addEventListener('click',()=>{this.ponto=i;this.anchors.forEach(x=>x.classList.remove('selected'));el.classList.add('selected');this.update()}));
-
-        document.getElementById('simular').addEventListener('click',()=>this.simular());
-        document.getElementById('reset').addEventListener('click',()=>this.reset());
+        this.ancoragem.addEventListener('change',()=>this.update());
 
         this.anim=false;
         this.update();
       }
 
-      // Posição vertical com faixa estável (2–20 m -> 140–520 px)
+      // mapeia 2–20 m para faixa confortável da cena
       posicoes(){
         const h=parseFloat(this.altura.value);
-        const base=map(h,2,20,140,520); // bottom da plataforma
-        const workerBottom=base+16;     // altura da plataforma
+        const base=map(h,2,20,150,530); // bottom da plataforma
+        const workerBottom=base+16;
         return {base,workerBottom};
       }
 
-      // Ponto do cinto (em px relativos ao stage)
+      // ponto do cinto (coordenadas em px dentro do stage)
       pontoCinto(){
-        const rectW=this.worker.getBoundingClientRect();
-        const rectS=this.stage.getBoundingClientRect();
-        const x=(rectW.left-rectS.left)+(rectW.width/2);
-        const y=(rectW.top -rectS.top )+30; // ~altura do harness
-        return {x,y,rectS};
-      }
-
-      // Posiciona âncoras com FQ=1 no nível do cinto
-      posicionarAncoras(){
-        const {rectS,y}=this.pontoCinto();
-        const cardW=100, cardH=100, off=120;
-        const yFQ1=clamp(y-cardH/2,20,rectS.height-cardH-20);
-        const yFQ0=clamp(yFQ1-off,20,rectS.height-cardH-20);
-        const yFQ2=clamp(yFQ1+off,20,rectS.height-cardH-20);
-        const right='15%';
-        Object.assign(this.aMed.style,{top:`${yFQ1}px`,right});
-        Object.assign(this.aSup.style,{top:`${yFQ0}px`,right});
-        Object.assign(this.aInf.style,{top:`${yFQ2}px`,right});
-      }
-
-      linhaSeguranca(){
-        const {x,y}=this.pontoCinto();
-        const a=[this.aSup,this.aMed,this.aInf][this.ponto].getBoundingClientRect();
-        const s=this.stage.getBoundingClientRect();
-        const ax=(a.left-s.left)+(a.width/2);
-        const ay=(a.top -s.top )+(a.height/2);
-        const dx=ax-x, dy=ay-y;
-        const L=Math.hypot(dx,dy);
-        const ang=Math.atan2(dy,dx)*180/Math.PI;
-        Object.assign(this.line.style,{left:`${x}px`,top:`${y}px`,width:`${L}px`,transform:`rotate(${ang}deg)`});
-        this.line.classList.add('active');
-      }
-
-      trajetoria(zlq){
         const w=this.worker.getBoundingClientRect();
         const s=this.stage.getBoundingClientRect();
         const x=(w.left-s.left)+(w.width/2);
-        const top=(w.top-s.top)+(w.height/2);
-        const h=Math.min(zlq*30, s.height-top-140);
-        Object.assign(this.traj.style,{left:`${x-2}px`,top:`${top}px`,height:`${h}px`});
+        const y=(w.top -s.top )+30; // offset ~peitoral/cinta
+        return {x,y,stage:s};
+      }
+
+      // posiciona cartões para que FQ=1 (nível) fique na altura do cinto
+      posicionarCartoes(){
+        const {x,y,stage}=this.pontoCinto();
+        const cardH=100, off=120;
+        const yFQ1=clamp(y-cardH/2,20,stage.height-cardH-20);
+        const yFQ0=clamp(yFQ1-off,20,stage.height-cardH-20);
+        const yFQ2=clamp(yFQ1+off,20,stage.height-cardH-20);
+
+        // posição horizontal depende do modo de ancoragem
+        const modo=this.ancoragem.value;
+        const afastMax=60; // px ~ 0,6 m (escala cartoon)
+        let leftMed, leftSup, leftInf;
+
+        if(modo==='overhead'){
+          leftMed = x-50; // colado no x do trabalhador
+          leftSup = x-50; leftInf = x-50;
+        }else if(modo==='srl'){
+          leftMed = x-50; // SRL acima do trabalhador
+          leftSup = x-50; leftInf = x-50;
+        }else{ // lateral próxima
+          leftMed = clamp(x-50, x-50-afastMax, x-50+afastMax);
+          leftSup = leftMed; leftInf = leftMed;
+        }
+
+        Object.assign(this.aMed.style,{left:`${leftMed}px`,top:`${yFQ1}px`});
+        Object.assign(this.aSup.style,{left:`${leftSup}px`,top:`${yFQ0}px`});
+        Object.assign(this.aInf.style,{left:`${leftInf}px`,top:`${yFQ2}px`});
+      }
+
+      // desenha a “corda” com Bezier suave e badge da distância horizontal
+      desenharCorda(){
+        const {x,y,stage}=this.pontoCinto();
+        const card=[this.aSup,this.aMed,this.aInf][this.ponto].getBoundingClientRect();
+        const s=stage;
+        const ax=(card.left-s.left)+(card.width/2);
+        const ay=(card.top -s.top )+(card.height/2);
+
+        // controle Bezier – levemente acima para dar “barriga” curta
+        const cx=(x+ax)/2;
+        const cy=Math.min(y,ay)-40;
+
+        // Atualiza viewBox do SVG para pixels do stage
+        this.ropeSvg.setAttribute('viewBox',`0 0 ${s.width} ${s.height}`);
+        this.ropePath.setAttribute('d',`M ${x},${y} Q ${cx},${cy} ${ax},${ay}`);
+        this.ropePath.setAttribute('stroke', '#ffb800');
+
+        // badge de distância horizontal (info UX)
+        const dx=Math.abs(ax-x);
+        this.distBadge.style.display='block';
+        this.distBadge.textContent=`${(dx/100).toFixed(1)} m`;
+        this.distBadge.style.left=`${x + (ax-x)/2 - 30}px`;
+        this.distBadge.style.top =`${Math.min(y,ay)-28}px`;
+      }
+
+      linhaVidaSRL(){
+        // para modo SRL vertical, movemos o cartão NÍVEL (ponto) para um topo fixo
+        const s=this.stage.getBoundingClientRect();
+        const w=this.worker.getBoundingClientRect();
+        const x=(w.left-s.left)+(w.width/2);
+        const yTop = 40; // ponto alto fixo
+        Object.assign(this.aMed.style,{left:`${x-50}px`,top:`${yTop}px`});
+      }
+
+      linhaIndicadores(R){
+        // KPIs + status
+        const setTag=(el,cls,txt)=>{el.className=`tag ${cls}`; el.textContent=txt};
+        this.vZLQ.textContent=`${R.Z}m`;
+        this.vFQ.textContent= R.FQ.toString();
+        this.vFI.textContent=`${R.FI}kN`;
+        this.vR.textContent = R.niv;
+
+        setTag(this.sZLQ, R.Z<=R.disp?'safe':'dang', R.Z<=R.disp?'SEGURO':'PERIGO');
+        setTag(this.sFQ , R.FQ<1?'safe':R.FQ===1?'warn':'dang', R.FQ<1?'BAIXO':R.FQ===1?'MÉDIO':'ALTO');
+        setTag(this.sFI , R.FI<=4?'safe':R.FI<=6?'warn':'dang', R.FI<=4?'ACEITÁVEL':R.FI<=6?'ELEVADO':'PERIGOSO');
+        setTag(this.sR  , R.res==='safe'?'safe':R.res==='warn'?'warn':'dang', R.res==='safe'?'SEGURO':R.res==='warn'?'ATENÇÃO':'CRÍTICO');
+
+        this.result.className=`result ${R.res==='safe'?'r-safe':R.res==='warn'?'r-warn':'r-dang'}`;
+        this.result.textContent= R.res==='safe'?'CENÁRIO SEGURO':R.res==='warn'?'CENÁRIO DE RISCO':'QUEDA FATAL';
+        this.hdrStatus.textContent=this.result.textContent;
+        this.hdrStatus.className=`badge ${R.res==='safe'?'r-safe':R.res==='warn'?'r-warn':'r-dang'}`;
       }
 
       calcular(){
-        const H = parseFloat(this.altura.value);
-        const L = parseFloat(this.talabarte.value);
+        const H=parseFloat(this.altura.value);
+        const L=parseFloat(this.talabarte.value);
         const epi=this.epi.value;
 
-        // FQ conforme ponto de ancoragem
-        let queda;
-        if (this.ponto===0) queda=Math.max(0, L-2.0);
-        else if (this.ponto===1) queda=L;
-        else queda=L+2.0;
+        // FQ conforme ponto e EPI (SRL reduz queda livre)
+        let Lqueda=L, queda;
+        if(this.ancoragem.value==='srl' || epi==='srl'){ // SRL vertical pré-tensionado
+          Lqueda = Math.max(0.6, L*0.5); // queda efetiva encurtada
+        }
 
-        const FQ= +(queda/L).toFixed(1);
+        if (this.ponto===0) queda=Math.max(0, Lqueda-2.0);
+        else if (this.ponto===1) queda=Lqueda;
+        else queda=Lqueda+2.0;
 
-        // ZLQ necessária
-        const desac = (epi==='completo'?1.75 : epi==='sem'?0.1 : 0.05);
-        const folga = 0.5, margem=1.0;
-        const Z = +(L+desac+folga+margem).toFixed(1);
-        const disp = +H.toFixed(1);
+        const FQ= +(queda/Math.max(L,0.1)).toFixed(1);
 
-        // Força de impacto (simplificado)
+        // ZLQ necessária (simplificado, conservador)
+        const desac = (epi==='completo'||epi==='srl')?1.75:(epi==='sem'?0.1:0.05);
+        const folga=0.5, margem=1.0;
+        const Z= +(Lqueda+desac+folga+margem).toFixed(1);
+        const disp= +H.toFixed(1);
+
+        // Força de impacto (didática)
         let FI;
-        if (epi==='completo') FI=Math.min(6.0,2.0+FQ*2.0);
+        if (epi==='completo' || epi==='srl') FI=Math.min(6.0, 2.0+FQ*2.0);
         else if (epi==='sem') FI=4.0+FQ*8.0;
         else FI=15.0;
         FI=+FI.toFixed(1);
 
-        // Resultado
         let res='safe', niv='BAIXO';
         if (epi==='abd' || Z>disp){res='dang'; niv='CRÍTICO'}
         else if (FI>6.0 || FQ>=2.0){res='warn'; niv='ALTO'}
         else if (FQ>1.0 || FI>4.0){res='warn'; niv='MÉDIO'}
 
-        return {FQ,Z,disp,FI,res,niv,queda};
+        return {FQ,Z,disp,FI,res,niv,queda,Lqueda};
       }
 
       update(){
         if(this.anim) return;
-        // posicionar plataforma e trabalhador
+
+        // posiciona plataforma e trabalhador
         const {base,workerBottom}=this.posicoes();
         this.platform.style.bottom=`${base}px`;
-        this.worker.style.bottom =`${workerBottom}px`;
-        this.worker.style.left   ='25%';
+        this.worker.style.bottom=`${workerBottom}px`;
+        this.worker.style.left='25%';
+        this.distBadge.style.display='none';
 
-        // cálculos
+        // SRL vertical: eleva ponto antes de posicionar demais
+        if(this.ancoragem.value==='srl') this.linhaVidaSRL();
+
+        // cartões sempre alinhados ao cinto para FQ=1
+        this.posicionarCartoes();
+
+        // cálculos + UI
         const R=this.calcular();
-        this.vZLQ.textContent=`${R.Z}m`;
-        this.vFQ.textContent =R.FQ.toString();
-        this.vFI.textContent =`${R.FI}kN`;
-        this.vR.textContent  =R.niv;
+        this.linhaIndicadores(R);
 
-        // status tags
-        const setTag=(el,cls,txt)=>{el.className=`tag ${cls}`; el.textContent=txt};
-        setTag(this.sZLQ, R.Z<=R.disp?'safe':'dang', R.Z<=R.disp?'SEGURO':'PERIGO');
-        setTag(this.sFQ , R.FQ<1?'safe':R.FQ===1?'warn':'dang', R.FQ<1?'BAIXO':R.FQ===1?'MÉDIO':'ALTO');
-        setTag(this.sFI , R.FI<=4?'safe':R.FI<=6?'warn':'dang', R.FI<=4?'ACEITÁVEL':R.FI<=6?'ELEVADO':'PERIGOSO');
-        setTag(this.sR  , R.res==='safe'?'safe':R.res==='warn'?'warn':'dang', R.res==='safe'?'SEGURO':R.res==='warn'?'ATENÇÃO':'CRÍTICO');
-        this.status.textContent = R.res==='safe'?'CENÁRIO SEGURO':R.res==='warn'?'CENÁRIO DE RISCO':'CENÁRIO CRÍTICO';
+        // corda Bezier curta e realista
+        this.desenharCorda();
 
-        // âncoras alinhadas ao cinto + linha + trajetória
-        this.posicionarAncoras();
-        this.linhaSeguranca();
-        this.trajetoria(R.Z);
-
-        // guardar para simulação
         this.last=R;
       }
 
       simular(){
         if(this.anim) return;
         this.anim=true;
-        const dist=Math.min(this.last.queda*30,450);
+        const dist=Math.min(this.last.queda*30,460);
         this.worker.style.setProperty('--fall',`${dist}px`);
-        this.worker.classList.add(this.last.res==='safe'?'fall-safe':this.last.res==='warn'?'fall-warn':'fall-dang');
-        const cls=this.last.res==='safe'?'r-safe':this.last.res==='warn'?'r-warn':'r-dang';
-        const msg=this.last.res==='safe'?'QUEDA SEGURA':this.last.res==='warn'?'LESÃO GRAVE':'QUEDA FATAL';
-        this.result.className=`result ${cls} show`; this.result.textContent=msg;
-        setTimeout(()=>this.reset(), this.last.res==='safe'?2200:2600);
+        const cls=this.last.res==='safe'?'fall-safe':this.last.res==='warn'?'fall-warn':'fall-dang';
+        this.worker.classList.add(cls);
+        setTimeout(()=>this.reset(), this.last.res==='safe'?2100:2500);
       }
 
       reset(){
         this.anim=false;
         this.worker.classList.remove('fall-safe','fall-warn','fall-dang');
-        this.result.classList.remove('show');
         this.update();
       }
     }
