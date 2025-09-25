@@ -1,382 +1,382 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>NR-35 • Fator de Queda – Cenários (HTML estático)</title>
-<style>
-  :root{
-    --bg:#0f172a; --panel:#0b1222; --ink:#e5e7eb; --muted:#94a3b8;
-    --brand:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
-    --line:#1f2937;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    background: radial-gradient(1200px 600px at 70% -10%, #1e293b 0, #0b1222 50%, var(--bg) 100%);
-    color:var(--ink);
-    font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
-  }
-  header{padding:16px 20px}
-  h1{margin:0; font-size:20px; color:var(--brand)}
-  .hint{font-size:12px; color:var(--muted)}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simulador Virtual NR-35 • Treinamento Profissional em Segurança</title>
+  <style>
+    :root{
+      --bg1:#0a0f1c;--bg2:#1a1f35;--bg3:#252b42;
+      --c1:#00d4ff;--c2:#00ff88;--cy:#ffb800;--cr:#ff4757;
+      --t1:#fff;--t2:#b8c2cc;--t3:#6c7b7f;--glass:rgba(255,255,255,.1);--glassb:rgba(255,255,255,.2)
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2) 50%,var(--bg3));color:var(--t1);min-height:100vh;overflow-x:hidden}
+    .header{padding:24px;background:linear-gradient(90deg,rgba(0,212,255,.1),rgba(0,255,136,.1));border-bottom:1px solid var(--glassb);backdrop-filter:blur(18px)}
+    .header-content{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+    .logo-section{display:flex;gap:16px;align-items:center}
+    .logo{width:50px;height:50px;border-radius:16px;background:conic-gradient(from 0deg,var(--c1),var(--c2),var(--cy),var(--cr),var(--c1));display:grid;place-items:center;animation:f 3s ease-in-out infinite}
+    .logo:before{content:"⚡";font-size:22px}
+    @keyframes f{50%{transform:translateY(-4px) rotate(5deg)}}
+    h1{font-size:28px;font-weight:800;background:linear-gradient(45deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .subtitle{color:var(--t2);font-size:14px}
+    .status-badge{padding:10px 16px;border-radius:22px;border:1px solid rgba(255,184,0,.3);color:var(--cy);background:rgba(255,184,0,.1);font-weight:700}
 
-  main{max-width:1200px; margin:0 auto; padding:12px 16px 32px;
-       display:grid; grid-template-columns:420px 1fr; gap:16px}
-  @media (max-width:1000px){ main{grid-template-columns:1fr} }
+    .main{max-width:1400px;margin:0 auto;padding:24px;display:grid;grid-template-columns:420px 1fr;gap:24px}
+    @media(max-width:1200px){.main{grid-template-columns:1fr}}
 
-  .card{background:var(--panel); border:1px solid var(--line);
-        border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.35); padding:14px}
-  .row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
-  label{font-size:12px; color:var(--muted); display:block; margin:6px 0}
-  input, select{width:100%; padding:10px; background:#0b1427; color:var(--ink);
-        border:1px solid #253043; border-radius:10px; font-size:14px}
-  .actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
-  button{cursor:pointer; padding:10px 14px; border-radius:12px; border:1px solid #243244;
-         background:#0b162b; color:#e6f6ff; font-weight:600}
-  button.primary{background:linear-gradient(180deg,#0ea5e9,#0284c7); border-color:#0369a1}
+    .panel{background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--glassb);border-radius:20px;padding:24px}
+    .section-title{display:flex;gap:10px;align-items:center;margin-bottom:16px;font-size:18px;font-weight:800}
+    .section-title:before{content:"";width:4px;height:20px;border-radius:2px;background:linear-gradient(45deg,var(--c1),var(--c2))}
+    .row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-bottom:16px}
+    .label{font-size:14px;font-weight:700}
+    .hint{font-size:12px;color:var(--t3)}
+    .slider{-webkit-appearance:none;width:100%;height:6px;border-radius:4px;background:linear-gradient(90deg,var(--bg2),var(--bg3));outline:none}
+    .slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:linear-gradient(45deg,var(--c1),var(--c2));box-shadow:0 4px 12px rgba(0,212,255,.4);cursor:pointer}
+    .input{width:120px;padding:10px 12px;border-radius:10px;border:1px solid var(--glassb);background:rgba(255,255,255,.05);color:var(--t1);text-align:center;font-weight:700}
+    .select{width:100%;padding:12px 16px;border-radius:12px;border:1px solid var(--glassb);background:rgba(255,255,255,.05);color:var(--t1);font-weight:700;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300d4ff' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
 
-  /* KPIs */
-  .kpis{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:8px}
-  .kpi{padding:10px; border-radius:10px; background:#0b1427; border:1px solid var(--line)}
-  .kpi b{display:block; font-size:12px; color:var(--muted)}
-  .kpi .v{font-size:18px; font-weight:800}
-  .k-ok{border-color:var(--ok); color:var(--ok); background:#0f2a1a}
-  .k-warn{border-color:var(--warn); color:var(--warn); background:#2a1f0f}
-  .k-bad{border-color:var(--bad); color:var(--bad); background:#2a0f0f}
+    .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:10px}
+    .kpi{background:var(--glass);border:1px solid var(--glassb);border-radius:14px;padding:16px;text-align:center}
+    .kpi .t{font-size:11px;color:var(--t3);text-transform:uppercase;font-weight:800;letter-spacing:.4px;margin-bottom:6px}
+    .kpi .v{font-size:22px;font-weight:900}
+    .tag{display:inline-block;margin-top:4px;font-size:10px;padding:4px 8px;border-radius:14px;border:1px solid}
+    .safe{color:#00ff88;border-color:#00ff88;background:rgba(0,255,136,.18)}
+    .warn{color:#ffb800;border-color:#ffb800;background:rgba(255,184,0,.18)}
+    .dang{color:#ff4757;border-color:#ff4757;background:rgba(255,71,87,.18)}
 
-  /* Palco */
-  .stageWrap{min-width:520px}
-  @media (max-width:1000px){ .stageWrap{min-width:unset} }
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+    .btn{border:0;border-radius:14px;padding:14px 16px;font-weight:900;cursor:pointer}
+    .btn-primary{background:linear-gradient(45deg,var(--c1),var(--c2));color:#001018}
+    .btn-ghost{background:rgba(255,255,255,.1);border:1px solid var(--glassb);color:var(--t1)}
 
-  .stage{
-    position:relative; width:min(92vw,820px); height:680px; margin:0 auto;
-    background:#0b1222; border:1px solid var(--line); border-radius:16px; overflow:hidden;
-    box-shadow:0 10px 40px rgba(0,0,0,.35);
-    background-size:cover; background-position:center;
-  }
-  .floor{position:absolute; left:0; right:0; bottom:40px; height:2px; background:#263244}
-  .band-safe{position:absolute; left:0; right:0;
-    background:linear-gradient(180deg, rgba(34,197,94,.12), rgba(34,197,94,.02));
-    border-top:1px dashed rgba(34,197,94,.5); border-bottom:1px dashed rgba(34,197,94,.5); pointer-events:none}
-  .band-near{position:absolute; left:0; right:0;
-    background:linear-gradient(180deg, rgba(239,68,68,.15), rgba(239,68,68,.03));
-    border-top:1px dashed rgba(239,68,68,.6); border-bottom:1px dashed rgba(239,68,68,.6); pointer-events:none}
+    /* Palco */
+    .stage{position:relative;height:700px;border-radius:24px;border:2px solid var(--glassb);overflow:hidden;background:linear-gradient(180deg,#87ceeb 0%,#5f9ea0 22%,#4682b4 45%,#2f4f4f 70%,#1c1c1c 100%)}
+    .building{position:absolute;right:0;top:0;width:42%;height:100%;background:linear-gradient(45deg,#2c3e50,#34495e);clip-path:polygon(18% 0,100% 0,100% 100%,0 100%);opacity:.75}
+    .windows{position:absolute;right:5%;top:10%;width:30%;height:80%;background:
+      repeating-linear-gradient(0deg,transparent 0,transparent 40px,rgba(255,255,200,.28) 40px,rgba(255,255,200,.28) 45px),
+      repeating-linear-gradient(90deg,transparent 0,transparent 30px,rgba(255,255,200,.28) 30px,rgba(255,255,200,.28) 35px)}
+    .ground{position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(#8b4513,#654321 55%,#3e2723)}
 
-  /* Silhueta (SVG) – usada em todos os cenários */
-  .silhouette{position:absolute; left:50%; transform:translateX(-50%); bottom:40px;
-              width:280px; height:auto; transition:transform 1.2s cubic-bezier(.2,.9,.2,1)}
+    .platform{position:absolute;left:15%;width:40%;height:16px;background:linear-gradient(90deg,#1e88e5,#42a5f5);border-radius:8px;box-shadow:0 4px 15px rgba(30,136,229,.4),inset 0 2px 0 rgba(255,255,255,.3);z-index:7}
+    .platform:before{content:"PLATAFORMA";position:absolute;bottom:24px;left:0;font-size:12px;font-weight:800;color:var(--c1);text-shadow:0 2px 8px rgba(0,0,0,.7);letter-spacing:.8px}
 
-  /* Pontos clicáveis */
-  .anchor{position:absolute; width:22px; height:22px; border-radius:50%;
-          background:#3b82f6; border:2px solid #fff; box-shadow:0 0 10px rgba(59,130,246,.5);
-          cursor:pointer; transform:translate(-50%,-50%); transition:transform .2s}
-  .anchor:hover{transform:translate(-50%,-50%) scale(1.15)}
+    .worker{position:absolute;width:120px;height:240px;z-index:10;transform-origin:50% 15%;transition:all .6s cubic-bezier(.25,.46,.45,.94)}
+    .svg{width:100%;height:100%;filter:drop-shadow(0 8px 20px rgba(0,0,0,.4))}
 
-  /* Toast */
-  .toast{position:fixed; left:50%; transform:translateX(-50%); bottom:18px; padding:10px 14px;
-         border-radius:10px; background:#0b1427; border:1px solid var(--line); color:#e6f6ff; display:none; z-index:10}
+    /* Sistema de ancoragem: container absoluto; os cartões serão posicionados via JS */
+    .anchor-system{position:absolute;right:15%;top:5%;width:120px;height:80%;z-index:15}
+    .anchor{position:absolute;width:100px;height:100px;border-radius:18px;background:rgba(10,15,28,.8);border:2px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s,border-color .25s,background .25s}
+    .anchor:hover{transform:scale(1.06) translateX(-4px);border-color:var(--c1)}
+    .anchor.selected{transform:scale(1.12) translateX(-6px);box-shadow:0 0 26px rgba(0,212,255,.45);background:rgba(0,212,255,.16);border-color:var(--c1)}
+    .anchor .icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(45deg,var(--c1),var(--c2));margin-bottom:8px}
+    .anchor .icon:before{content:"⚓";font-size:20px;color:#fff}
+    .anchor .label{font-size:13px;font-weight:900;text-align:center}
 
-  .noteBox{align-self:end; background:#0b1427; border:1px dashed #253043; padding:10px; border-radius:10px; text-align:center; font-size:12px; color:var(--muted)}
-  fieldset.checklist{margin:10px 0 2px; padding:10px; border:1px dashed #253043; border-radius:10px}
-  .chk{display:flex; gap:8px; align-items:center; font-size:13px; color:var(--ink)}
-  .chk input{width:auto}
-</style>
+    .line{position:absolute;height:4px;border-radius:2px;background:linear-gradient(45deg,var(--cy),#ffa726);box-shadow:0 0 14px rgba(255,184,0,.6);opacity:0;transform-origin:0 50%;transition:opacity .3s,width .3s,transform .3s;z-index:8}
+    .line.active{opacity:1}
+
+    .traj{position:absolute;border-left:4px dashed var(--cr);opacity:.85;z-index:6;transform-origin:top center}
+    .traj.safe{border-color:#00ff88}
+
+    .result{position:absolute;left:50%;top:20px;transform:translate(-50%,-80px);opacity:0;padding:14px 18px;border-radius:20px;font-weight:900;letter-spacing:.8px;backdrop-filter:blur(18px);transition:all .5s}
+    .result.show{opacity:1;transform:translate(-50%,10px)}
+    .r-safe{background:rgba(0,255,136,.2);border:2px solid #00ff88;color:#00ff88}
+    .r-warn{background:rgba(255,184,0,.2);border:2px solid #ffb800;color:#ffb800}
+    .r-dang{background:rgba(255,71,87,.2);border:2px solid #ff4757;color:#ff4757}
+
+    /* Quedas */
+    .worker.fall-safe{animation:fallSafe 2s cubic-bezier(.1,.7,.5,1) forwards}
+    .worker.fall-warn{animation:fallWarn 2.3s cubic-bezier(.2,.8,.4,1) forwards}
+    .worker.fall-dang{animation:fallDang 2.6s cubic-bezier(.5,.05,.6,.2) forwards}
+    @keyframes fallSafe{0%{transform:translateY(0)}30%{transform:translateY(var(--fall)) rotate(15deg)}80%{transform:translateY(calc(var(--fall)*.92))}100%{transform:translateY(calc(var(--fall)*.9))}}
+    @keyframes fallWarn{0%{transform:translateY(0)}40%{transform:translateY(var(--fall)) rotate(22deg)}100%{transform:translateY(calc(var(--fall)*.92))}}
+    @keyframes fallDang{0%{transform:translateY(0)}100%{transform:translateY(var(--fall)) rotate(90deg)}}
+  </style>
 </head>
 <body>
-  <header>
-    <h1>NR-35 • Fator de Queda – Simulação por Cenários</h1>
-    <div class="hint">Modelo educacional simplificado. Em campo: siga fabricante e procedimento corporativo.</div>
+  <header class="header">
+    <div class="header-content">
+      <div class="logo-section">
+        <div class="logo"></div>
+        <div>
+          <h1>Simulador Virtual NR-35</h1>
+          <div class="subtitle">Treinamento Profissional em Segurança</div>
+        </div>
+      </div>
+      <div id="status" class="status-badge">CENÁRIO SEGURO</div>
+    </div>
   </header>
 
-  <main>
-    <!-- Painel -->
-    <section class="card" aria-label="Parâmetros e Controles">
+  <main class="main">
+    <aside class="panel">
+      <h2 class="section-title">Parâmetros da Simulação</h2>
+
+      <div class="label">Altura do Trabalho</div>
       <div class="row">
-        <div>
-          <label for="cenario">Cenário</label>
-          <select id="cenario" aria-label="Selecione o cenário">
-            <option value="silhueta" selected>Silhueta (educacional)</option>
-            <option value="laje">Laje com linha de vida (imagem)</option>
-            <option value="escada">Escada marinheiro (imagem)</option>
-          </select>
-        </div>
-        <div>
-          <label for="altTrabalho">Altura de Trabalho (m)</label>
-          <input id="altTrabalho" type="number" min="1" step="0.1" value="3.0">
-        </div>
+        <input id="altura" type="range" class="slider" min="2" max="20" step="0.5" value="8">
+        <input id="alturaIn" type="number" class="input" min="2" max="20" step="0.5" value="8">
       </div>
+      <div class="hint">Altura dos pés do trabalhador em relação ao nível do chão.</div>
 
-      <div class="row3" style="margin-top:8px">
-        <div>
-          <label for="altTrab">Altura do Trabalhador (m)</label>
-          <input id="altTrab" type="number" min="1.5" max="2.0" step="0.01" value="1.75">
-        </div>
-        <div>
-          <label for="talabarte">Talabarte (m)</label>
-          <input id="talabarte" type="number" min="1.0" max="2.5" step="0.1" value="1.8">
-        </div>
-        <div>
-          <label for="massa">Massa do Trabalhador (kg)</label>
-          <input id="massa" type="number" min="45" max="150" step="1" value="85">
-        </div>
-      </div>
-
+      <div class="label" style="margin-top:14px">Comprimento do Talabarte</div>
       <div class="row">
-        <div>
-          <label>Fator de Queda (seleção por ponto)</label>
-          <input id="fqVis" value="— selecione um ponto —" disabled aria-live="polite">
+        <input id="talabarte" type="range" class="slider" min="0.9" max="2.0" step="0.1" value="1.3">
+        <input id="talabarteIn" type="number" class="input" min="0.9" max="2.0" step="0.1" value="1.3">
+      </div>
+      <div class="hint">Comprimento do talabarte de segurança em metros.</div>
+
+      <div class="label" style="margin-top:14px">Tipo de EPI</div>
+      <select id="epi" class="select">
+        <option value="completo">Cinto Paraquedista + Talabarte com Absorvedor</option>
+        <option value="sem">Cinto Paraquedista + Talabarte sem Absorvedor</option>
+        <option value="abd">Cinto Abdominal (inadequado)</option>
+      </select>
+
+      <h2 class="section-title" style="margin-top:22px">Indicadores de Segurança</h2>
+      <div class="kpis">
+        <div class="kpi" id="kpiZLQ"><div class="t">Zona Livre de Queda</div><div class="v" id="vZLQ">4.2m</div><div class="tag safe" id="sZLQ">SEGURO</div></div>
+        <div class="kpi" id="kpiFQ"><div class="t">Fator de Queda</div><div class="v" id="vFQ">1.0</div><div class="tag warn" id="sFQ">MÉDIO</div></div>
+        <div class="kpi" id="kpiFI"><div class="t">Força de Impacto</div><div class="v" id="vFI">4.2kN</div><div class="tag safe" id="sFI">ACEITÁVEL</div></div>
+        <div class="kpi" id="kpiR"><div class="t">Nível de Risco</div><div class="v" id="vR">BAIXO</div><div class="tag safe" id="sR">SEGURO</div></div>
+      </div>
+
+      <div class="grid2">
+        <button id="simular" class="btn btn-primary">⚡ SIMULAR QUEDA</button>
+        <button id="reset" class="btn btn-ghost">🔄 RESETAR</button>
+      </div>
+    </aside>
+
+    <section class="panel" style="padding:0">
+      <div class="stage" id="stage">
+        <div class="building"></div>
+        <div class="windows"></div>
+        <div class="ground"></div>
+
+        <div id="platform" class="platform"></div>
+
+        <!-- Sistema de ancoragens (posicionadas via JS) -->
+        <div class="anchor-system" id="anchors">
+          <div id="aSup"  class="anchor"><div class="icon"></div><div class="label">ACIMA<br>FQ &lt; 1</div></div>
+          <div id="aMed"  class="anchor selected"><div class="icon"></div><div class="label">NÍVEL<br>FQ = 1</div></div>
+          <div id="aInf"  class="anchor"><div class="icon"></div><div class="label">ABAIXO<br>FQ = 2</div></div>
         </div>
-        <div class="noteBox" role="note" aria-label="Valores internos">Absorvedor=1,0 m · Folga=0,1 m · Arnês=0,2 m</div>
-      </div>
 
-      <fieldset class="checklist" aria-labelledby="chkTitle">
-        <legend id="chkTitle">Checklist operacional (resumo)</legend>
-        <label class="chk"><input type="checkbox" id="climaOk"> Condições de clima/vento/luminosidade adequadas</label>
-        <label class="chk"><input type="checkbox" id="resgateOk"> Plano de resgate disponível e ensaiado</label>
-        <label class="chk"><input type="checkbox" id="treinamentoOk"> Treinamento vigente / aptidão confirmada</label>
-      </fieldset>
+        <div id="linha" class="line"></div>
+        <div id="traj" class="traj safe"></div>
 
-      <div class="kpis">
-        <div class="kpi"><b>Queda livre (m)</b><div class="v" id="vQL">—</div></div>
-        <div class="kpi"><b>Clearance requerido (m)</b><div class="v" id="vCL">—</div></div>
-        <div class="kpi"><b>Margem de segurança (m)</b><div class="v" id="vMG">—</div></div>
-        <div class="kpi" id="kRES"><b>Resultado</b><div class="v" id="vRES">—</div></div>
-      </div>
+        <div id="worker" class="worker">
+          <svg class="svg" viewBox="0 0 80 180" xmlns="http://www.w3.org/2000/svg" aria-label="Trabalhador com EPI">
+            <circle cx="40" cy="25" r="12" fill="#ffdbac" stroke="#d4a574" stroke-width="2"/>
+            <ellipse cx="40" cy="20" rx="14" ry="8" fill="#ff6b35" stroke="#d4531f" stroke-width="2"/>
+            <rect x="30" y="35" width="20" height="40" rx="5" fill="#4a90e2" stroke="#2e5c8a" stroke-width="2"/>
+            <!-- Cinta/harness (ponto de conexão está a ~y=52) -->
+            <rect x="28" y="45" width="24" height="15" rx="3" fill="#ffd700" stroke="#ccaa00" stroke-width="2" opacity=".85"/>
+            <rect x="20" y="40" width="8" height="25" rx="4" fill="#ffdbac" stroke="#d4a574" stroke-width="2"/>
+            <rect x="52" y="40" width="8" height="25" rx="4" fill="#ffdbac" stroke="#d4a574" stroke-width="2"/>
+            <rect x="32" y="75" width="6" height="35" rx="3" fill="#2c3e50" stroke="#1a252f" stroke-width="2"/>
+            <rect x="42" y="75" width="6" height="35" rx="3" fill="#2c3e50" stroke="#1a252f" stroke-width="2"/>
+            <ellipse cx="35" cy="115" rx="8" ry="4" fill="#8b4513" stroke="#5d2e0a" stroke-width="2"/>
+            <ellipse cx="45" cy="115" rx="8" ry="4" fill="#8b4513" stroke="#5d2e0a" stroke-width="2"/>
+            <circle cx="40" cy="52" r="3" fill="#ff0000" stroke="#cc0000" stroke-width="1"/>
+          </svg>
+        </div>
 
-      <div class="kpis">
-        <div class="kpi"><b>Força estimada (kN)</b><div class="v" id="vF">—</div></div>
-        <div class="kpi"><b>Limite recomendável (kN)</b><div class="v">≤ 6</div></div>
-      </div>
-
-      <div class="actions">
-        <button class="primary" id="btnSim">▶ Simular</button>
-      </div>
-    </section>
-
-    <!-- Palco -->
-    <section class="card stageWrap" aria-label="Palco da simulação">
-      <div id="stage" class="stage">
-        <!-- Faixas de segurança/perigo (posicionadas via JS) -->
-        <div class="floor" aria-hidden="true"></div>
-
-        <!-- SVG da silhueta -->
-        <svg id="sil" class="silhouette" viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg" aria-label="Silhueta humana">
-          <defs>
-            <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#0f2038"/>
-              <stop offset="1" stop-color="#0b1427"/>
-            </linearGradient>
-          </defs>
-          <g id="person">
-            <circle cx="300" cy="120" r="56" fill="url(#bodyGrad)" stroke="#93c5fd" stroke-width="2.4"/>
-            <path fill="url(#bodyGrad)" stroke="#93c5fd" stroke-width="2.4" d="
-              M210,200 C220,185 250,175 300,175 C350,175 380,185 390,200
-              L410,350 C415,390 380,440 300,450 C220,440 185,390 190,350 Z"/>
-            <path fill="none" stroke="#93c5fd" stroke-opacity=".6" stroke-width="1.8" d="M255,195 L230,360 M345,195 L370,360 M220,335 L380,335"/>
-            <circle cx="300" cy="260" r="12" fill="#38bdf8" stroke="#0369a1" stroke-width="3"/>
-            <path fill="url(#bodyGrad)" stroke="#93c5fd" stroke-width="2.4" d="M190,235 Q165,285 175,340 Q180,370 195,385 L210,370 Q205,350 205,330 Q205,305 220,265 Z"/>
-            <path fill="url(#bodyGrad)" stroke="#93c5fd" stroke-width="2.4" d="M410,235 Q435,285 425,340 Q420,370 405,385 L390,370 Q395,350 395,330 Q395,305 380,265 Z"/>
-            <path fill="url(#bodyGrad)" stroke="#93c5fd" stroke-width="2.4" d="M245,452 Q235,520 235,610 Q235,670 245,730 L280,730 Q275,670 275,610 Q275,520 285,452 Z"/>
-            <path fill="url(#bodyGrad)" stroke="#93c5fd" stroke-width="2.4" d="M355,452 Q365,520 365,610 Q365,670 355,730 L320,730 Q325,670 325,610 Q325,520 315,452 Z"/>
-            <path fill="none" stroke="#93c5fd" stroke-opacity=".6" stroke-width="1.6" d="M230,730 L285,730 M315,730 L370,730"/>
-          </g>
-        </svg>
-        <!-- Âncoras serão inseridas por JS -->
+        <div id="result" class="result r-safe">SIMULAÇÃO SEGURA</div>
       </div>
     </section>
   </main>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>
+    // Utilitários
+    const clamp=(v,min,max)=>Math.min(Math.max(v,min),max);
+    const map=(v,a,b,c,d)=>c+((clamp(v,a,b)-a)*(d-c))/(b-a);
 
-<script>
-(function(){
-  // Constantes internas didáticas
-  const ABS = 1.0;   // m
-  const FOLGA = 0.1; // m
-  const ARNES = 0.2; // m
-  const G = 9.80665;
-  const FLOOR_PX = 40;
+    class Simulador{
+      constructor(){
+        // Controles
+        this.altura=document.getElementById('altura');
+        this.alturaIn=document.getElementById('alturaIn');
+        this.talabarte=document.getElementById('talabarte');
+        this.talabarteIn=document.getElementById('talabarteIn');
+        this.epi=document.getElementById('epi');
 
-  // UI refs
-  const selCenario = document.getElementById('cenario');
-  const altTrabalho = document.getElementById('altTrabalho');
-  const altTrab = document.getElementById('altTrab');
-  const talabarte = document.getElementById('talabarte');
-  const massa = document.getElementById('massa');
-  const fqVis = document.getElementById('fqVis');
+        // Cena
+        this.stage=document.getElementById('stage');
+        this.platform=document.getElementById('platform');
+        this.worker=document.getElementById('worker');
+        this.line=document.getElementById('linha');
+        this.traj=document.getElementById('traj');
+        this.result=document.getElementById('result');
+        this.status=document.getElementById('status');
 
-  const vQL = document.getElementById('vQL');
-  const vCL = document.getElementById('vCL');
-  const vMG = document.getElementById('vMG');
-  const vRES = document.getElementById('vRES');
-  const kRES = document.getElementById('kRES');
-  const vF = document.getElementById('vF');
+        // Âncoras
+        this.aSup=document.getElementById('aSup');
+        this.aMed=document.getElementById('aMed');
+        this.aInf=document.getElementById('aInf');
+        this.anchors=[this.aSup,this.aMed,this.aInf];
+        this.ponto=1; // 0 sup, 1 nível, 2 inf
 
-  const btnSim = document.getElementById('btnSim');
-  const stage = document.getElementById('stage');
-  const sil = document.getElementById('sil');
+        // KPIs
+        this.vZLQ=document.getElementById('vZLQ'); this.sZLQ=document.getElementById('sZLQ');
+        this.vFQ =document.getElementById('vFQ');  this.sFQ =document.getElementById('sFQ');
+        this.vFI =document.getElementById('vFI');  this.sFI =document.getElementById('sFI');
+        this.vR  =document.getElementById('vR');   this.sR  =document.getElementById('sR');
 
-  const climaOk = document.getElementById('climaOk');
-  const resgateOk = document.getElementById('resgateOk');
-  const treinamentoOk = document.getElementById('treinamentoOk');
+        // Eventos
+        const sync=(a,b)=>a.addEventListener('input',e=>{b.value=a.value;this.update()});
+        sync(this.altura,this.alturaIn); sync(this.alturaIn,this.altura);
+        sync(this.talabarte,this.talabarteIn); sync(this.talabarteIn,this.talabarte);
+        this.epi.addEventListener('change',()=>this.update());
+        this.anchors.forEach((el,i)=>el.addEventListener('click',()=>{this.ponto=i;this.anchors.forEach(x=>x.classList.remove('selected'));el.classList.add('selected');this.update()}));
 
-  const toast = document.getElementById('toast');
+        document.getElementById('simular').addEventListener('click',()=>this.simular());
+        document.getElementById('reset').addEventListener('click',()=>this.reset());
 
-  // Estado
-  let selectedFQ = null;
-  let bandSafe = null, bandNear = null;
-  let anchors = [];
+        this.anim=false;
+        this.update();
+      }
 
-  // Cenários (pontos e BG)
-  const SCENARIOS = {
-    silhueta: {
-      bg: null,
-      anchors: [
-        {top:'18%', left:'50%', fq:0, label:'Acima da cabeça (FQ=0)'},
-        {top:'36%', left:'50%', fq:1, label:'Altura do peito (FQ=1)'},
-        {top:'76%', left:'50%', fq:2, label:'Altura dos pés (FQ=2)'}
-      ]
-    },
-    laje: {
-      bg: 'img/laje.png', // substitua se desejar
-      anchors: [
-        {top:'12%', left:'52%', fq:0, label:'Linha de vida acima (FQ=0)'},
-        {top:'40%', left:'48%', fq:1, label:'Nível do dorsal (FQ=1)'},
-        {top:'88%', left:'50%', fq:2, label:'Ancoragem nos pés (FQ=2)'}
-      ]
-    },
-    escada: {
-      bg: 'img/escada.png', // substitua se desejar
-      anchors: [
-        {top:'16%', left:'50%', fq:0, label:'Trava-quedas acima (FQ=0)'},
-        {top:'45%', left:'48%', fq:1, label:'Ao nível do peito (FQ=1)'},
-        {top:'92%', left:'50%', fq:2, label:'Conexão nos degraus/pés (FQ=2)'}
-      ]
+      // Posição vertical com faixa estável (2–20 m -> 140–520 px)
+      posicoes(){
+        const h=parseFloat(this.altura.value);
+        const base=map(h,2,20,140,520); // bottom da plataforma
+        const workerBottom=base+16;     // altura da plataforma
+        return {base,workerBottom};
+      }
+
+      // Ponto do cinto (em px relativos ao stage)
+      pontoCinto(){
+        const rectW=this.worker.getBoundingClientRect();
+        const rectS=this.stage.getBoundingClientRect();
+        const x=(rectW.left-rectS.left)+(rectW.width/2);
+        const y=(rectW.top -rectS.top )+30; // ~altura do harness
+        return {x,y,rectS};
+      }
+
+      // Posiciona âncoras com FQ=1 no nível do cinto
+      posicionarAncoras(){
+        const {rectS,y}=this.pontoCinto();
+        const cardW=100, cardH=100, off=120;
+        const yFQ1=clamp(y-cardH/2,20,rectS.height-cardH-20);
+        const yFQ0=clamp(yFQ1-off,20,rectS.height-cardH-20);
+        const yFQ2=clamp(yFQ1+off,20,rectS.height-cardH-20);
+        const right='15%';
+        Object.assign(this.aMed.style,{top:`${yFQ1}px`,right});
+        Object.assign(this.aSup.style,{top:`${yFQ0}px`,right});
+        Object.assign(this.aInf.style,{top:`${yFQ2}px`,right});
+      }
+
+      linhaSeguranca(){
+        const {x,y}=this.pontoCinto();
+        const a=[this.aSup,this.aMed,this.aInf][this.ponto].getBoundingClientRect();
+        const s=this.stage.getBoundingClientRect();
+        const ax=(a.left-s.left)+(a.width/2);
+        const ay=(a.top -s.top )+(a.height/2);
+        const dx=ax-x, dy=ay-y;
+        const L=Math.hypot(dx,dy);
+        const ang=Math.atan2(dy,dx)*180/Math.PI;
+        Object.assign(this.line.style,{left:`${x}px`,top:`${y}px`,width:`${L}px`,transform:`rotate(${ang}deg)`});
+        this.line.classList.add('active');
+      }
+
+      trajetoria(zlq){
+        const w=this.worker.getBoundingClientRect();
+        const s=this.stage.getBoundingClientRect();
+        const x=(w.left-s.left)+(w.width/2);
+        const top=(w.top-s.top)+(w.height/2);
+        const h=Math.min(zlq*30, s.height-top-140);
+        Object.assign(this.traj.style,{left:`${x-2}px`,top:`${top}px`,height:`${h}px`});
+      }
+
+      calcular(){
+        const H = parseFloat(this.altura.value);
+        const L = parseFloat(this.talabarte.value);
+        const epi=this.epi.value;
+
+        // FQ conforme ponto de ancoragem
+        let queda;
+        if (this.ponto===0) queda=Math.max(0, L-2.0);
+        else if (this.ponto===1) queda=L;
+        else queda=L+2.0;
+
+        const FQ= +(queda/L).toFixed(1);
+
+        // ZLQ necessária
+        const desac = (epi==='completo'?1.75 : epi==='sem'?0.1 : 0.05);
+        const folga = 0.5, margem=1.0;
+        const Z = +(L+desac+folga+margem).toFixed(1);
+        const disp = +H.toFixed(1);
+
+        // Força de impacto (simplificado)
+        let FI;
+        if (epi==='completo') FI=Math.min(6.0,2.0+FQ*2.0);
+        else if (epi==='sem') FI=4.0+FQ*8.0;
+        else FI=15.0;
+        FI=+FI.toFixed(1);
+
+        // Resultado
+        let res='safe', niv='BAIXO';
+        if (epi==='abd' || Z>disp){res='dang'; niv='CRÍTICO'}
+        else if (FI>6.0 || FQ>=2.0){res='warn'; niv='ALTO'}
+        else if (FQ>1.0 || FI>4.0){res='warn'; niv='MÉDIO'}
+
+        return {FQ,Z,disp,FI,res,niv,queda};
+      }
+
+      update(){
+        if(this.anim) return;
+        // posicionar plataforma e trabalhador
+        const {base,workerBottom}=this.posicoes();
+        this.platform.style.bottom=`${base}px`;
+        this.worker.style.bottom =`${workerBottom}px`;
+        this.worker.style.left   ='25%';
+
+        // cálculos
+        const R=this.calcular();
+        this.vZLQ.textContent=`${R.Z}m`;
+        this.vFQ.textContent =R.FQ.toString();
+        this.vFI.textContent =`${R.FI}kN`;
+        this.vR.textContent  =R.niv;
+
+        // status tags
+        const setTag=(el,cls,txt)=>{el.className=`tag ${cls}`; el.textContent=txt};
+        setTag(this.sZLQ, R.Z<=R.disp?'safe':'dang', R.Z<=R.disp?'SEGURO':'PERIGO');
+        setTag(this.sFQ , R.FQ<1?'safe':R.FQ===1?'warn':'dang', R.FQ<1?'BAIXO':R.FQ===1?'MÉDIO':'ALTO');
+        setTag(this.sFI , R.FI<=4?'safe':R.FI<=6?'warn':'dang', R.FI<=4?'ACEITÁVEL':R.FI<=6?'ELEVADO':'PERIGOSO');
+        setTag(this.sR  , R.res==='safe'?'safe':R.res==='warn'?'warn':'dang', R.res==='safe'?'SEGURO':R.res==='warn'?'ATENÇÃO':'CRÍTICO');
+        this.status.textContent = R.res==='safe'?'CENÁRIO SEGURO':R.res==='warn'?'CENÁRIO DE RISCO':'CENÁRIO CRÍTICO';
+
+        // âncoras alinhadas ao cinto + linha + trajetória
+        this.posicionarAncoras();
+        this.linhaSeguranca();
+        this.trajetoria(R.Z);
+
+        // guardar para simulação
+        this.last=R;
+      }
+
+      simular(){
+        if(this.anim) return;
+        this.anim=true;
+        const dist=Math.min(this.last.queda*30,450);
+        this.worker.style.setProperty('--fall',`${dist}px`);
+        this.worker.classList.add(this.last.res==='safe'?'fall-safe':this.last.res==='warn'?'fall-warn':'fall-dang');
+        const cls=this.last.res==='safe'?'r-safe':this.last.res==='warn'?'r-warn':'r-dang';
+        const msg=this.last.res==='safe'?'QUEDA SEGURA':this.last.res==='warn'?'LESÃO GRAVE':'QUEDA FATAL';
+        this.result.className=`result ${cls} show`; this.result.textContent=msg;
+        setTimeout(()=>this.reset(), this.last.res==='safe'?2200:2600);
+      }
+
+      reset(){
+        this.anim=false;
+        this.worker.classList.remove('fall-safe','fall-warn','fall-dang');
+        this.result.classList.remove('show');
+        this.update();
+      }
     }
-  };
 
-  function pxPerMeter(){
-    const usable = stage.clientHeight - FLOOR_PX - 40;
-    return usable / 8.0; // escala visual didática
-  }
-
-  function showToast(msg){
-    toast.textContent = msg; toast.style.display='block';
-    setTimeout(()=>toast.style.display='none', 1400);
-  }
-
-  function compute(){
-    const H = parseFloat(altTrabalho.value);
-    const Ht = parseFloat(altTrab.value);
-    const L  = parseFloat(talabarte.value);
-    const m  = parseFloat(massa.value);
-    const FQ = (selectedFQ===null ? 0 : selectedFQ);
-
-    const quedaLivre = Math.max(0, FQ * L);
-    const clearance  = Ht + quedaLivre + ABS + FOLGA + ARNES;
-    const margem     = H - clearance;
-
-    // força estimada (kN)
-    const desacel = Math.max(0.35, ABS + ARNES);
-    const FkN = ((m * G * quedaLivre) / desacel) / 1000;
-
-    // status
-    let status = 'SEGURO';
-    if (clearance >= H) status = 'IMPACTO';
-    else if (H - clearance <= 0.3) status = 'PRÓXIMO';
-    else if (H - clearance < 1.0) status = 'ALERTA';
-
-    // KPIs
-    vQL.textContent = quedaLivre.toFixed(2);
-    vCL.textContent = clearance.toFixed(2);
-    vMG.textContent = margem.toFixed(2);
-    vRES.textContent = status;
-    vF.textContent  = FkN.toFixed(1);
-
-    kRES.className = 'kpi';
-    if (status==='SEGURO') kRES.classList.add('k-ok');
-    else if (status==='IMPACTO') kRES.classList.add('k-bad');
-    else kRES.classList.add('k-warn');
-
-    return {H,Ht,L,FQ,quedaLivre,clearance,margem,status};
-  }
-
-  function ensureBands(model){
-    const ppx = pxPerMeter();
-    if (!bandSafe){ bandSafe = document.createElement('div'); bandSafe.className='band-safe'; stage.appendChild(bandSafe); }
-    if (!bandNear){ bandNear = document.createElement('div'); bandNear.className='band-near'; stage.appendChild(bandNear); }
-
-    // seguro quando sobra >= 1.0 m: banda verde até H-1.0
-    const safeH = Math.max(0,(model.H - 1.0) * ppx);
-    bandSafe.style.bottom = FLOOR_PX + 'px';
-    bandSafe.style.height = safeH + 'px';
-
-    // últimos 0.3 m: banda vermelha perto do chão
-    const nearH = 0.3 * ppx;
-    bandNear.style.bottom = FLOOR_PX + 'px';
-    bandNear.style.height = nearH + 'px';
-  }
-
-  function animateFall(model){
-    const ppx = pxPerMeter();
-    const fallPx = Math.min(model.clearance * ppx, model.H * ppx);
-    const rot = model.status==='IMPACTO' ? 16 : model.status==='PRÓXIMO' ? 8 : 3;
-    sil.style.transform = `translateX(-50%) translateY(${fallPx}px) rotate(${rot}deg)`;
-  }
-
-  function makeAnchors(cfg){
-    // limpar anteriores
-    anchors.forEach(a=>a.remove()); anchors = [];
-    stage.style.backgroundImage = cfg.bg ? `url('${cfg.bg}')` : 'none';
-
-    cfg.anchors.forEach(a=>{
-      const d = document.createElement('button');
-      d.className = 'anchor';
-      d.style.top = a.top; d.style.left = a.left;
-      d.title = a.label; d.setAttribute('aria-label', 'Selecionar âncora: ' + a.label);
-      d.addEventListener('click', ()=>{
-        selectedFQ = a.fq;
-        document.getElementById('fqVis').value = `FQ = ${a.fq}`;
-        alert(`${a.label}. Fator de Queda = ${a.fq}.`);
-      });
-      stage.appendChild(d);
-      anchors.push(d);
-    });
-  }
-
-  function loadScenario(){
-    const cfg = SCENARIOS[selCenario.value];
-    // reset da silhueta
-    sil.style.transform = `translateX(-50%) translateY(0px) rotate(0deg)`;
-    makeAnchors(cfg);
-    compute();
-  }
-
-  // Bind
-  selCenario.addEventListener('change', loadScenario);
-  [altTrabalho, altTrab, talabarte, massa].forEach(i=>i.addEventListener('change', compute));
-  document.getElementById('btnSim').addEventListener('click', ()=>{
-    if (selectedFQ===null){
-      alert('Selecione um ponto de ancoragem (FQ) antes de simular.');
-      return;
-    }
-    if (!(climaOk.checked && resgateOk.checked && treinamentoOk.checked)){
-      const faltantes = [
-        !climaOk.checked && 'Condição meteorológica',
-        !resgateOk.checked && 'Plano de resgate',
-        !treinamentoOk.checked && 'Treinamento vigente'
-      ].filter(Boolean).join(' · ');
-      if (!confirm(`Atenção: itens críticos não confirmados:\n- ${faltantes}\n\nDeseja simular assim mesmo?`)) return;
-    }
-    const m = compute(); ensureBands(m); animateFall(m); showToast(`Simulado: ${m.status}`);
-  });
-
-  // init
-  loadScenario();
-  compute();
-})();
-</script>
+    window.addEventListener('DOMContentLoaded',()=>new Simulador());
+  </script>
 </body>
 </html>
