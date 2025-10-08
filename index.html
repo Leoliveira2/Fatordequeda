@@ -176,7 +176,7 @@
           <div id="dotFQ2" class="anchor-dot" data-label="ABAIXO (FQ=2)"></div>
         </div>
 
-        <!-- SVG da “corda” com Bezier -->
+        <!-- SVG da "corda" com Bezier -->
         <svg id="ropeSvg" class="ropeSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
             <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -212,284 +212,331 @@
   </main>
 
   <script>
-    // utilitários
-    const clamp=(v,min,max)=>Math.min(Math.max(v,min),max);
-    const map=(v,a,b,c,d)=>c+((clamp(v,a,b)-a)*(d-c))/(b-a);
+    // Utilitários
+    const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+    const map = (v, a, b, c, d) => c + ((clamp(v, a, b) - a) * (d - c)) / (b - a);
 
-    class Simulador{
-      aplicarCenario(tipo){
-        // Dois cenários solicitados: 
-        // 1) SEGURO: ZLQ ≥ 1 m acima do solo (não toca)
-        // 2) LESÃO: toca os pés no solo
-        if(tipo==='seguro'){
-          // Parâmetros escolhidos para ilustrar segurança
-          this.altura.value = this.alturaIn.value = 8.0;     // 8 m de altura dos pés
-          this.talabarte.value = this.talabarteIn.value = 1.2; // talabarte curto
-          this.epi.value = 'completo';
-          this.ancoragem.value = 'overhead';
-          this.ponto = 0; // acima -> FQ≈0
-          this.cards.forEach(c=>c.classList.remove('selected')); this.aSup.classList.add('selected');
-        } else if(tipo==='lesao'){
-          // Parâmetros para demonstrar impacto no solo
-          this.altura.value = this.alturaIn.value = 3.0;     // 3 m de altura
-          this.talabarte.value = this.talabarteIn.value = 1.6; // talabarte longo
-          this.epi.value = 'sem'; // sem absorvedor, pior caso didático
-          this.ancoragem.value = 'lateral';
-          this.ponto = 2; // abaixo -> FQ≈2
-          this.cards.forEach(c=>c.classList.remove('selected')); this.aInf.classList.add('selected');
-        }
+    class Simulador {
+      constructor() {
+        // Elementos DOM
+        this.altura = document.getElementById('altura');
+        this.alturaIn = document.getElementById('alturaIn');
+        this.talabarte = document.getElementById('talabarte');
+        this.talabarteIn = document.getElementById('talabarteIn');
+        this.epi = document.getElementById('epi');
+        this.ancoragem = document.getElementById('ancoragem');
+        this.worker = document.getElementById('worker');
+        this.platform = document.getElementById('platform');
+        this.ropeSvg = document.getElementById('ropeSvg');
+        this.ropePath = document.getElementById('ropePath');
+        this.distBadge = document.getElementById('distBadge');
+        this.vZLQ = document.getElementById('vZLQ');
+        this.sZLQ = document.getElementById('sZLQ');
+        this.vFQ = document.getElementById('vFQ');
+        this.sFQ = document.getElementById('sFQ');
+        this.vFI = document.getElementById('vFI');
+        this.sFI = document.getElementById('sFI');
+        this.vR = document.getElementById('vR');
+        this.sR = document.getElementById('sR');
+        this.result = document.getElementById('result');
+        this.hdrStatus = document.getElementById('hdrStatus');
+        this.stage = document.getElementById('stage');
+
+        this.aSup = document.getElementById('aSup');
+        this.aMed = document.getElementById('aMed');
+        this.aInf = document.getElementById('aInf');
+        this.cards = [this.aSup, this.aMed, this.aInf];
+        this.ponto = 1; // FQ=1 default
+
+        // Event listeners
+        this.altura.addEventListener('input', () => { 
+          this.alturaIn.value = this.altura.value; 
+          this.update(); 
+        });
+        this.alturaIn.addEventListener('input', () => { 
+          this.altura.value = this.alturaIn.value; 
+          this.update(); 
+        });
+        this.talabarte.addEventListener('input', () => { 
+          this.talabarteIn.value = this.talabarte.value; 
+          this.update(); 
+        });
+        this.talabarteIn.addEventListener('input', () => { 
+          this.talabarte.value = this.talabarteIn.value; 
+          this.update(); 
+        });
+        this.epi.addEventListener('change', () => this.update());
+        this.ancoragem.addEventListener('change', () => this.update());
+        
+        this.cards.forEach((card, i) => card.addEventListener('click', () => {
+          this.ponto = i;
+          this.cards.forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          this.update();
+        }));
+        
+        document.getElementById('cSeg').addEventListener('click', () => this.aplicarCenario('seguro'));
+        document.getElementById('cLes').addEventListener('click', () => this.aplicarCenario('lesao'));
+        document.getElementById('btSim').addEventListener('click', () => this.simular());
+        document.getElementById('btReset').addEventListener('click', () => this.reset());
+
+        this.anim = false;
         this.update();
       }
 
-      posicionarMarcadores(){
-        const {x,y,stage} = this.pontoCinto();
-        const off=120; // afastamento vertical ilustrativo
-        const set=(el,yy)=>{ el.style.left = `${x}px`; el.style.top = `${yy}px`; };
-        set(document.getElementById('dotFQ0'), Math.max(30, y-off));
-        set(document.getElementById('dotFQ1'), y);
-        set(document.getElementById('dotFQ2'), Math.min(stage.height-30, y+off));
+      // Sistema de posicionamento corrigido
+      calcularPosicoes() {
+        const altura = parseFloat(this.altura.value); // altura em metros
+        const stageHeight = 720; // altura do stage em pixels
+        const groundHeight = 120; // altura do solo em pixels
+        const platformHeight = 16; // altura da plataforma em pixels
+        const workerHeight = 238; // altura do trabalhador em pixels
+        
+        // Mapear altura (2-20m) para posição no stage
+        // O solo está a 120px do bottom, então a área útil é 600px
+        const workArea = stageHeight - groundHeight; // 600px
+        const minHeight = 2; // metros
+        const maxHeight = 20; // metros
+        
+        // Calcular posição da plataforma (bottom em pixels)
+        const platformBottom = groundHeight + ((altura - minHeight) / (maxHeight - minHeight)) * (workArea - platformHeight - 50);
+        
+        // Posicionar trabalhador exatamente sobre a plataforma
+        const workerBottom = platformBottom + platformHeight;
+        
+        return {
+          platformBottom: Math.max(groundHeight, platformBottom),
+          workerBottom: Math.max(groundHeight + platformHeight, workerBottom),
+          altura
+        };
       }
 
-
-      constructor(){
-        // inputs
-        this.altura=document.getElementById('altura');
-        this.alturaIn=document.getElementById('alturaIn');
-        this.talabarte=document.getElementById('talabarte');
-        this.talabarteIn=document.getElementById('talabarteIn');
-        this.epi=document.getElementById('epi');
-        this.ancoragem=document.getElementById('ancoragem');
-
-        // cena
-        this.stage=document.getElementById('stage');
-        this.platform=document.getElementById('platform');
-        this.worker=document.getElementById('worker');
-        this.ropeSvg=document.getElementById('ropeSvg');
-        this.ropePath=document.getElementById('ropePath');
-        this.distBadge=document.getElementById('distBadge');
-        this.result=document.getElementById('result');
-        this.hdrStatus=document.getElementById('hdrStatus');
-
-        // ancoragens
-        this.aSup=document.getElementById('aSup');
-        this.aMed=document.getElementById('aMed');
-        this.aInf=document.getElementById('aInf');
-        this.cards=[this.aSup,this.aMed,this.aInf];
-        this.ponto=1; // 0=sup, 1=nível, 2=inf
-        this.cards.forEach((el,i)=>el.addEventListener('click',()=>{this.ponto=i;this.cards.forEach(c=>c.classList.remove('selected'));el.classList.add('selected');this.update()}));
-
-        // KPIs
-        this.vZLQ=document.getElementById('vZLQ'); this.sZLQ=document.getElementById('sZLQ');
-        this.vFQ =document.getElementById('vFQ');  this.sFQ =document.getElementById('sFQ');
-        this.vFI =document.getElementById('vFI');  this.sFI =document.getElementById('sFI');
-        this.vR  =document.getElementById('vR');   this.sR  =document.getElementById('sR');
-
-        // botões
-        document.getElementById('btSim').addEventListener('click',()=>this.simular());
-        document.getElementById('btReset').addEventListener('click',()=>this.reset());
-        // cenários rápidos
-        document.getElementById('cSeg').addEventListener('click',()=>this.aplicarCenario('seguro'));
-        document.getElementById('cLes').addEventListener('click',()=>this.aplicarCenario('lesao'));
-
-        // sincronização de inputs
-        const sync=(a,b)=>a.addEventListener('input',()=>{b.value=a.value;this.update()});
-        sync(this.altura,this.alturaIn); sync(this.alturaIn,this.altura);
-        sync(this.talabarte,this.talabarteIn); sync(this.talabarteIn,this.talabarte);
-        this.epi.addEventListener('change',()=>this.update());
-        this.ancoragem.addEventListener('change',()=>this.update());
-
-        this.anim=false;
-        this.update();
+      // Posicionar elementos na cena
+      posicionarElementos() {
+        const pos = this.calcularPosicoes();
+        
+        // Posicionar plataforma
+        this.platform.style.bottom = `${pos.platformBottom}px`;
+        
+        // Posicionar trabalhador horizontalmente (fixo) e verticalmente (sobre a plataforma)
+        const stageWidth = this.stage.offsetWidth;
+        const workerWidth = 118;
+        const workerLeft = stageWidth * 0.25; // 25% da largura do stage
+        
+        this.worker.style.left = `${Math.max(20, Math.min(workerLeft, stageWidth - workerWidth - 20))}px`;
+        this.worker.style.bottom = `${pos.workerBottom}px`;
+        
+        return pos;
       }
 
-      // mapeia 2–20 m para faixa confortável da cena
-      posicoes(){
-        const h=parseFloat(this.altura.value);
-        const base=map(h,2,20,150,530); // bottom da plataforma
-        const workerBottom=base+16;
-        return {base,workerBottom};
+      // Obter coordenadas do ponto de conexão do cinto
+      pontoCinto() {
+        const workerRect = this.worker.getBoundingClientRect();
+        const stageRect = this.stage.getBoundingClientRect();
+        
+        // Ponto de conexão no centro horizontal e na altura do cinto (aproximadamente 30px do topo)
+        const x = (workerRect.left - stageRect.left) + (workerRect.width / 2);
+        const y = (workerRect.top - stageRect.top) + 30; // offset para o cinto
+        
+        return { x, y, stageRect };
       }
 
-      // ponto do cinto (coordenadas em px dentro do stage)
-      pontoCinto(){
-        const w=this.worker.getBoundingClientRect();
-        const s=this.stage.getBoundingClientRect();
-        const x=(w.left-s.left)+(w.width/2);
-        const y=(w.top -s.top )+30; // offset ~peitoral/cinta
-        return {x,y,stage:s};
+      // Posicionar marcadores visuais dos pontos de ancoragem
+      posicionarMarcadores() {
+        const { x, y } = this.pontoCinto();
+        const offset = 120; // afastamento vertical entre os pontos
+        
+        const setPosition = (element, yPos) => {
+          element.style.left = `${x}px`;
+          element.style.top = `${Math.max(30, Math.min(yPos, 690))}px`;
+        };
+        
+        setPosition(document.getElementById('dotFQ0'), y - offset); // ACIMA
+        setPosition(document.getElementById('dotFQ1'), y);          // NÍVEL
+        setPosition(document.getElementById('dotFQ2'), y + offset); // ABAIXO
       }
 
-      // posiciona cartões para que FQ=1 (nível) fique na altura do cinto
-      posicionarCartoes(){
-        const {x,y,stage}=this.pontoCinto();
-        const cardH=100, off=120;
-        const yFQ1=clamp(y-cardH/2,20,stage.height-cardH-20);
-        const yFQ0=clamp(yFQ1-off,20,stage.height-cardH-20);
-        const yFQ2=clamp(yFQ1+off,20,stage.height-cardH-20);
+      // Desenhar corda conectando trabalhador ao ponto de ancoragem
+      desenharCorda() {
+        const { x: workerX, y: workerY, stageRect } = this.pontoCinto();
+        
+        // Obter posição do cartão de ancoragem selecionado
+        const selectedCard = this.cards[this.ponto];
+        const cardRect = selectedCard.getBoundingClientRect();
+        
+        const anchorX = (cardRect.left - stageRect.left) + (cardRect.width / 2);
+        const anchorY = (cardRect.top - stageRect.top) + (cardRect.height / 2);
+        
+        // Ponto de controle para curva Bezier
+        const controlX = (workerX + anchorX) / 2;
+        const controlY = Math.min(workerY, anchorY) - 40;
+        
+        // Atualizar SVG
+        this.ropeSvg.setAttribute('viewBox', `0 0 ${stageRect.width} ${stageRect.height}`);
+        this.ropePath.setAttribute('d', `M ${workerX},${workerY} Q ${controlX},${controlY} ${anchorX},${anchorY}`);
+        
+        // Badge de distância
+        const distance = Math.abs(anchorX - workerX) / 100; // converter para metros (aproximado)
+        this.distBadge.style.display = 'block';
+        this.distBadge.textContent = `${distance.toFixed(1)} m`;
+        this.distBadge.style.left = `${workerX + (anchorX - workerX) / 2 - 30}px`;
+        this.distBadge.style.top = `${Math.min(workerY, anchorY) - 28}px`;
+      }
 
-        // posição horizontal depende do modo de ancoragem
-        const modo=this.ancoragem.value;
-        const afastMax=60; // px ~ 0,6 m (escala cartoon)
-        let leftMed, leftSup, leftInf;
+      // Configuração especial para SRL vertical
+      configurarSRL() {
+        if (this.ancoragem.value === 'srl') {
+          const { x } = this.pontoCinto();
+          const topY = 40; // ponto alto fixo
+          
+          // Mover cartão NÍVEL para posição vertical
+          Object.assign(this.aMed.style, {
+            left: `${x - 50}px`,
+            top: `${topY}px`
+          });
+        }
+      }
 
-        if(modo==='overhead'){
-          leftMed = x-50; // colado no x do trabalhador
-          leftSup = x-50; leftInf = x-50;
-        }else if(modo==='srl'){
-          leftMed = x-50; // SRL acima do trabalhador
-          leftSup = x-50; leftInf = x-50;
-        }else{ // lateral próxima
-          leftMed = clamp(x-50, x-50-afastMax, x-50+afastMax);
-          leftSup = leftMed; leftInf = leftMed;
+      // Cálculos de segurança
+      calcular() {
+        const H = parseFloat(this.altura.value);
+        const L = parseFloat(this.talabarte.value);
+        const epi = this.epi.value;
+
+        // Fator de Queda conforme ponto selecionado
+        let Lqueda = L;
+        let queda;
+        
+        if (this.ancoragem.value === 'srl' || epi === 'srl') {
+          Lqueda = Math.max(0.6, L * 0.5); // SRL reduz queda livre
         }
 
-        Object.assign(this.aMed.style,{left:`${leftMed}px`,top:`${yFQ1}px`});
-        Object.assign(this.aSup.style,{left:`${leftSup}px`,top:`${yFQ0}px`});
-        Object.assign(this.aInf.style,{left:`${leftInf}px`,top:`${yFQ2}px`});
-      }
-
-      // desenha a “corda” com Bezier suave e badge da distância horizontal
-      desenharCorda(){
-        const {x,y,stage}=this.pontoCinto();
-        const card=[this.aSup,this.aMed,this.aInf][this.ponto].getBoundingClientRect();
-        const s=stage;
-        const ax=(card.left-s.left)+(card.width/2);
-        const ay=(card.top -s.top )+(card.height/2);
-
-        // controle Bezier – levemente acima para dar “barriga” curta
-        const cx=(x+ax)/2;
-        const cy=Math.min(y,ay)-40;
-
-        // Atualiza viewBox do SVG para pixels do stage
-        this.ropeSvg.setAttribute('viewBox',`0 0 ${s.width} ${s.height}`);
-        this.ropePath.setAttribute('d',`M ${x},${y} Q ${cx},${cy} ${ax},${ay}`);
-        this.ropePath.setAttribute('stroke', '#ffb800');
-
-        // badge de distância horizontal (info UX)
-        const dx=Math.abs(ax-x);
-        this.distBadge.style.display='block';
-        this.distBadge.textContent=`${(dx/100).toFixed(1)} m`;
-        this.distBadge.style.left=`${x + (ax-x)/2 - 30}px`;
-        this.distBadge.style.top =`${Math.min(y,ay)-28}px`;
-      }
-
-      linhaVidaSRL(){
-        // para modo SRL vertical, movemos o cartão NÍVEL (ponto) para um topo fixo
-        const s=this.stage.getBoundingClientRect();
-        const w=this.worker.getBoundingClientRect();
-        const x=(w.left-s.left)+(w.width/2);
-        const yTop = 40; // ponto alto fixo
-        Object.assign(this.aMed.style,{left:`${x-50}px`,top:`${yTop}px`});
-      }
-
-      linhaIndicadores(R){
-        // KPIs + status
-        const setTag=(el,cls,txt)=>{el.className=`tag ${cls}`; el.textContent=txt};
-        this.vZLQ.textContent=`${R.Z}m`;
-        this.vFQ.textContent= R.FQ.toString();
-        this.vFI.textContent=`${R.FI}kN`;
-        this.vR.textContent = R.niv;
-
-        setTag(this.sZLQ, R.Z<=R.disp?'safe':'dang', R.Z<=R.disp?'SEGURO':'PERIGO');
-        setTag(this.sFQ , R.FQ===0?'safe':R.FQ===1?'warn':'dang', R.FQ===0?'BAIXO':R.FQ===1?'MÉDIO':'ALTO');
-        setTag(this.sFI , R.FI<=4?'safe':R.FI<=6?'warn':'dang', R.FI<=4?'ACEITÁVEL':R.FI<=6?'ELEVADO':'PERIGOSO');
-        setTag(this.sR  , R.res==='safe'?'safe':R.res==='warn'?'warn':'dang', R.res==='safe'?'SEGURO':R.res==='warn'?'ATENÇÃO':'CRÍTICO');
-
-        this.result.className=`result ${R.res==='safe'?'r-safe':R.res==='warn'?'r-warn':'r-dang'}`;
-        this.result.textContent= R.res==='safe'?'CENÁRIO SEGURO':R.res==='warn'?'CENÁRIO DE RISCO':'QUEDA FATAL';
-        this.hdrStatus.textContent=this.result.textContent;
-        this.hdrStatus.className=`badge ${R.res==='safe'?'r-safe':R.res==='warn'?'r-warn':'r-dang'}`;
-      }
-
-      calcular(){
-        const H=parseFloat(this.altura.value);
-        const L=parseFloat(this.talabarte.value);
-        const epi=this.epi.value;
-
-        // FQ conforme ponto e EPI (SRL reduz queda livre)
-        let Lqueda=L, queda;
-        if(this.ancoragem.value==='srl' || epi==='srl'){ // SRL vertical pré-tensionado
-          Lqueda = Math.max(0.6, L*0.5); // queda efetiva encurtada
-        }
-
-        if (this.ponto===0) queda=Math.max(0, Lqueda-2.0);
-        else if (this.ponto===1) queda=Lqueda;
-        else queda=Lqueda+2.0;
+        if (this.ponto === 0) queda = Math.max(0, Lqueda - 2.0);      // ACIMA
+        else if (this.ponto === 1) queda = Lqueda;                    // NÍVEL
+        else queda = Lqueda + 2.0;                                    // ABAIXO
 
         const FQcalc = queda / Math.max(L, 0.1);
-        const FQ = Math.max(0, Math.min(2, Math.round(FQcalc))); // exibir apenas 0, 1 ou 2
+        const FQ = Math.max(0, Math.min(2, Math.round(FQcalc)));
 
-        // ZLQ necessária (simplificado, conservador)
-        const desac = (epi==='completo'||epi==='srl')?1.75:(epi==='sem'?0.1:0.05);
-        const folga=0.5, margem=1.0;
-        const Z= +(Lqueda+desac+folga+margem).toFixed(1);
-        const disp= +H.toFixed(1);
+        // Zona Livre de Queda necessária
+        const desaceleracao = (epi === 'completo' || epi === 'srl') ? 1.75 : (epi === 'sem' ? 0.1 : 0.05);
+        const folga = 0.5;
+        const margem = 1.0;
+        const Z = +(Lqueda + desaceleracao + folga + margem).toFixed(1);
+        const disp = +H.toFixed(1);
 
-        // Força de impacto (didática)
+        // Força de Impacto
         let FI;
-        if (epi==='completo' || epi==='srl') FI=Math.min(6.0, 2.0 + FQcalc*2.0);
-        else if (epi==='sem') FI=4.0 + FQcalc*8.0;
-        else FI=15.0;
-        FI=+FI.toFixed(1);
+        if (epi === 'completo' || epi === 'srl') FI = Math.min(6.0, 2.0 + FQcalc * 2.0);
+        else if (epi === 'sem') FI = 4.0 + FQcalc * 8.0;
+        else FI = 15.0;
+        FI = +FI.toFixed(1);
 
-        let res='safe', niv='BAIXO';
-        if (epi==='abd' || Z>disp){res='dang'; niv='CRÍTICO'}
-        else if (FI>6.0 || FQcalc>=2.0){res='warn'; niv='ALTO'}
-        else if (FQcalc>1.0 || FI>4.0){res='warn'; niv='MÉDIO'}
+        // Avaliação de risco
+        let res = 'safe', niv = 'BAIXO';
+        if (epi === 'abd' || Z > disp) { res = 'dang'; niv = 'CRÍTICO'; }
+        else if (FI > 6.0 || FQcalc >= 2.0) { res = 'warn'; niv = 'ALTO'; }
+        else if (FQcalc > 1.0 || FI > 4.0) { res = 'warn'; niv = 'MÉDIO'; }
 
-        return {FQ, FQcalc, Z, disp, FI, res, niv, queda, Lqueda};
+        return { FQ, FQcalc, Z, disp, FI, res, niv, queda, Lqueda };
       }
 
-      update(){
-        if(this.anim) return;
+      // Atualizar indicadores na interface
+      atualizarIndicadores(R) {
+        const setTag = (el, cls, txt) => { el.className = `tag ${cls}`; el.textContent = txt; };
+        
+        this.vZLQ.textContent = `${R.Z}m`;
+        this.vFQ.textContent = R.FQ.toString();
+        this.vFI.textContent = `${R.FI}kN`;
+        this.vR.textContent = R.niv;
 
-        // posiciona plataforma e trabalhador
-        const {base,workerBottom}=this.posicoes();
-        this.platform.style.bottom=`${base}px`;
-        this.worker.style.bottom=`${workerBottom}px`;
-        const s=this.stage.getBoundingClientRect();
-        const workerW=118;
-        const target = s.width*0.25;
-        const xPx = clamp(target, 20, s.width - workerW - 20);
-        this.worker.style.left = `${xPx}px`;
-        this.distBadge.style.display='none';
+        setTag(this.sZLQ, R.Z <= R.disp ? 'safe' : 'dang', R.Z <= R.disp ? 'SEGURO' : 'PERIGO');
+        setTag(this.sFQ, R.FQ === 0 ? 'safe' : R.FQ === 1 ? 'warn' : 'dang', R.FQ === 0 ? 'BAIXO' : R.FQ === 1 ? 'MÉDIO' : 'ALTO');
+        setTag(this.sFI, R.FI <= 4 ? 'safe' : R.FI <= 6 ? 'warn' : 'dang', R.FI <= 4 ? 'ACEITÁVEL' : R.FI <= 6 ? 'ELEVADO' : 'PERIGOSO');
+        setTag(this.sR, R.res === 'safe' ? 'safe' : R.res === 'warn' ? 'warn' : 'dang', R.res === 'safe' ? 'SEGURO' : R.res === 'warn' ? 'ATENÇÃO' : 'CRÍTICO');
 
-        // SRL vertical: eleva ponto antes de posicionar demais
-        if(this.ancoragem.value==='srl') this.linhaVidaSRL();
+        this.result.className = `result ${R.res === 'safe' ? 'r-safe' : R.res === 'warn' ? 'r-warn' : 'r-dang'}`;
+        this.result.textContent = R.res === 'safe' ? 'CENÁRIO SEGURO' : R.res === 'warn' ? 'CENÁRIO DE RISCO' : 'QUEDA FATAL';
+        this.hdrStatus.textContent = this.result.textContent;
+        this.hdrStatus.className = `badge ${R.res === 'safe' ? 'r-safe' : R.res === 'warn' ? 'r-warn' : 'r-dang'}`;
+      }
 
-        // cartões sempre alinhados ao cinto para FQ=1
-        this.posicionarCartoes();
+      // Aplicar cenários pré-definidos
+      aplicarCenario(tipo) {
+        if (tipo === 'seguro') {
+          this.altura.value = this.alturaIn.value = 8.0;
+          this.talabarte.value = this.talabarteIn.value = 1.2;
+          this.epi.value = 'completo';
+          this.ancoragem.value = 'overhead';
+          this.ponto = 0; // ACIMA
+          this.cards.forEach(c => c.classList.remove('selected'));
+          this.aSup.classList.add('selected');
+        } else if (tipo === 'lesao') {
+          this.altura.value = this.alturaIn.value = 3.0;
+          this.talabarte.value = this.talabarteIn.value = 1.6;
+          this.epi.value = 'sem';
+          this.ancoragem.value = 'lateral';
+          this.ponto = 2; // ABAIXO
+          this.cards.forEach(c => c.classList.remove('selected'));
+          this.aInf.classList.add('selected');
+        }
+        this.update();
+      }
 
-        // cálculos + UI
-        const R=this.calcular();
-        this.linhaIndicadores(R);
+      // Atualização principal
+      update() {
+        if (this.anim) return;
 
-        // corda Bezier curta e realista
+        // Posicionar elementos
+        this.posicionarElementos();
+        
+        // Configurações especiais
+        this.configurarSRL();
+        
+        // Desenhar conexões
         this.desenharCorda();
-        // marcadores visuais
         this.posicionarMarcadores();
-
-        this.last=R;
+        
+        // Cálculos e indicadores
+        const R = this.calcular();
+        this.atualizarIndicadores(R);
+        
+        this.last = R;
       }
 
-      simular(){
-        if(this.anim) return;
-        this.anim=true;
-        const dist=Math.min(this.last.queda*30,460);
-        this.worker.style.setProperty('--fall',`${dist}px`);
-        const cls=this.last.res==='safe'?'fall-safe':this.last.res==='warn'?'fall-warn':'fall-dang';
-        this.worker.classList.add(cls);
-        setTimeout(()=>this.reset(), this.last.res==='safe'?2100:2500);
+      // Simular queda
+      simular() {
+        if (this.anim) return;
+        this.anim = true;
+        
+        const distancia = Math.min(this.last.queda * 30, 460);
+        this.worker.style.setProperty('--fall', `${distancia}px`);
+        
+        const classe = this.last.res === 'safe' ? 'fall-safe' : this.last.res === 'warn' ? 'fall-warn' : 'fall-dang';
+        this.worker.classList.add(classe);
+        
+        setTimeout(() => {
+          if (this.last.res === 'safe') {
+            alert(`Queda segura! Zona Livre de Queda resultante: ${this.last.Z}m`);
+          } else if (this.last.res === 'dang') {
+            alert('Colisão! O colaborador se machucou.');
+          } else {
+            alert('Cenário de risco! Verifique os parâmetros de segurança.');
+          }
+          this.reset();
+        }, 2000); // Duração fixa de 2 segundos
       }
 
-      reset(){
-        this.anim=false;
-        this.worker.classList.remove('fall-safe','fall-warn','fall-dang');
+      // Resetar simulação
+      reset() {
+        this.anim = false;
+        this.worker.classList.remove('fall-safe', 'fall-warn', 'fall-dang');
         this.update();
       }
     }
 
-    window.addEventListener('DOMContentLoaded',()=>new Simulador());
+    // Inicializar quando o DOM estiver carregado
+    window.addEventListener('DOMContentLoaded', () => new Simulador());
   </script>
 </body>
 </html>
