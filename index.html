@@ -1,456 +1,304 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador NR-35 (V7: Altura Configurável)</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Simulador NR-35 (V7: Altura Configurável)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
 
-        :root {
-            --cor-fundo: #eef2f6;
-            --cor-painel: #fff;
-            --cor-seguro: #2ecc71;
-            --cor-atencao: #f1c40f;
-            --cor-critico: #e74c3c;
-            --cor-corda: #f39c12;
-        }
+:root{
+  --cor-fundo:#eef2f6; --cor-painel:#fff;
+  --cor-seguro:#2ecc71; --cor-atencao:#f1c40f; --cor-critico:#e74c3c; --cor-corda:#f39c12;
+}
+body{font-family:'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;height:100vh;overflow:hidden;display:flex;gap:20px}
+.sidebar{width:320px;background:var(--cor-painel);padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:15px;z-index:10;overflow-y:auto}
+h2{margin:0 0 5px 0;font-size:1.2rem;color:#2c3e50}
+.subtitle{font-size:.8rem;color:#7f8c8d;margin-bottom:10px}
+.control-group{border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:5px}
+label{font-size:.85rem;font-weight:600;color:#34495e;display:block;margin-bottom:5px}
+input[type="range"]{width:100%;margin:5px 0;cursor:pointer}
+.val-display{font-size:.9rem;font-weight:bold;color:#2980b9;float:right}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--cor-fundo);
-            margin: 0; padding: 20px;
-            height: 100vh; overflow: hidden;
-            display: flex; gap: 20px;
-        }
+.btn-action{padding:15px;border:none;border-radius:8px;font-weight:800;cursor:pointer;transition:transform .1s,background .2s;color:#fff;font-size:1rem;text-transform:uppercase;width:100%;margin-top:5px}
+.btn-simular{background:linear-gradient(135deg,#3498db,#2980b9);box-shadow:0 4px 0 #1c5a85}
+.btn-simular:hover{transform:translateY(-2px);box-shadow:0 6px 0 #1c5a85}
+.btn-simular:active{transform:translateY(2px);box-shadow:0 0 0 #1c5a85}
+.btn-reset{background:#95a5a6;box-shadow:0 4px 0 #7f8c8d;margin-top:10px}
+.btn-reset:hover{background:#7f8c8d}
+.btn-reset:active{transform:translateY(2px);box-shadow:0 0 0 #7f8c8d}
 
-        /* --- Painel Lateral --- */
-        .sidebar {
-            width: 320px;
-            background: var(--cor-painel);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; gap: 15px;
-            z-index: 10;
-            overflow-y: auto;
-        }
+/* KPIs (apenas ZLQ) */
+.kpi-container{display:grid;grid-template-columns:1fr;gap:10px}
+.kpi-box{background:#f8f9fa;padding:10px;border-radius:6px;border-left:4px solid #ddd}
+.kpi-title{font-size:.65rem;text-transform:uppercase;color:#666;font-weight:700}
+.kpi-value{font-size:1.1rem;font-weight:900;color:#333}
+.kpi-status{font-size:.7rem;font-weight:bold;margin-top:2px}
 
-        h2 { margin: 0 0 5px 0; font-size: 1.2rem; color: #2c3e50; }
-        .subtitle { font-size: 0.8rem; color: #7f8c8d; margin-bottom: 10px; }
-        
-        .control-group {
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 5px;
-        }
+.stage-container{flex:1;background:linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%);border-radius:12px;position:relative;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1);border:2px solid #fff}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2}
 
-        label { font-size: 0.85rem; font-weight: 600; color: #34495e; display: block; margin-bottom: 5px; }
-        
-        input[type="range"] { width: 100%; margin: 5px 0; cursor: pointer; }
-        .val-display { font-size: 0.9rem; font-weight: bold; color: #2980b9; float: right; }
+.ruler-label{position:absolute;right:10px;color:rgba(0,0,0,.4);font-size:.8rem;font-weight:bold;pointer-events:none;border-bottom:1px solid rgba(0,0,0,.1);width:50px;text-align:right}
 
-        .btn-action {
-            padding: 15px; border: none; border-radius: 8px;
-            font-weight: 800; cursor: pointer; transition: transform 0.1s, background 0.2s;
-            color: white; font-size: 1rem; text-transform: uppercase;
-            width: 100%; margin-top: 5px;
-        }
-        .btn-simular { background: linear-gradient(135deg, #3498db, #2980b9); box-shadow: 0 4px 0 #1c5a85; }
-        .btn-simular:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #1c5a85; }
-        .btn-simular:active { transform: translateY(2px); box-shadow: 0 0 0 #1c5a85; }
-        
-        .btn-reset { background: #95a5a6; box-shadow: 0 4px 0 #7f8c8d; margin-top: 10px;}
-        .btn-reset:hover { background: #7f8c8d; }
-        .btn-reset:active { transform: translateY(2px); box-shadow: 0 0 0 #7f8c8d; }
-
-        /* KPIs (simplificado: uma coluna / um card) */
-        .kpi-container { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .kpi-box {
-            background: #f8f9fa; padding: 10px; border-radius: 6px;
-            border-left: 4px solid #ddd;
-        }
-        .kpi-title { font-size: 0.65rem; text-transform: uppercase; color: #666; font-weight: 700; }
-        .kpi-value { font-size: 1.1rem; font-weight: 900; color: #333; }
-        .kpi-status { font-size: 0.7rem; font-weight: bold; margin-top: 2px; }
-
-        /* --- Palco (Canvas) --- */
-        .stage-container {
-            flex: 1;
-            background: linear-gradient(to bottom, #87CEEB 0%, #e0f7fa 100%);
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border: 2px solid #fff;
-        }
-
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
-
-        /* Elementos Visuais Sobrepostos */
-        .ruler-label {
-            position: absolute; right: 10px; color: rgba(0,0,0,0.4); 
-            font-size: 0.8rem; font-weight: bold; pointer-events: none; border-bottom: 1px solid rgba(0,0,0,0.1);
-            width: 50px; text-align: right;
-        }
-
-        #alert-overlay {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(231, 76, 60, 0.95); color: white;
-            padding: 30px 50px; border-radius: 12px; font-size: 2.5rem; font-weight: 900;
-            text-align: center; z-index: 100; opacity: 0; pointer-events: none;
-            transition: opacity 0.2s, transform 0.2s; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-            border: 4px solid white;
-        }
-
-        .success-overlay {
-            background: rgba(46, 204, 113, 0.95) !important;
-        }
-
-    </style>
+#alert-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(231,76,60,.95);color:#fff;padding:30px 50px;border-radius:12px;font-size:2.5rem;font-weight:900;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 20px 50px rgba(0,0,0,.4);border:4px solid #fff}
+.success-overlay{background:rgba(46,204,113,.95)!important}
+</style>
 </head>
 <body>
-
-    <div class="sidebar">
-        <div>
-            <h2>⚙️ Simulador NR-35</h2>
-            <div class="subtitle">Física e Colisão em Tempo Real</div>
-        </div>
-        
-        <div class="control-group">
-            <label>1. Altura de Trabalho (H)</label>
-            <span id="val-height" class="val-display">6.0m</span>
-            <input type="range" id="input-height" min="2.0" max="10.0" step="0.5" value="6.0">
-            <small style="color:#888; font-size:0.7em">Altura dos pés em relação ao solo</small>
-        </div>
-
-        <div class="control-group">
-            <label>2. Comp. Talabarte (L)</label>
-            <span id="val-l" class="val-display">1.5m</span>
-            <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
-        </div>
-
-        <div class="control-group">
-            <label>3. Posição da Ancoragem</label>
-            <span id="val-anchor" class="val-display">Overhead</span>
-            <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
-            <small style="color:#888; font-size:0.7em; display:block; margin-top:5px">
-                0: Acima (FQ 0) | 1: Cinto (FQ 1) | 2: Pés (FQ 2)
-            </small>
-        </div>
-
-        <!-- KPI Único -->
-        <div class="kpi-container">
-            <div class="kpi-box">
-                <div class="kpi-title">ZLQ RESULTANTE (H − ZLQ necessária)</div>
-                <div class="kpi-value" id="kpi-result">-- m</div>
-                <div class="kpi-status" id="kpi-status">--</div>
-            </div>
-        </div>
-
-        <button class="btn-action btn-simular" onclick="startSimulation()">⚠️ SIMULAR QUEDA</button>
-        <button class="btn-action btn-reset" onclick="resetSimulation()">🔄 RESETAR</button>
+  <div class="sidebar">
+    <div>
+      <h2>⚙️ Simulador NR-35</h2>
+      <div class="subtitle">Física e Colisão em Tempo Real</div>
     </div>
 
-    <div class="stage-container" id="stage">
-        <div id="alert-overlay">COLISÃO COM O SOLO!</div>
-        <canvas id="simCanvas"></canvas>
+    <div class="control-group">
+      <label>1. Altura de Trabalho (H)</label>
+      <span id="val-height" class="val-display">6.0m</span>
+      <input type="range" id="input-height" min="2.0" max="10.0" step="0.5" value="6.0">
+      <small style="color:#888;font-size:.7em">Altura dos pés em relação ao solo</small>
     </div>
+
+    <div class="control-group">
+      <label>2. Comp. Talabarte (L)</label>
+      <span id="val-l" class="val-display">1.5m</span>
+      <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
+    </div>
+
+    <div class="control-group">
+      <label>3. Posição da Ancoragem</label>
+      <span id="val-anchor" class="val-display">Overhead</span>
+      <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
+      <small style="color:#888;font-size:.7em;display:block;margin-top:5px">
+        0: Acima (FQ 0) | 1: Cinto (FQ 1) | 2: Pés (FQ 2)
+      </small>
+    </div>
+
+    <div class="kpi-container">
+      <div class="kpi-box">
+        <div class="kpi-title">ZLQ RESULTANTE (H − ZLQ necessária)</div>
+        <div class="kpi-value" id="kpi-zlq">-- m</div>
+        <div class="kpi-status" id="kpi-status">--</div>
+      </div>
+    </div>
+
+    <button class="btn-action btn-simular" onclick="startSimulation()">⚠️ SIMULAR QUEDA</button>
+    <button class="btn-action btn-reset" onclick="resetSimulation()">🔄 RESETAR</button>
+  </div>
+
+  <div class="stage-container" id="stage">
+    <div id="alert-overlay">COLISÃO COM O SOLO!</div>
+    <canvas id="simCanvas"></canvas>
+  </div>
 
 <script>
-    // --- Configurações Físicas ---
-    const GRAVITY = 0.6;       // Gravidade
-    const DAMPING = 0.96;      // Resistência do ar
-    const PX_PER_METER = 50;   // Escala visual: 50px = 1 metro
-    const WORKER_H_PX = 90;    // Altura do boneco (aprox 1.8m)
-    const DECEL = 1.2;     // m - distensão do absorvedor (conservador)
-    const DR_SHIFT = 0.3;  // m - deslocamento do D-ring/arnês
-    const BODY = 1.5;      // m - altura abaixo do D-ring (porção do corpo)
-    const SAFETY = 1.0;    // m - folga de segurança
+/* --- Configurações Físicas --- */
+const GRAVITY=0.6,DAMPING=0.96,PX_PER_METER=50,WORKER_H_PX=90;
+const DECEL=1.2,DR_SHIFT=0.3,BODY=1.5,SAFETY=1.0;
 
-    // --- Estado da Simulação ---
-    const canvas = document.getElementById('simCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    let running = false;
-    let crashed = false;
-    let finished = false;
+/* --- Estado --- */
+const canvas=document.getElementById('simCanvas'); const ctx=canvas.getContext('2d');
+let running=false, crashed=false, finished=false;
 
-    // Objetos
-    let world = { groundY: 0 };
-    let anchor = { x: 0, y: 0, fq: 0 }; 
-    let worker = { x: 0, y: 0, vx: 0, vy: 0, startY: 0 };
-    let rope = { lengthM: 1.5 };
-    let config = { workHeightM: 6.0 };
+let world={groundY:0};
+let anchor={x:0,y:0,fq:0};
+let worker={x:0,y:0,vx:0,vy:0,startY:0};
+let rope={lengthM:1.5};
+let config={workHeightM:6.0};
 
-    // Inputs DOM
-    const inHeight = document.getElementById('input-height');
-    const inLength = document.getElementById('input-l');
-    const inAnchor = document.getElementById('input-anchor');
-    
-    // Labels
-    const lblHeight = document.getElementById('val-height');
-    const lblLength = document.getElementById('val-l');
-    const lblAnchor = document.getElementById('val-anchor');
+/* Inputs */
+const inHeight=document.getElementById('input-height');
+const inLength=document.getElementById('input-l');
+const inAnchor=document.getElementById('input-anchor');
+const lblHeight=document.getElementById('val-height');
+const lblLength=document.getElementById('val-l');
+const lblAnchor=document.getElementById('val-anchor');
 
-    // Inicialização
-    function resize() {
-        canvas.width = document.getElementById('stage').offsetWidth;
-        canvas.height = document.getElementById('stage').offsetHeight;
-        world.groundY = canvas.height - 40; // Chão fica 40px acima do fundo do canvas
-        resetSimulation();
+function resize(){
+  canvas.width=document.getElementById('stage').offsetWidth;
+  canvas.height=document.getElementById('stage').offsetHeight;
+  world.groundY=canvas.height-40;
+  resetSimulation();
+}
+window.addEventListener('resize',resize);
+
+function updateSettings(){
+  config.workHeightM=parseFloat(inHeight.value);
+  rope.lengthM=parseFloat(inLength.value);
+  anchor.fq=parseInt(inAnchor.value);
+
+  lblHeight.innerText=config.workHeightM.toFixed(1)+"m";
+  lblLength.innerText=rope.lengthM.toFixed(1)+"m";
+  const anchorLabels=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"];
+  lblAnchor.innerText=anchorLabels[anchor.fq];
+
+  if(!running){
+    const feetY=world.groundY-(config.workHeightM*PX_PER_METER);
+    worker.y=feetY-WORKER_H_PX;
+    worker.x=canvas.width/2;
+    worker.startY=worker.y;
+
+    const dRingY=worker.y+30;
+    if(anchor.fq===0){ anchor.y=dRingY-(1.5*PX_PER_METER); }
+    else if(anchor.fq===1){ anchor.y=dRingY; }
+    else { anchor.y=feetY; }
+    anchor.x=worker.x-20;
+  }
+  calcKPIs();
+  if(!running) drawScene();
+}
+[inHeight,inLength,inAnchor].forEach(el=>el.addEventListener('input',updateSettings));
+
+function loop(){
+  if(!running) return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(!crashed && !finished){
+    worker.vy+=GRAVITY;
+    worker.vx*=DAMPING; worker.vy*=DAMPING;
+    worker.x+=worker.vx; worker.y+=worker.vy;
+  }
+
+  if((worker.y+WORKER_H_PX)>=world.groundY){
+    if(!crashed && !finished){
+      crashed=true; worker.y=world.groundY-WORKER_H_PX; worker.vy=0;
+      showResult(false);
     }
-    window.addEventListener('resize', resize);
+  }
 
-    function updateSettings() {
-        // Ler Inputs
-        config.workHeightM = parseFloat(inHeight.value);
-        rope.lengthM = parseFloat(inLength.value);
-        anchor.fq = parseInt(inAnchor.value);
+  const dRingX=worker.x, dRingY=worker.y+30;
+  const dx=dRingX-anchor.x, dy=dRingY-anchor.y;
+  const dist=Math.hypot(dx,dy);
+  const maxDistPx=(rope.lengthM+1.1)*PX_PER_METER;
 
-        // Atualizar Textos
-        lblHeight.innerText = config.workHeightM.toFixed(1) + "m";
-        lblLength.innerText = rope.lengthM.toFixed(1) + "m";
-        
-        const anchorLabels = ["Acima (FQ 0)", "Cinto (FQ 1)", "Pés (FQ 2)"];
-        lblAnchor.innerText = anchorLabels[anchor.fq];
-
-        // Posicionar Trabalhador (Apenas se não estiver rodando)
-        if (!running) {
-            const feetY = world.groundY - (config.workHeightM * PX_PER_METER);
-            worker.y = feetY - WORKER_H_PX;
-            worker.x = canvas.width / 2;
-            worker.startY = worker.y;
-            const dRingY = worker.y + 30;
-            if (anchor.fq === 0)      anchor.y = dRingY - (1.5 * PX_PER_METER);
-            else if (anchor.fq === 1) anchor.y = dRingY;
-            else                      anchor.y = feetY;
-            anchor.x = worker.x - 20;
-        }
-        
-        calcKPIs();
-        if(!running) drawScene();
+  if(dist>maxDistPx && !crashed){
+    const angle=Math.atan2(dy,dx);
+    const pullX=Math.cos(angle)*maxDistPx+anchor.x;
+    const pullY=Math.sin(angle)*maxDistPx+anchor.y;
+    const k=0.08;
+    worker.vx-=(dRingX-pullX)*k; worker.vy-=(dRingY-pullY)*k;
+    if(Math.abs(worker.vy)<0.1 && Math.abs(worker.vx)<0.1 && !finished){
+      finished=true; showResult(true);
     }
+  }
 
-    [inHeight, inLength, inAnchor].forEach(el => el.addEventListener('input', updateSettings));
+  drawScene();
+  requestAnimationFrame(loop);
+}
 
-    // --- Loop de Física ---
-    function loop() {
-        if (!running) return;
+function drawScene(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawRulers();
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const platformY=worker.startY+WORKER_H_PX;
+  ctx.beginPath(); ctx.moveTo(0,platformY); ctx.lineTo(canvas.width,platformY);
+  ctx.strokeStyle="#bdc3c7"; ctx.lineWidth=4; ctx.setLineDash([10,10]); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#7f8c8d"; ctx.font="bold 12px Inter"; ctx.fillText("PLATAFORMA DE TRABALHO",10,platformY-5);
 
-        // 1. Gravidade
-        if (!crashed && !finished) {
-            worker.vy += GRAVITY;
-            worker.vx *= DAMPING;
-            worker.vy *= DAMPING;
-            worker.x += worker.vx;
-            worker.y += worker.vy;
-        }
+  ctx.fillStyle="#5d4037"; ctx.fillRect(0,world.groundY,canvas.width,canvas.height-world.groundY);
+  ctx.fillStyle="#8d6e63"; ctx.fillRect(0,world.groundY,canvas.width,5);
+  ctx.fillStyle="rgba(255,255,255,0.3)"; ctx.fillText("SOLO (NÍVEL 0)",canvas.width/2-40,world.groundY+25);
 
-        // 2. Colisão com Chão (SOLO)
-        if ((worker.y + WORKER_H_PX) >= world.groundY) {
-            if (!crashed && !finished) {
-                crashed = true;
-                worker.y = world.groundY - WORKER_H_PX;
-                worker.vy = 0;
-                showResult(false);
-            }
-        }
+  const dRingX=worker.x, dRingY=worker.y+30;
+  ctx.beginPath(); ctx.moveTo(anchor.x,anchor.y);
+  const dx=dRingX-anchor.x, dy=dRingY-anchor.y;
+  const dist=Math.hypot(dx,dy);
+  const ropePx=rope.lengthM*PX_PER_METER;
 
-        // 3. Mecânica da Corda
-        const dRingX = worker.x;
-        const dRingY = worker.y + 30;
+  if(dist<ropePx && !crashed && !finished){
+    const slack=(ropePx-dist)*0.6;
+    ctx.quadraticCurveTo(anchor.x+dx/2,anchor.y+dy+slack,dRingX,dRingY);
+    ctx.strokeStyle="#f39c12"; ctx.lineWidth=3;
+  }else{
+    ctx.lineTo(dRingX,dRingY);
+    ctx.strokeStyle=(dist>ropePx)?"#c0392b":"#f39c12"; ctx.lineWidth=(dist>ropePx)?2:3;
+  }
+  ctx.stroke();
 
-        const dx = dRingX - anchor.x;
-        const dy = dRingY - anchor.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        
-        // Comprimento máximo (Corda + Absorvedor abrindo)
-        const maxDistPx = (rope.lengthM + 1.1) * PX_PER_METER;
+  ctx.beginPath(); ctx.arc(anchor.x,anchor.y,6,0,Math.PI*2); ctx.fillStyle="#2980b9"; ctx.fill();
 
-        if (dist > maxDistPx && !crashed) {
-            const angle = Math.atan2(dy, dx);
-            const pullX = Math.cos(angle) * maxDistPx + anchor.x;
-            const pullY = Math.sin(angle) * maxDistPx + anchor.y;
+  ctx.save(); ctx.translate(worker.x,worker.y);
+  if(crashed){ ctx.translate(0,WORKER_H_PX); ctx.rotate(-Math.PI/2); ctx.translate(0,-WORKER_H_PX); }
+  else if(running){ ctx.rotate(worker.vx*0.05); }
+  ctx.fillStyle="#f1c40f"; ctx.beginPath(); ctx.arc(0,10,10,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(0,6,11,Math.PI,0); ctx.fill();
+  ctx.fillStyle="#3498db"; ctx.fillRect(-12,20,24,35);
+  ctx.fillStyle="#2c3e50"; ctx.fillRect(-13,28,26,6);
+  ctx.fillStyle="#34495e"; ctx.fillRect(-10,55,8,35); ctx.fillRect(2,55,8,35);
+  ctx.restore();
+}
 
-            const k = 0.08; // Rigidez
-            worker.vx -= (dRingX - pullX) * k;
-            worker.vy -= (dRingY - pullY) * k;
-            
-            if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) {
-                finished = true;
-                showResult(true);
-            }
-        }
+function drawRulers(){
+  const meters=Math.ceil(canvas.height/PX_PER_METER);
+  ctx.strokeStyle="rgba(0,0,0,0.05)"; ctx.lineWidth=1;
+  ctx.fillStyle="rgba(0,0,0,0.3)"; ctx.font="10px Inter";
+  for(let i=0;i<=meters;i++){
+    const y=world.groundY-(i*PX_PER_METER); if(y<0) break;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
+    if(i>0) ctx.fillText(i+"m",canvas.width-30,y+3);
+  }
+}
 
-        drawScene();
-        requestAnimationFrame(loop);
-    }
+function startSimulation(){
+  if(running) return;
+  updateSettings();
+  running=true; crashed=false; finished=false;
+  const el=document.getElementById('alert-overlay'); el.style.opacity=0; el.className='';
+  loop();
+}
 
-    // --- Renderização ---
-    function drawScene() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawRulers();
+function resetSimulation(){
+  running=false; crashed=false; finished=false;
+  worker.vx=0; worker.vy=0;
+  document.getElementById('alert-overlay').style.opacity=0;
+  updateSettings();
+}
 
-        const platformY = worker.startY + WORKER_H_PX;
-        ctx.beginPath();
-        ctx.moveTo(0, platformY);
-        ctx.lineTo(canvas.width, platformY);
-        ctx.strokeStyle = "#bdc3c7";
-        ctx.lineWidth = 4;
-        ctx.setLineDash([10, 10]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        
-        ctx.fillStyle = "#7f8c8d";
-        ctx.font = "bold 12px Inter";
-        ctx.fillText("PLATAFORMA DE TRABALHO", 10, platformY - 5);
+function showResult(safe){
+  const el=document.getElementById('alert-overlay');
+  el.innerText=safe?"RETIDO COM SUCESSO":"COLISÃO FATAL!";
+  el.className=safe?"success-overlay":"";
+  el.style.opacity=1;
+  el.style.transform="translate(-50%,-50%) scale(1.1)";
+  setTimeout(()=>el.style.transform="translate(-50%,-50%) scale(1)",200);
+}
 
-        ctx.fillStyle = "#5d4037";
-        ctx.fillRect(0, world.groundY, canvas.width, canvas.height - world.groundY);
-        ctx.fillStyle = "#8d6e63";
-        ctx.fillRect(0, world.groundY, canvas.width, 5);
-        ctx.fillStyle = "rgba(255,255,255,0.3)";
-        ctx.fillText("SOLO (NÍVEL 0)", canvas.width/2 - 40, world.groundY + 25);
+/* --- KPIs: apenas ZLQ --- */
+function calcKPIs(){
+  const l=rope.lengthM, h=config.workHeightM, fq=anchor.fq;
 
-        const dRingX = worker.x;
-        const dRingY = worker.y + 30;
-        
-        ctx.beginPath();
-        ctx.moveTo(anchor.x, anchor.y);
-        
-        const dx = dRingX - anchor.x;
-        const dy = dRingY - anchor.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        const ropePx = rope.lengthM * PX_PER_METER;
-        
-        if (dist < ropePx && !crashed && !finished) {
-            const slack = (ropePx - dist) * 0.6;
-            ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + slack, dRingX, dRingY);
-            ctx.strokeStyle = "#f39c12";
-            ctx.lineWidth = 3;
-        } else {
-            ctx.lineTo(dRingX, dRingY);
-            ctx.strokeStyle = (dist > ropePx) ? "#c0392b" : "#f39c12";
-            ctx.lineWidth = (dist > ropePx) ? 2 : 3;
-        }
-        ctx.stroke();
+  // Queda livre estimada por FQ
+  let quedaLivre;
+  if(fq===0) quedaLivre=0.6;
+  else if(fq===1) quedaLivre=l;
+  else quedaLivre=l+1.5;
 
-        ctx.beginPath();
-        ctx.arc(anchor.x, anchor.y, 6, 0, Math.PI*2);
-        ctx.fillStyle = "#2980b9";
-        ctx.fill();
+  const zlqNec=+(quedaLivre+DECEL+DR_SHIFT+BODY+SAFETY).toFixed(2);
+  const zlqRes=+(h - zlqNec).toFixed(2); // H − ZLQ necessária
 
-        ctx.save();
-        ctx.translate(worker.x, worker.y);
-        
-        if (crashed) {
-            ctx.translate(0, WORKER_H_PX); 
-            ctx.rotate(-Math.PI/2); 
-            ctx.translate(0, -WORKER_H_PX);
-        } else if (running) {
-            ctx.rotate(worker.vx * 0.05);
-        }
+  const kpiZ=document.getElementById('kpi-zlq');
+  const kpiS=document.getElementById('kpi-status');
 
-        // Boneco
-        ctx.fillStyle = "#f1c40f";
-        ctx.beginPath(); ctx.arc(0, 10, 10, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = "#e74c3c";
-        ctx.beginPath(); ctx.arc(0, 6, 11, Math.PI, 0); ctx.fill();
-        ctx.fillStyle = "#3498db";
-        ctx.fillRect(-12, 20, 24, 35);
-        ctx.fillStyle = "#2c3e50";
-        ctx.fillRect(-13, 28, 26, 6);
-        ctx.fillStyle = "#34495e";
-        ctx.fillRect(-10, 55, 8, 35);
-        ctx.fillRect(2, 55, 8, 35);
+  kpiZ.innerText=`${zlqRes>0?'+':''}${zlqRes.toFixed(2)} m`;
 
-        ctx.restore();
-    }
+  if(zlqRes>=1.0){
+    kpiZ.style.color= "#2ecc71"; kpiS.style.color="#2ecc71";
+    kpiS.innerText="SEGURO (≥ 1,0 m)";
+  }else if(zlqRes>0){
+    kpiZ.style.color= "#f1c40f"; kpiS.style.color="#f39c12";
+    kpiS.innerText="ATENÇÃO (0–1,0 m)";
+  }else{
+    kpiZ.style.color= "#e74c3c"; kpiS.style.color="#e74c3c";
+    kpiS.innerText="CRÍTICO (< 0 m)";
+  }
 
-    function drawRulers() {
-        const meters = Math.ceil(canvas.height / PX_PER_METER);
-        ctx.strokeStyle = "rgba(0,0,0,0.05)";
-        ctx.lineWidth = 1;
-        ctx.fillStyle = "rgba(0,0,0,0.3)";
-        ctx.font = "10px Inter";
+  // Aviso técnico (mantido, não intrusivo)
+  if(fq===2 && l>1.8){
+    kpiS.innerText += " • Aviso: FQ2 com L>1,8 m pode ser vedado por fabricantes";
+  }
+}
 
-        for(let i=0; i<=meters; i++) {
-            const y = world.groundY - (i * PX_PER_METER);
-            if (y < 0) break;
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width, y);
-            ctx.stroke();
-            if (i > 0) ctx.fillText(i + "m", canvas.width - 30, y + 3);
-        }
-    }
-
-    // --- Lógica de Controle ---
-    function startSimulation() {
-        if (running) return;
-        updateSettings();
-        running = true;
-        crashed = false;
-        finished = false;
-        const ov = document.getElementById('alert-overlay');
-        ov.style.opacity = 0; ov.className = '';
-        loop();
-    }
-
-    function resetSimulation() {
-        running = false; crashed = false; finished = false;
-        worker.vx = 0; worker.vy = 0;
-        document.getElementById('alert-overlay').style.opacity = 0;
-        updateSettings();
-    }
-
-    function showResult(safe) {
-        const el = document.getElementById('alert-overlay');
-        el.innerText = safe ? "RETIDO COM SUCESSO" : "COLISÃO FATAL!";
-        el.className = safe ? "success-overlay" : "";
-        el.style.opacity = 1;
-        el.style.transform = "translate(-50%, -50%) scale(1.1)";
-        setTimeout(() => el.style.transform = "translate(-50%, -50%) scale(1)", 200);
-    }
-
-    function calcKPIs() {
-        // Entradas
-        const l  = rope.lengthM;       // comprimento do talabarte (m)
-        const h  = config.workHeightM; // altura dos pés (m)
-        const fq = anchor.fq;          // 0=acima | 1=cinto | 2=pés
-
-        // Queda livre estimada por FQ
-        // FQ0 ≈ 0,6 m; FQ1 ≈ L; FQ2 ≈ L + 1,5 m
-        let quedaLivre = (fq === 0) ? 0.6 : (fq === 1 ? l : l + 1.5);
-
-        // ZLQ necessária (componentes conservadores)
-        const zlqNec = quedaLivre + DECEL + DR_SHIFT + BODY + SAFETY;
-
-        // ZLQ RESULTANTE = H disponível − ZLQ necessária
-        const zlqRes = +(h - zlqNec).toFixed(2);
-
-        // Exibição
-        const elVal = document.getElementById('kpi-result');
-        const elSts = document.getElementById('kpi-status');
-
-        elVal.innerText = `${zlqRes.toFixed(2)} m`;
-
-        if (zlqRes >= 1.0) {
-            elVal.style.color = "#2ecc71";
-            elSts.innerText = "SEGURO (≥ 1,0 m)";
-            elSts.style.color = "#2ecc71";
-        } else {
-            elVal.style.color = "#e74c3c";
-            elSts.innerText = "CRÍTICO (< 1,0 m)";
-            elSts.style.color = "#e74c3c";
-        }
-    }
-
-    // Boot
-    setTimeout(() => { resize(); updateSettings(); }, 100);
+/* Boot */
+setTimeout(()=>{ resize(); updateSettings(); },100);
 </script>
 </body>
 </html>
