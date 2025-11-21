@@ -1,542 +1,526 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Simulador Virtual NR-35 – Ancoragens</title>
-  <style>
-    :root{
-      --bg1:#0a0f1c;--bg2:#1a1f35;--bg3:#252b42;
-      --c1:#00d4ff;--c2:#00ff88;--cy:#ffb800;--cr:#ff4757;
-      --t1:#fff;--t2:#b8c2cc;--t3:#7d8b96;--glass:rgba(255,255,255,.08);--glassb:rgba(255,255,255,.18)
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2) 55%,var(--bg3));color:var(--t1);min-height:100vh}
-    .header{padding:20px 24px;border-bottom:1px solid var(--glassb);backdrop-filter:blur(18px)}
-    .header>div{max-width:1400px;margin:0 auto;display:flex;gap:14px;align-items:center;justify-content:space-between}
-    h1{font-size:24px;font-weight:900;background:linear-gradient(45deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .badge{padding:8px 14px;border-radius:999px;border:1px solid rgba(255,184,0,.35);color:var(--cy);background:rgba(255,184,0,.12);font-weight:800}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador NR-35 (V7: Altura Configurável)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
 
-    .main{max-width:1400px;margin:0 auto;padding:22px;display:grid;grid-template-columns:420px 1fr;gap:22px}
-    @media(max-width:1200px){.main{grid-template-columns:1fr}}
-    .panel{background:var(--glass);border:1px solid var(--glassb);border-radius:18px;padding:18px}
-    .title{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-weight:900}
-    .title:before{content:"";width:4px;height:18px;border-radius:2px;background:linear-gradient(45deg,var(--c1),var(--c2))}
-    .row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin:10px 0}
-    .label{font-size:14px;font-weight:800}
-    .hint{font-size:12px;color:var(--t3)}
-    .slider{-webkit-appearance:none;width:100%;height:6px;border-radius:4px;background:linear-gradient(90deg,#1a2237,#141a2c);outline:none}
-    .slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(45deg,var(--c1),var(--c2));box-shadow:0 4px 12px rgba(0,212,255,.35);cursor:pointer}
-    .input{width:110px;padding:10px;border-radius:10px;border:1px solid var(--glassb);background:rgba(255,255,255,.05);color:var(--t1);font-weight:800;text-align:center}
-    .select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--glassb);background:rgba(255,255,255,.05);color:var(--t1);font-weight:800}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-    .btn{border:0;border-radius:12px;padding:14px 16px;font-weight:900;cursor:pointer}
-    .btn-primary{background:linear-gradient(45deg,var(--c1),var(--c2));color:#07131a}
-    .btn-ghost{background:rgba(255,255,255,.08);border:1px solid var(--glassb);color:var(--t1)}
+        :root {
+            --cor-fundo: #eef2f6;
+            --cor-painel: #fff;
+            --cor-seguro: #2ecc71;
+            --cor-atencao: #f1c40f;
+            --cor-critico: #e74c3c;
+            --cor-corda: #f39c12;
+        }
 
-    .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px}
-    .kpi{background:rgba(0,0,0,.18);border:1px solid var(--glassb);border-radius:12px;padding:14px;text-align:center}
-    .kpi .t{font-size:11px;color:var(--t3);text-transform:uppercase;font-weight:900;letter-spacing:.4px;margin-bottom:6px}
-    .kpi .v{font-size:20px;font-weight:900}
-    .tag{display:inline-block;margin-top:4px;font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid}
-    .safe{color:#00ff88;border-color:#00ff88;background:rgba(0,255,136,.16)}
-    .warn{color:#ffb800;border-color:#ffb800;background:rgba(255,184,0,.16)}
-    .dang{color:#ff4757;border-color:#ff4757;background:rgba(255,71,87,.18)}
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--cor-fundo);
+            margin: 0; padding: 20px;
+            height: 100vh; overflow: hidden;
+            display: flex; gap: 20px;
+        }
 
-    /* Palco */
-    .stage{position:relative;height:720px;border-radius:20px;border:1px solid var(--glassb);overflow:hidden;background:linear-gradient(180deg,#8fd3ff 0%,#6aa7c5 42%,#3a6786 64%,#243b4a 78%,#1a1a1a 100%)}
-    .building{position:absolute;right:0;top:0;width:42%;height:100%;background:linear-gradient(45deg,#2c3e50,#34495e);clip-path:polygon(16% 0,100% 0,100% 100%,0 100%);opacity:.78}
-    .grid{position:absolute;right:7.5%;top:8%;width:28%;height:84%;
-      background:
-       repeating-linear-gradient(0deg,transparent 0,transparent 52px,rgba(255,255,255,.22) 52px,rgba(255,255,255,.22) 54px),
-       repeating-linear-gradient(90deg,transparent 0,transparent 52px,rgba(255,255,255,.22) 52px,rgba(255,255,255,.22) 54px);
-    }
-    .ground{position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(#8b4513,#654321 55%,#3e2723)}
+        /* --- Painel Lateral --- */
+        .sidebar {
+            width: 320px;
+            background: var(--cor-painel);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; gap: 15px;
+            z-index: 10;
+            overflow-y: auto;
+        }
 
-    .platform{position:absolute;left:15%;width:40%;height:16px;background:linear-gradient(90deg,#1e88e5,#42a5f5);border-radius:8px;box-shadow:0 4px 16px rgba(30,136,229,.36),inset 0 2px 0 rgba(255,255,255,.28);z-index:6}
-    .platform:before{content:"PLATAFORMA";position:absolute;bottom:22px;left:0;font-size:12px;font-weight:900;color:#7fd3ff;text-shadow:0 2px 8px rgba(0,0,0,.7)}
+        h2 { margin: 0 0 5px 0; font-size: 1.2rem; color: #2c3e50; }
+        .subtitle { font-size: 0.8rem; color: #7f8c8d; margin-bottom: 10px; }
+        
+        .control-group {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
 
-    .worker{position:absolute;width:118px;height:238px;z-index:12;transform-origin:50% 15%;transition:all .6s cubic-bezier(.25,.46,.45,.94)}
-    .svg{width:100%;height:100%;filter:drop-shadow(0 10px 24px rgba(0,0,0,.45))}
+        label { font-size: 0.85rem; font-weight: 600; color: #34495e; display: block; margin-bottom: 5px; }
+        
+        input[type="range"] { width: 100%; margin: 5px 0; cursor: pointer; }
+        .val-display { font-size: 0.9rem; font-weight: bold; color: #2980b9; float: right; }
 
-    /* Ancoragens: cartões posicionados via JS */
-    .anchors{position:absolute;right:15%;top:6%;width:120px;height:82%;z-index:15}
-    .anchor{position:absolute;width:100px;height:100px;border-radius:16px;background:rgba(10,15,28,.82);border:2px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s,border-color .25s,background .25s}
-    .anchor:hover{transform:scale(1.06) translateX(-4px);border-color:var(--c1)}
-    .anchor.selected{transform:scale(1.1) translateX(-6px);box-shadow:0 0 24px rgba(0,212,255,.4);background:rgba(0,212,255,.15);border-color:var(--c1)}
-    .anchor .icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(45deg,var(--c1),var(--c2));margin-bottom:8px}
-    .anchor .icon:before{content:"⚓";font-size:19px;color:#fff}
-    .anchor .label{font-size:12px;font-weight:900;text-align:center;line-height:1.1}
+        .btn-action {
+            padding: 15px; border: none; border-radius: 8px;
+            font-weight: 800; cursor: pointer; transition: transform 0.1s, background 0.2s;
+            color: white; font-size: 1rem; text-transform: uppercase;
+            width: 100%; margin-top: 5px;
+        }
+        .btn-simular { background: linear-gradient(135deg, #3498db, #2980b9); box-shadow: 0 4px 0 #1c5a85; }
+        .btn-simular:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #1c5a85; }
+        .btn-simular:active { transform: translateY(2px); box-shadow: 0 0 0 #1c5a85; }
+        
+        .btn-reset { background: #95a5a6; box-shadow: 0 4px 0 #7f8c8d; margin-top: 10px;}
+        .btn-reset:hover { background: #7f8c8d; }
+        .btn-reset:active { transform: translateY(2px); box-shadow: 0 0 0 #7f8c8d; }
 
-    /* SVG rope + badge distância */
-    .ropeSvg{position:absolute;inset:0;z-index:10;pointer-events:none}
-    .dist-badge{position:absolute;z-index:11;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;background:rgba(0,0,0,.35);border:1px solid var(--glassb)}
+        /* KPIs */
+        .kpi-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .kpi-box {
+            background: #f8f9fa; padding: 10px; border-radius: 6px;
+            border-left: 4px solid #ddd;
+        }
+        .kpi-title { font-size: 0.65rem; text-transform: uppercase; color: #666; font-weight: 700; }
+        .kpi-value { font-size: 1.1rem; font-weight: 900; color: #333; }
+        .kpi-status { font-size: 0.7rem; font-weight: bold; margin-top: 2px; }
 
-    .result{position:absolute;right:24px;top:18px;padding:10px 14px;border-radius:999px;font-weight:900;border:2px solid;backdrop-filter:blur(10px)}
-    .r-safe{color:#00ff88;border-color:#00ff88;background:rgba(0,255,136,.12)}
-    .r-warn{color:#ffb800;border-color:#ffb800;background:rgba(255,184,0,.12)}
-    .r-dang{color:#ff4757;border-color:#ff4757;background:rgba(255,71,87,.12)}
+        /* --- Palco (Canvas) --- */
+        .stage-container {
+            flex: 1;
+            background: linear-gradient(to bottom, #87CEEB 0%, #e0f7fa 100%);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid #fff;
+        }
 
-    /* Animações de queda */
-    .worker.fall-safe{animation:fallSafe 2s cubic-bezier(.1,.7,.5,1) forwards}
-    .worker.fall-warn{animation:fallWarn 2.2s cubic-bezier(.2,.8,.4,1) forwards}
-    .worker.fall-dang{animation:fallDang 2.5s cubic-bezier(.5,.05,.6,.2) forwards}
-    @keyframes fallSafe{0%{transform:translateY(0)}30%{transform:translateY(var(--fall)) rotate(12deg)}80%{transform:translateY(calc(var(--fall)*.9))}100%{transform:translateY(calc(var(--fall)*.86))}}
-    @keyframes fallWarn{0%{transform:translateY(0)}40%{transform:translateY(var(--fall)) rotate(22deg)}100%{transform:translateY(calc(var(--fall)*.9))}}
-    @keyframes fallDang{0%{transform:translateY(0)}100%{transform:translateY(var(--fall)) rotate(90deg)}}
-    /* Marcadores visuais dos pontos de ancoragem (FQ 0, 1, 2) */
-    .anchor-dots{position:absolute;inset:0;pointer-events:none;z-index:16}
-    .anchor-dot{position:absolute;left:0;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#00d4ff;box-shadow:0 0 12px rgba(0,212,255,.6);border:2px solid #0a2030}
-    .anchor-dot::after{content:attr(data-label);position:absolute;left:22px;top:-8px;padding:4px 8px;border-radius:10px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:11px;font-weight:800;white-space:nowrap}
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
 
-    /* Botões de cenários rápidos */
-    .scenarios{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-    .btn-safe{background:rgba(0,255,136,.18);border:1px solid #00ff88;color:#00ff88}
-    .btn-danger{background:rgba(255,71,87,.18);border:1px solid #ff4757;color:#ff6b7d}
-  </style>
+        /* Elementos Visuais Sobrepostos */
+        .ruler-label {
+            position: absolute; right: 10px; color: rgba(0,0,0,0.4); 
+            font-size: 0.8rem; font-weight: bold; pointer-events: none; border-bottom: 1px solid rgba(0,0,0,0.1);
+            width: 50px; text-align: right;
+        }
+
+        #alert-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(231, 76, 60, 0.95); color: white;
+            padding: 30px 50px; border-radius: 12px; font-size: 2.5rem; font-weight: 900;
+            text-align: center; z-index: 100; opacity: 0; pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            border: 4px solid white;
+        }
+
+        .success-overlay {
+            background: rgba(46, 204, 113, 0.95) !important;
+        }
+
+    </style>
 </head>
 <body>
-  <header class="header">
-    <div>
-      <h1>Simulador Virtual NR-35</h1>
-      <div id="hdrStatus" class="badge">CENÁRIO SEGURO</div>
+
+    <div class="sidebar">
+        <div>
+            <h2>⚙️ Simulador NR-35</h2>
+            <div class="subtitle">Física e Colisão em Tempo Real</div>
+        </div>
+        
+        <div class="control-group">
+            <label>1. Altura de Trabalho (H)</label>
+            <span id="val-height" class="val-display">6.0m</span>
+            <input type="range" id="input-height" min="2.0" max="10.0" step="0.5" value="6.0">
+            <small style="color:#888; font-size:0.7em">Altura dos pés em relação ao solo</small>
+        </div>
+
+        <div class="control-group">
+            <label>2. Comp. Talabarte (L)</label>
+            <span id="val-l" class="val-display">1.5m</span>
+            <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
+        </div>
+
+        <div class="control-group">
+            <label>3. Posição da Ancoragem</label>
+            <span id="val-anchor" class="val-display">Overhead</span>
+            <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
+            <small style="color:#888; font-size:0.7em; display:block; margin-top:5px">
+                0: Acima (FQ 0) | 1: Cinto (FQ 1) | 2: Pés (FQ 2)
+            </small>
+        </div>
+
+        <div class="kpi-container">
+            <div class="kpi-box">
+                <div class="kpi-title">ZLQ Necessária</div>
+                <div class="kpi-value" id="kpi-zlq">-- m</div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-title">Margem de Sobra</div>
+                <div class="kpi-value" id="kpi-margin">-- m</div>
+                <div class="kpi-status" id="kpi-status">--</div>
+            </div>
+        </div>
+
+        <button class="btn-action btn-simular" onclick="startSimulation()">⚠️ SIMULAR QUEDA</button>
+        <button class="btn-action btn-reset" onclick="resetSimulation()">🔄 RESETAR</button>
     </div>
-  </header>
 
-  <main class="main">
-    <aside class="panel">
-      <div class="title">Parâmetros da Simulação</div>
+    <div class="stage-container" id="stage">
+        <div id="alert-overlay">COLISÃO COM O SOLO!</div>
+        <canvas id="simCanvas"></canvas>
+    </div>
 
-      <div class="label">Altura do Trabalho</div>
-      <div class="row">
-        <input id="altura" class="slider" type="range" min="2" max="20" step="0.5" value="8">
-        <input id="alturaIn" class="input" type="number" min="2" max="20" step="0.5" value="8">
-      </div>
-      <div class="hint">Altura dos pés do trabalhador em relação ao chão.</div>
+<script>
+    // --- Configurações Físicas ---
+    const GRAVITY = 0.6;       // Gravidade
+    const DAMPING = 0.96;      // Resistência do ar
+    const PX_PER_METER = 50;   // Escala visual: 50px = 1 metro
+    const WORKER_H_PX = 90;    // Altura do boneco (aprox 1.8m)
+    const DECEL = 1.2;     // m - distensão do absorvedor (conservador)
+    const DR_SHIFT = 0.3;  // m - deslocamento do D-ring/arnês
+    const BODY = 1.5;      // m - altura abaixo do D-ring (porção do corpo)
+    const SAFETY = 1.0;    // m - folga de segurança
 
-      <div class="label" style="margin-top:10px">Comprimento do Talabarte</div>
-      <div class="row">
-        <input id="talabarte" class="slider" type="range" min="0.9" max="2.0" step="0.1" value="1.3">
-        <input id="talabarteIn" class="input" type="number" min="0.9" max="2.0" step="0.1" value="1.3">
-      </div>
-      <div class="hint">Em metros (para SRL, é ignorado no cálculo da distância).</div>
+    // --- Estado da Simulação ---
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let running = false;
+    let crashed = false;
+    let finished = false;
 
-      <div class="label" style="margin-top:10px">Tipo de EPI</div>
-      <select id="epi" class="select">
-        <option value="completo">Cinto Paraquedista + Talabarte com Absorvedor</option>
-        <option value="sem">Cinto Paraquedista + Talabarte sem Absorvedor</option>
-        <option value="abd">Cinto Abdominal (inadequado)</option>
-        <option value="srl">SRL (Trava-Quedas Retrátil)</option>
-      </select>
+    // Objetos
+    let world = { groundY: 0 };
+    let anchor = { x: 0, y: 0, fq: 0 }; 
+    let worker = { x: 0, y: 0, vx: 0, vy: 0, startY: 0 };
+    let rope = { lengthM: 1.5 };
+    let config = { workHeightM: 6.0 };
 
-      <div class="label" style="margin-top:10px">Tipo de Ancoragem</div>
-      <select id="ancoragem" class="select">
-        <option value="overhead">Sobre a Cabeça (linha de vida)</option>
-        <option value="srl">SRL Vertical (ponto alto fixo)</option>
-        <option value="lateral">Lateral Próxima (≤ 0,6 m)</option>
-      </select>
+    // Inputs DOM
+    const inHeight = document.getElementById('input-height');
+    const inLength = document.getElementById('input-l');
+    const inAnchor = document.getElementById('input-anchor');
+    
+    // Labels
+    const lblHeight = document.getElementById('val-height');
+    const lblLength = document.getElementById('val-l');
+    const lblAnchor = document.getElementById('val-anchor');
 
-      <div class="title" style="margin-top:14px">Indicadores de Segurança</div>
-      <div class="scenarios">
-        <button id="cSeg" class="btn btn-safe">🟢 CENÁRIO 1 – SEGURO (ZLQ ≥ 1 m)</button>
-        <button id="cLes" class="btn btn-danger">🔴 CENÁRIO 2 – LESÃO (bate o pé)</button>
-      </div>
-      <div class="kpis">
-        <div class="kpi"><div class="t">Zona Livre de Queda</div><div class="v" id="vZLQ">4.1m</div><div class="tag safe" id="sZLQ">SEGURO</div></div>
-        <div class="kpi"><div class="t">Fator de Queda</div><div class="v" id="vFQ">1.0</div><div class="tag warn" id="sFQ">MÉDIO</div></div>
-        <div class="kpi"><div class="t">Força de Impacto</div><div class="v" id="vFI">4.2kN</div><div class="tag safe" id="sFI">ACEITÁVEL</div></div>
-        <div class="kpi"><div class="t">Nível de Risco</div><div class="v" id="vR">BAIXO</div><div class="tag safe" id="sR">SEGURO</div></div>
-      </div>
+    // Inicialização
+    function resize() {
+        canvas.width = document.getElementById('stage').offsetWidth;
+        canvas.height = document.getElementById('stage').offsetHeight;
+        world.groundY = canvas.height - 40; // Chão fica 40px acima do fundo do canvas
+        resetSimulation();
+    }
+    window.addEventListener('resize', resize);
 
-      <div class="grid2">
-        <button id="btSim" class="btn btn-primary">⚡ SIMULAR QUEDA</button>
-        <button id="btReset" class="btn btn-ghost">🔄 RESETAR</button>
-      </div>
-    </aside>
+    function updateSettings() {
+        // Ler Inputs
+        config.workHeightM = parseFloat(inHeight.value);
+        rope.lengthM = parseFloat(inLength.value);
+        anchor.fq = parseInt(inAnchor.value);
 
-    <section class="panel" style="padding:0">
-      <div id="stage" class="stage">
-        <div class="building"></div>
-        <div class="grid"></div>
-        <div class="ground"></div>
-
-        <div id="platform" class="platform"></div>
-
-        <!-- Cartões das ancoragens (JS posiciona para colar FQ=1 no cinto) -->
-        <div id="anchors" class="anchors">
-          <div id="aSup" class="anchor"><div class="icon"></div><div class="label">ACIMA<br>FQ &lt; 1</div></div>
-          <div id="aMed" class="anchor selected"><div class="icon"></div><div class="label">NÍVEL<br>FQ = 1</div></div>
-          <div id="aInf" class="anchor"><div class="icon"></div><div class="label">ABAIXO<br>FQ = 2</div></div>
-        </div>
-
-        <!-- Marcadores visuais dos 3 pontos de ancoragem -->
-        <div id="anchorDots" class="anchor-dots">
-          <div id="dotFQ0" class="anchor-dot" data-label="ACIMA (FQ≈0)"></div>
-          <div id="dotFQ1" class="anchor-dot" data-label="NÍVEL (FQ=1)"></div>
-          <div id="dotFQ2" class="anchor-dot" data-label="ABAIXO (FQ=2)"></div>
-        </div>
-
-        <!-- SVG da "corda" com Bezier -->
-        <svg id="ropeSvg" class="ropeSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <defs>
-            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-          <path id="ropePath" d="M0,0 Q0,0 0,0" stroke="#ffb800" stroke-width="4" fill="none" filter="url(#glow)"/>
-        </svg>
-        <div id="distBadge" class="dist-badge" style="display:none">0.0 m</div>
-
-        <!-- Trabalhador -->
-        <div id="worker" class="worker" aria-label="Trabalhador">
-          <svg class="svg" viewBox="0 0 80 180" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="40" cy="25" r="12" fill="#ffdbac" stroke="#d4a574" stroke-width="2"/>
-            <ellipse cx="40" cy="20" rx="14" ry="8" fill="#ff6b35" stroke="#d4531f" stroke-width="2"/>
-            <rect x="30" y="35" width="20" height="40" rx="5" fill="#4a90e2" stroke="#2e5c8a" stroke-width="2"/>
-            <!-- Cinta / ponto de conexão (~ y=52) -->
-            <rect x="28" y="45" width="24" height="15" rx="3" fill="#ffd700" stroke="#ccaa00" stroke-width="2" opacity=".9"/>
-            <rect x="20" y="40" width="8" height="25" rx="4" fill="#ffdbac" stroke="#d4a574" stroke-width="2"/>
-            <rect x="52" y="40" width="8" height="25" rx="4" fill="#ffdbac" stroke="#d4a574" stroke-width="2"/>
-            <rect x="32" y="75" width="6" height="35" rx="3" fill="#2c3e50" stroke="#1a252f" stroke-width="2"/>
-            <rect x="42" y="75" width="6" height="35" rx="3" fill="#2c3e50" stroke="#1a252f" stroke-width="2"/>
-            <ellipse cx="35" cy="115" rx="8" ry="4" fill="#8b4513" stroke="#5d2e0a" stroke-width="2"/>
-            <ellipse cx="45" cy="115" rx="8" ry="4" fill="#8b4513" stroke="#5d2e0a" stroke-width="2"/>
-            <circle cx="40" cy="52" r="3" fill="#ff0000" stroke="#cc0000" stroke-width="1"/>
-          </svg>
-        </div>
-
-        <div id="result" class="result r-safe">CENÁRIO SEGURO</div>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    // Utilitários
-    const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
-    const map = (v, a, b, c, d) => c + ((clamp(v, a, b) - a) * (d - c)) / (b - a);
-
-    class Simulador {
-      constructor() {
-        // Elementos DOM
-        this.altura = document.getElementById('altura');
-        this.alturaIn = document.getElementById('alturaIn');
-        this.talabarte = document.getElementById('talabarte');
-        this.talabarteIn = document.getElementById('talabarteIn');
-        this.epi = document.getElementById('epi');
-        this.ancoragem = document.getElementById('ancoragem');
-        this.worker = document.getElementById('worker');
-        this.platform = document.getElementById('platform');
-        this.ropeSvg = document.getElementById('ropeSvg');
-        this.ropePath = document.getElementById('ropePath');
-        this.distBadge = document.getElementById('distBadge');
-        this.vZLQ = document.getElementById('vZLQ');
-        this.sZLQ = document.getElementById('sZLQ');
-        this.vFQ = document.getElementById('vFQ');
-        this.sFQ = document.getElementById('sFQ');
-        this.vFI = document.getElementById('vFI');
-        this.sFI = document.getElementById('sFI');
-        this.vR = document.getElementById('vR');
-        this.sR = document.getElementById('sR');
-        this.result = document.getElementById('result');
-        this.hdrStatus = document.getElementById('hdrStatus');
-        this.stage = document.getElementById('stage');
-
-        this.aSup = document.getElementById('aSup');
-        this.aMed = document.getElementById('aMed');
-        this.aInf = document.getElementById('aInf');
-        this.cards = [this.aSup, this.aMed, this.aInf];
-        this.ponto = 1; // FQ=1 default
-
-        // Event listeners
-        this.altura.addEventListener('input', () => { 
-          this.alturaIn.value = this.altura.value; 
-          this.update(); 
-        });
-        this.alturaIn.addEventListener('input', () => { 
-          this.altura.value = this.alturaIn.value; 
-          this.update(); 
-        });
-        this.talabarte.addEventListener('input', () => { 
-          this.talabarteIn.value = this.talabarte.value; 
-          this.update(); 
-        });
-        this.talabarteIn.addEventListener('input', () => { 
-          this.talabarte.value = this.talabarteIn.value; 
-          this.update(); 
-        });
-        this.epi.addEventListener('change', () => this.update());
-        this.ancoragem.addEventListener('change', () => this.update());
+        // Atualizar Textos
+        lblHeight.innerText = config.workHeightM.toFixed(1) + "m";
+        lblLength.innerText = rope.lengthM.toFixed(1) + "m";
         
-        this.cards.forEach((card, i) => card.addEventListener('click', () => {
-          this.ponto = i;
-          this.cards.forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
-          this.update();
-        }));
-        
-        document.getElementById('cSeg').addEventListener('click', () => this.aplicarCenario('seguro'));
-        document.getElementById('cLes').addEventListener('click', () => this.aplicarCenario('lesao'));
-        document.getElementById('btSim').addEventListener('click', () => this.simular());
-        document.getElementById('btReset').addEventListener('click', () => this.reset());
+        const anchorLabels = ["Acima (FQ 0)", "Cinto (FQ 1)", "Pés (FQ 2)"];
+        lblAnchor.innerText = anchorLabels[anchor.fq];
 
-        this.anim = false;
-        this.update();
-      }
-
-      // Sistema de posicionamento corrigido
-      calcularPosicoes() {
-        const altura = parseFloat(this.altura.value); // altura em metros
-        const stageHeight = 720; // altura do stage em pixels
-        const groundHeight = 120; // altura do solo em pixels
-        const platformHeight = 16; // altura da plataforma em pixels
-        const workerHeight = 238; // altura do trabalhador em pixels
-        
-        // Mapear altura (2-20m) para posição no stage
-        // O solo está a 120px do bottom, então a área útil é 600px
-        const workArea = stageHeight - groundHeight; // 600px
-        const minHeight = 2; // metros
-        const maxHeight = 20; // metros
-        
-        // Calcular posição da plataforma (bottom em pixels)
-        const platformBottom = groundHeight + ((altura - minHeight) / (maxHeight - minHeight)) * (workArea - platformHeight - 50);
-        
-        // Posicionar trabalhador exatamente sobre a plataforma
-        const workerBottom = platformBottom + platformHeight;
-        
-        return {
-          platformBottom: Math.max(groundHeight, platformBottom),
-          workerBottom: Math.max(groundHeight + platformHeight, workerBottom),
-          altura
-        };
-      }
-
-      // Posicionar elementos na cena
-      posicionarElementos() {
-        const pos = this.calcularPosicoes();
-        
-        // Posicionar plataforma
-        this.platform.style.bottom = `${pos.platformBottom}px`;
-        
-        // Posicionar trabalhador horizontalmente (fixo) e verticalmente (sobre a plataforma)
-        const stageWidth = this.stage.offsetWidth;
-        const workerWidth = 118;
-        const workerLeft = stageWidth * 0.25; // 25% da largura do stage
-        
-        this.worker.style.left = `${Math.max(20, Math.min(workerLeft, stageWidth - workerWidth - 20))}px`;
-        this.worker.style.bottom = `${pos.workerBottom}px`;
-        
-        return pos;
-      }
-
-      // Obter coordenadas do ponto de conexão do cinto
-      pontoCinto() {
-        const workerRect = this.worker.getBoundingClientRect();
-        const stageRect = this.stage.getBoundingClientRect();
-        
-        // Ponto de conexão no centro horizontal e na altura do cinto (aproximadamente 30px do topo)
-        const x = (workerRect.left - stageRect.left) + (workerRect.width / 2);
-        const y = (workerRect.top - stageRect.top) + 30; // offset para o cinto
-        
-        return { x, y, stageRect };
-      }
-
-      // Posicionar marcadores visuais dos pontos de ancoragem
-      posicionarMarcadores() {
-        const { x, y } = this.pontoCinto();
-        const offset = 120; // afastamento vertical entre os pontos
-        
-        const setPosition = (element, yPos) => {
-          element.style.left = `${x}px`;
-          element.style.top = `${Math.max(30, Math.min(yPos, 690))}px`;
-        };
-        
-        setPosition(document.getElementById('dotFQ0'), y - offset); // ACIMA
-        setPosition(document.getElementById('dotFQ1'), y);          // NÍVEL
-        setPosition(document.getElementById('dotFQ2'), y + offset); // ABAIXO
-      }
-
-      // Desenhar corda conectando trabalhador ao ponto de ancoragem
-      desenharCorda() {
-        const { x: workerX, y: workerY, stageRect } = this.pontoCinto();
-        
-        // Obter posição do cartão de ancoragem selecionado
-        const selectedCard = this.cards[this.ponto];
-        const cardRect = selectedCard.getBoundingClientRect();
-        
-        const anchorX = (cardRect.left - stageRect.left) + (cardRect.width / 2);
-        const anchorY = (cardRect.top - stageRect.top) + (cardRect.height / 2);
-        
-        // Ponto de controle para curva Bezier
-        const controlX = (workerX + anchorX) / 2;
-        const controlY = Math.min(workerY, anchorY) - 40;
-        
-        // Atualizar SVG
-        this.ropeSvg.setAttribute('viewBox', `0 0 ${stageRect.width} ${stageRect.height}`);
-        this.ropePath.setAttribute('d', `M ${workerX},${workerY} Q ${controlX},${controlY} ${anchorX},${anchorY}`);
-        
-        // Badge de distância
-        const distance = Math.abs(anchorX - workerX) / 100; // converter para metros (aproximado)
-        this.distBadge.style.display = 'block';
-        this.distBadge.textContent = `${distance.toFixed(1)} m`;
-        this.distBadge.style.left = `${workerX + (anchorX - workerX) / 2 - 30}px`;
-        this.distBadge.style.top = `${Math.min(workerY, anchorY) - 28}px`;
-      }
-
-      // Configuração especial para SRL vertical
-      configurarSRL() {
-        if (this.ancoragem.value === 'srl') {
-          const { x } = this.pontoCinto();
-          const topY = 40; // ponto alto fixo
-          
-          // Mover cartão NÍVEL para posição vertical
-          Object.assign(this.aMed.style, {
-            left: `${x - 50}px`,
-            top: `${topY}px`
-          });
+        // Posicionar Trabalhador (Apenas se não estiver rodando)
+        if (!running) {
+            // A posição Y é calculada de baixo para cima
+            // GroundY - (Metros * Pixels) = Posição dos Pés
+            const feetY = world.groundY - (config.workHeightM * PX_PER_METER);
+            
+            // O Worker.y é o topo da cabeça (top-left do rect), então subtraímos a altura do boneco
+            worker.y = feetY - WORKER_H_PX;
+            worker.x = canvas.width / 2;
+            worker.startY = worker.y;
+            
+            // Posicionar Ancoragem RELATIVA ao trabalhador
+            // D-Ring (conexão) fica nas costas, aprox 30px do topo
+            const dRingY = worker.y + 30;
+            
+            if (anchor.fq === 0) {
+                // Acima da cabeça (ex: 1.5m acima do D-Ring)
+                anchor.y = dRingY - (1.5 * PX_PER_METER);
+            } else if (anchor.fq === 1) {
+                // Nível do cinto
+                anchor.y = dRingY;
+            } else {
+                // Nível dos pés (Abaixo do cinto)
+                // Pés estão em feetY.
+                anchor.y = feetY;
+            }
+            anchor.x = worker.x - 20; // Levemente à esquerda
         }
-      }
-
-      // Cálculos de segurança
-      calcular() {
-        const H = parseFloat(this.altura.value);
-        const L = parseFloat(this.talabarte.value);
-        const epi = this.epi.value;
-
-        // Fator de Queda conforme ponto selecionado
-        let Lqueda = L;
-        let queda;
         
-        if (this.ancoragem.value === 'srl' || epi === 'srl') {
-          Lqueda = Math.max(0.6, L * 0.5); // SRL reduz queda livre
-        }
-
-        if (this.ponto === 0) queda = Math.max(0, Lqueda - 2.0);      // ACIMA
-        else if (this.ponto === 1) queda = Lqueda;                    // NÍVEL
-        else queda = Lqueda + 2.0;                                    // ABAIXO
-
-        const FQcalc = queda / Math.max(L, 0.1);
-        const FQ = Math.max(0, Math.min(2, Math.round(FQcalc)));
-
-        // Zona Livre de Queda necessária
-        const desaceleracao = (epi === 'completo' || epi === 'srl') ? 1.75 : (epi === 'sem' ? 0.1 : 0.05);
-        const folga = 0.5;
-        const margem = 1.0;
-        const Z = +(Lqueda + desaceleracao + folga + margem).toFixed(1);
-        const disp = +H.toFixed(1);
-
-        // Força de Impacto
-        let FI;
-        if (epi === 'completo' || epi === 'srl') FI = Math.min(6.0, 2.0 + FQcalc * 2.0);
-        else if (epi === 'sem') FI = 4.0 + FQcalc * 8.0;
-        else FI = 15.0;
-        FI = +FI.toFixed(1);
-
-        // Avaliação de risco
-        let res = 'safe', niv = 'BAIXO';
-        if (epi === 'abd' || Z > disp) { res = 'dang'; niv = 'CRÍTICO'; }
-        else if (FI > 6.0 || FQcalc >= 2.0) { res = 'warn'; niv = 'ALTO'; }
-        else if (FQcalc > 1.0 || FI > 4.0) { res = 'warn'; niv = 'MÉDIO'; }
-
-        return { FQ, FQcalc, Z, disp, FI, res, niv, queda, Lqueda };
-      }
-
-      // Atualizar indicadores na interface
-      atualizarIndicadores(R) {
-        const setTag = (el, cls, txt) => { el.className = `tag ${cls}`; el.textContent = txt; };
-        
-        this.vZLQ.textContent = `${R.Z}m`;
-        this.vFQ.textContent = R.FQ.toString();
-        this.vFI.textContent = `${R.FI}kN`;
-        this.vR.textContent = R.niv;
-
-        setTag(this.sZLQ, R.Z <= R.disp ? 'safe' : 'dang', R.Z <= R.disp ? 'SEGURO' : 'PERIGO');
-        setTag(this.sFQ, R.FQ === 0 ? 'safe' : R.FQ === 1 ? 'warn' : 'dang', R.FQ === 0 ? 'BAIXO' : R.FQ === 1 ? 'MÉDIO' : 'ALTO');
-        setTag(this.sFI, R.FI <= 4 ? 'safe' : R.FI <= 6 ? 'warn' : 'dang', R.FI <= 4 ? 'ACEITÁVEL' : R.FI <= 6 ? 'ELEVADO' : 'PERIGOSO');
-        setTag(this.sR, R.res === 'safe' ? 'safe' : R.res === 'warn' ? 'warn' : 'dang', R.res === 'safe' ? 'SEGURO' : R.res === 'warn' ? 'ATENÇÃO' : 'CRÍTICO');
-
-        this.result.className = `result ${R.res === 'safe' ? 'r-safe' : R.res === 'warn' ? 'r-warn' : 'r-dang'}`;
-        this.result.textContent = R.res === 'safe' ? 'CENÁRIO SEGURO' : R.res === 'warn' ? 'CENÁRIO DE RISCO' : 'QUEDA FATAL';
-        this.hdrStatus.textContent = this.result.textContent;
-        this.hdrStatus.className = `badge ${R.res === 'safe' ? 'r-safe' : R.res === 'warn' ? 'r-warn' : 'r-dang'}`;
-      }
-
-      // Aplicar cenários pré-definidos
-      aplicarCenario(tipo) {
-        if (tipo === 'seguro') {
-          this.altura.value = this.alturaIn.value = 8.0;
-          this.talabarte.value = this.talabarteIn.value = 1.2;
-          this.epi.value = 'completo';
-          this.ancoragem.value = 'overhead';
-          this.ponto = 0; // ACIMA
-          this.cards.forEach(c => c.classList.remove('selected'));
-          this.aSup.classList.add('selected');
-        } else if (tipo === 'lesao') {
-          this.altura.value = this.alturaIn.value = 3.0;
-          this.talabarte.value = this.talabarteIn.value = 1.6;
-          this.epi.value = 'sem';
-          this.ancoragem.value = 'lateral';
-          this.ponto = 2; // ABAIXO
-          this.cards.forEach(c => c.classList.remove('selected'));
-          this.aInf.classList.add('selected');
-        }
-        this.update();
-      }
-
-      // Atualização principal
-      update() {
-        if (this.anim) return;
-
-        // Posicionar elementos
-        this.posicionarElementos();
-        
-        // Configurações especiais
-        this.configurarSRL();
-        
-        // Desenhar conexões
-        this.desenharCorda();
-        this.posicionarMarcadores();
-        
-        // Cálculos e indicadores
-        const R = this.calcular();
-        this.atualizarIndicadores(R);
-        
-        this.last = R;
-      }
-
-      // Simular queda
-      simular() {
-        if (this.anim) return;
-        this.anim = true;
-        
-        const distancia = Math.min(this.last.queda * 30, 460);
-        this.worker.style.setProperty('--fall', `${distancia}px`);
-        
-        const classe = this.last.res === 'safe' ? 'fall-safe' : this.last.res === 'warn' ? 'fall-warn' : 'fall-dang';
-        this.worker.classList.add(classe);
-        
-        setTimeout(() => {
-          if (this.last.res === 'safe') {
-            alert(`Queda segura! Zona Livre de Queda resultante: ${this.last.Z}m`);
-          } else if (this.last.res === 'dang') {
-            alert('Colisão! O colaborador se machucou.');
-          } else {
-            alert('Cenário de risco! Verifique os parâmetros de segurança.');
-          }
-          this.reset();
-        }, 2000); // Duração fixa de 2 segundos
-      }
-
-      // Resetar simulação
-      reset() {
-        this.anim = false;
-        this.worker.classList.remove('fall-safe', 'fall-warn', 'fall-dang');
-        this.update();
-      }
+        calcKPIs();
+        if(!running) drawScene();
     }
 
-    // Inicializar quando o DOM estiver carregado
-    window.addEventListener('DOMContentLoaded', () => new Simulador());
-  </script>
+    [inHeight, inLength, inAnchor].forEach(el => el.addEventListener('input', updateSettings));
+
+    // --- Loop de Física ---
+    function loop() {
+        if (!running) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. Gravidade
+        if (!crashed && !finished) {
+            worker.vy += GRAVITY;
+            worker.vx *= DAMPING;
+            worker.vy *= DAMPING;
+            worker.x += worker.vx;
+            worker.y += worker.vy;
+        }
+
+        // 2. Colisão com Chão (SOLO)
+        // Pés do trabalhador = worker.y + WORKER_H_PX
+        if ((worker.y + WORKER_H_PX) >= world.groundY) {
+            if (!crashed && !finished) {
+                // IMPACTO!
+                crashed = true;
+                worker.y = world.groundY - WORKER_H_PX;
+                worker.vy = 0;
+                showResult(false); // False = Morte/Acidente
+            }
+        }
+
+        // 3. Mecânica da Corda
+        const dRingX = worker.x;
+        const dRingY = worker.y + 30;
+
+        const dx = dRingX - anchor.x;
+        const dy = dRingY - anchor.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        
+        // Comprimento máximo (Corda + Absorvedor abrindo)
+        // Adicionamos 1.2m de absorvedor "virtual" na física
+        const maxDistPx = (rope.lengthM + 1.1) * PX_PER_METER;
+
+        if (dist > maxDistPx && !crashed) {
+            // Corda esticada -> Força elástica
+            const angle = Math.atan2(dy, dx);
+            const pullX = Math.cos(angle) * maxDistPx + anchor.x;
+            const pullY = Math.sin(angle) * maxDistPx + anchor.y;
+
+            // Mola
+            const k = 0.08; // Rigidez
+            worker.vx -= (dRingX - pullX) * k;
+            worker.vy -= (dRingY - pullY) * k;
+            
+            // Se a velocidade for muito baixa, consideramos "Retido"
+            if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) {
+                finished = true;
+                showResult(true); // True = Salvo
+            }
+        }
+
+        drawScene();
+        requestAnimationFrame(loop);
+    }
+
+    // --- Renderização ---
+    function drawScene() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 1. Desenhar Cenário de Fundo (Réguas)
+        drawRulers();
+
+        // 2. Desenhar Plataforma de Trabalho
+        // Linha cinza onde começou
+        const platformY = worker.startY + WORKER_H_PX;
+        ctx.beginPath();
+        ctx.moveTo(0, platformY);
+        ctx.lineTo(canvas.width, platformY);
+        ctx.strokeStyle = "#bdc3c7";
+        ctx.lineWidth = 4;
+        ctx.setLineDash([10, 10]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Label Plataforma
+        ctx.fillStyle = "#7f8c8d";
+        ctx.font = "bold 12px Inter";
+        ctx.fillText("PLATAFORMA DE TRABALHO", 10, platformY - 5);
+
+        // 3. Desenhar Chão
+        ctx.fillStyle = "#5d4037";
+        ctx.fillRect(0, world.groundY, canvas.width, canvas.height - world.groundY);
+        ctx.fillStyle = "#8d6e63"; // Borda
+        ctx.fillRect(0, world.groundY, canvas.width, 5);
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.fillText("SOLO (NÍVEL 0)", canvas.width/2 - 40, world.groundY + 25);
+
+        // 4. Corda
+        const dRingX = worker.x;
+        const dRingY = worker.y + 30;
+        
+        ctx.beginPath();
+        ctx.moveTo(anchor.x, anchor.y);
+        
+        // Curva da corda (Simulação visual de frouxidão)
+        const dx = dRingX - anchor.x;
+        const dy = dRingY - anchor.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const ropePx = rope.lengthM * PX_PER_METER;
+        
+        if (dist < ropePx && !crashed && !finished) {
+            // Curva (Bézier)
+            const slack = (ropePx - dist) * 0.6;
+            ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + slack, dRingX, dRingY);
+            ctx.strokeStyle = "#f39c12";
+            ctx.lineWidth = 3;
+        } else {
+            // Reta (Tensa)
+            ctx.lineTo(dRingX, dRingY);
+            ctx.strokeStyle = (dist > ropePx) ? "#c0392b" : "#f39c12"; // Vermelho se esticando absorvedor
+            ctx.lineWidth = (dist > ropePx) ? 2 : 3;
+        }
+        ctx.stroke();
+
+        // 5. Ancoragem
+        ctx.beginPath();
+        ctx.arc(anchor.x, anchor.y, 6, 0, Math.PI*2);
+        ctx.fillStyle = "#2980b9";
+        ctx.fill();
+
+        // 6. Trabalhador
+        ctx.save();
+        ctx.translate(worker.x, worker.y);
+        
+        if (crashed) {
+            ctx.translate(0, WORKER_H_PX); 
+            ctx.rotate(-Math.PI/2); 
+            ctx.translate(0, -WORKER_H_PX);
+        } else if (running) {
+            // Balanço leve
+            ctx.rotate(worker.vx * 0.05);
+        }
+
+        // Corpo Stickman "Gordinho" (Melhor visibilidade)
+        // Cabeça
+        ctx.fillStyle = "#f1c40f"; // Pele
+        ctx.beginPath(); ctx.arc(0, 10, 10, 0, Math.PI*2); ctx.fill();
+        // Capacete
+        ctx.fillStyle = "#e74c3c"; 
+        ctx.beginPath(); ctx.arc(0, 6, 11, Math.PI, 0); ctx.fill();
+        // Torso
+        ctx.fillStyle = "#3498db";
+        ctx.fillRect(-12, 20, 24, 35);
+        // Cinto
+        ctx.fillStyle = "#2c3e50";
+        ctx.fillRect(-13, 28, 26, 6); // Faixa peito
+        // Pernas
+        ctx.fillStyle = "#34495e";
+        ctx.fillRect(-10, 55, 8, 35);
+        ctx.fillRect(2, 55, 8, 35);
+
+        ctx.restore();
+    }
+
+    function drawRulers() {
+        // Desenha linhas horizontais a cada metro
+        const meters = Math.ceil(canvas.height / PX_PER_METER);
+        ctx.strokeStyle = "rgba(0,0,0,0.05)";
+        ctx.lineWidth = 1;
+        ctx.fillStyle = "rgba(0,0,0,0.3)";
+        ctx.font = "10px Inter";
+
+        for(let i=0; i<=meters; i++) {
+            const y = world.groundY - (i * PX_PER_METER);
+            if (y < 0) break;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+            
+            if (i > 0) ctx.fillText(i + "m", canvas.width - 30, y + 3);
+        }
+    }
+
+    // --- Lógica de Controle ---
+    function startSimulation() {
+        if (running) return;
+        
+        // Atualiza posição uma última vez para garantir
+        updateSettings();
+        
+        running = true;
+        crashed = false;
+        finished = false;
+        document.getElementById('alert-overlay').style.opacity = 0;
+        document.getElementById('alert-overlay').className = '';
+        
+        loop();
+    }
+
+    function resetSimulation() {
+        running = false;
+        crashed = false;
+        finished = false;
+        worker.vx = 0;
+        worker.vy = 0;
+        document.getElementById('alert-overlay').style.opacity = 0;
+        updateSettings();
+    }
+
+    function showResult(safe) {
+        const el = document.getElementById('alert-overlay');
+        el.innerText = safe ? "RETIDO COM SUCESSO" : "COLISÃO FATAL!";
+        el.className = safe ? "success-overlay" : "";
+        el.style.opacity = 1;
+        el.style.transform = "translate(-50%, -50%) scale(1.1)";
+        setTimeout(() => el.style.transform = "translate(-50%, -50%) scale(1)", 200);
+    }
+
+    function calcKPIs() {
+        // Cálculos Técnicos para o Painel
+        const l = rope.lengthM;           // comprimento do talabarte (m)
+  	const h = config.workHeightM;     // altura dos pés (m)
+  	const fq = anchor.fq;             // 0=acima | 1=cinto | 2=pés
+
+        // Distância de queda livre estimada por FQ
+ 	 // FQ0 ≈ 0,6 m (folga/ativação); FQ1 ≈ L; FQ2 ≈ L + 1,5 m (D-ring→pés)
+  	let quedaLivre;
+  	if (fq === 0) quedaLivre = 0.6;
+ 	else if (fq === 1) quedaLivre = l;
+  	else quedaLivre = l + 1.5;
+        
+        // ZLQ requerida = QuedaLivre + Desaceleração + D-ring shift + Corpo abaixo do D-ring + Folga
+  	const zlqReq = +(quedaLivre + DECEL + DR_SHIFT + BODY + SAFETY).toFixed(2);
+  	const margem = +(h - zlqReq).toFixed(2);
+
+ 	// Atualização do painel (sem alterar visual da simulação)
+  	document.getElementById('kpi-zlq').innerText = `${zlqReq.toFixed(2)} m`;
+
+  	const elMargem = document.getElementById('kpi-margin');
+  	const elStatus = document.getElementById('kpi-status');
+
+ 	 elMargem.innerText = (margem > 0 ? "+" : "") + margem.toFixed(2) + " m";
+
+ 	 if (margem >= 0.5) {
+ 	   elMargem.style.color = "#2ecc71"; // verde
+ 	   elStatus.innerText = "SEGURO";
+  	   elStatus.style.color = "#2ecc71";
+ 	 } else if (margem >= 0) {
+ 	   elMargem.style.color = "#f1c40f"; // amarelo
+ 	   elStatus.innerText = "ATENÇÃO (Margem Baixa)";
+ 	   elStatus.style.color = "#f39c12";
+ 	 } else {
+  	  elMargem.style.color = "#e74c3c"; // vermelho
+  	  elStatus.innerText = "CRÍTICO (Colisão)";
+  	  elStatus.style.color = "#e74c3c";
+  }
+
+	 // Aviso técnico não intrusivo: FQ2 com L elevado (prática de fabricantes)
+ 	 if (fq === 2 && l > 1.8) {
+   	  elStatus.innerText += " • Aviso: FQ2 com L>1,8 m pode ser vedado por fabricantes";
+  	  // Mantemos a cor já definida acima para não “piscar” a UI
+  }
+}
+
+    // Boot
+    setTimeout(() => {
+        resize();
+        updateSettings();
+    }, 100);
+
+</script>
 </body>
 </html>
