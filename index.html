@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador NR-35 (V7: ZLQ + Itens do Diagrama)</title>
+<title>Simulador NR-35 (V7: ZLQ + Itens do Diagrama + Absorvedor opcional)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
 
@@ -18,6 +18,9 @@
   label{font-size:.85rem;font-weight:600;color:#34495e;display:block;margin-bottom:5px}
   input[type="range"]{width:100%;margin:5px 0;cursor:pointer}
   .val-display{font-size:.9rem;font-weight:bold;color:#2980b9;float:right}
+  .inline{display:flex;align-items:center;gap:10px;font-size:.9rem;color:#34495e}
+  .inline input{transform:scale(1.2)}
+
   .btn-action{padding:15px;border:none;border-radius:8px;font-weight:800;cursor:pointer;transition:transform .1s,background .2s;color:#fff;font-size:1rem;text-transform:uppercase;width:100%;margin-top:5px}
   .btn-simular{background:linear-gradient(135deg,#3498db,#2980b9);box-shadow:0 4px 0 #1c5a85}
   .btn-simular:hover{transform:translateY(-2px);box-shadow:0 6px 0 #1c5a85}
@@ -65,6 +68,15 @@
     </div>
 
     <div class="control-group">
+      <label>Absorvedor de energia</label>
+      <div class="inline">
+        <input type="checkbox" id="input-abs" checked>
+        <span id="val-abs">Sim (1,20 m)</span>
+      </div>
+      <small style="color:#888;font-size:.7em">Desmarque para simular talabarte <b>sem</b> absorvedor (0,00 m)</small>
+    </div>
+
+    <div class="control-group">
       <label>3. Posição da Ancoragem</label>
       <span id="val-anchor" class="val-display">Acima (FQ 0)</span>
       <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
@@ -106,28 +118,32 @@
 <script>
   /* Física/escala */
   const GRAVITY=0.6,DAMPING=0.96,PX_PER_METER=50,WORKER_H_PX=90;
-  const DECEL=1.2,DR_SHIFT=0.3,BODY=1.5,SAFETY=1.0; // constantes do diagrama
+  const DR_SHIFT=0.3,BODY=1.5,SAFETY=1.0; // constantes fixas do diagrama
+  const DECEL_BASE = 1.2;                 // valor do absorvedor quando presente
 
   /* Estado */
   const canvas=document.getElementById('simCanvas'); const ctx=canvas.getContext('2d');
   let running=false,crashed=false,finished=false;
   let world={groundY:0},anchor={x:0,y:0,fq:0},worker={x:0,y:0,vx:0,vy:0,startY:0};
-  let rope={lengthM:1.5}; let config={workHeightM:6.0};
+  let rope={lengthM:1.5}; let config={workHeightM:6.0,useAbs:true};
 
   /* Inputs */
   const inHeight=document.getElementById('input-height');
   const inLength=document.getElementById('input-l');
   const inAnchor=document.getElementById('input-anchor');
+  const inAbs=document.getElementById('input-abs');
+
   const lblHeight=document.getElementById('val-height');
   const lblLength=document.getElementById('val-l');
   const lblAnchor=document.getElementById('val-anchor');
+  const lblAbs=document.getElementById('val-abs');
 
   /* KPIs */
   const elDQ=document.getElementById('kpi-dq');
   const elL=document.getElementById('kpi-L');
-  const elDec=document.getElementById('kpi-dec'); // fixo 1.20 m
-  const elBody=document.getElementById('kpi-body'); // fixo 1.50 m
-  const elSafe=document.getElementById('kpi-safe'); // fixo 1.00 m
+  const elDec=document.getElementById('kpi-dec');
+  const elBody=document.getElementById('kpi-body');
+  const elSafe=document.getElementById('kpi-safe');
   const elZLQreq=document.getElementById('kpi-zlq-req');
   const elZLQres=document.getElementById('kpi-zlq-res');
   const elStatus=document.getElementById('kpi-status');
@@ -145,10 +161,12 @@
     config.workHeightM=parseFloat(inHeight.value);
     rope.lengthM=parseFloat(inLength.value);
     anchor.fq=parseInt(inAnchor.value);
+    config.useAbs = !!inAbs.checked;
 
     lblHeight.innerText=config.workHeightM.toFixed(1)+"m";
     lblLength.innerText=rope.lengthM.toFixed(1)+"m";
     lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
+    lblAbs.innerText = config.useAbs ? "Sim (1,20 m)" : "Não (0,00 m)";
 
     if(!running){
       const feetY=world.groundY-(config.workHeightM*PX_PER_METER);
@@ -163,7 +181,7 @@
     calcKPIs();
     if(!running) drawScene();
   }
-  [inHeight,inLength,inAnchor].forEach(el=>el.addEventListener('input',updateSettings));
+  [inHeight,inLength,inAnchor,inAbs].forEach(el=>el.addEventListener('input',updateSettings));
 
   /* Simulação */
   function loop(){
@@ -183,7 +201,8 @@
 
     const dRingX=worker.x,dRingY=worker.y+30;
     const dx=dRingX-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
-    const maxDistPx=(rope.lengthM+1.1)*PX_PER_METER; // absorvedor na física visual
+    // limite de extensão do sistema (corda + absorvedor se presente)
+    const maxDistPx=(rope.lengthM + (config.useAbs ? DECEL_BASE : 0)) * PX_PER_METER;
 
     if(dist>maxDistPx && !crashed){
       const angle=Math.atan2(dy,dx);
@@ -236,11 +255,11 @@
     if(crashed){ ctx.translate(0,WORKER_H_PX); ctx.rotate(-Math.PI/2); ctx.translate(0,-WORKER_H_PX); }
     else if(running){ ctx.rotate(worker.vx*0.05); }
 
-    ctx.fillStyle="#f1c40f"; ctx.beginPath(); ctx.arc(0,10,10,0,Math.PI*2); ctx.fill(); /* cabeça */
-    ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(0,6,11,Math.PI,0); ctx.fill(); /* capacete */
-    ctx.fillStyle="#3498db"; ctx.fillRect(-12,20,24,35); /* torso */
-    ctx.fillStyle="#2c3e50"; ctx.fillRect(-13,28,26,6); /* cinto */
-    ctx.fillStyle="#34495e"; ctx.fillRect(-10,55,8,35); ctx.fillRect(2,55,8,35); /* pernas */
+    ctx.fillStyle="#f1c40f"; ctx.beginPath(); ctx.arc(0,10,10,0,Math.PI*2); ctx.fill(); // cabeça
+    ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(0,6,11,Math.PI,0); ctx.fill(); // capacete
+    ctx.fillStyle="#3498db"; ctx.fillRect(-12,20,24,35); // torso
+    ctx.fillStyle="#2c3e50"; ctx.fillRect(-13,28,26,6); // cinto
+    ctx.fillStyle="#34495e"; ctx.fillRect(-10,55,8,35); ctx.fillRect(2,55,8,35); // pernas
     ctx.restore();
   }
 
@@ -280,6 +299,7 @@
   /* KPIs: apenas ZLQ + itens do diagrama */
   function calcKPIs(){
     const L=rope.lengthM, H=config.workHeightM, FQ=anchor.fq;
+    const DECEL = config.useAbs ? DECEL_BASE : 0.0;
 
     // Distância de Queda Livre (conservador por FQ)
     // FQ0 ≈ 0,6 m; FQ1 ≈ L; FQ2 ≈ L + 1,5 m
