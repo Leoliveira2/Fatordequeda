@@ -64,8 +64,8 @@
         .btn-reset:hover { background: #7f8c8d; }
         .btn-reset:active { transform: translateY(2px); box-shadow: 0 0 0 #7f8c8d; }
 
-        /* KPIs */
-        .kpi-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        /* KPIs (simplificado: uma coluna / um card) */
+        .kpi-container { display: grid; grid-template-columns: 1fr; gap: 10px; }
         .kpi-box {
             background: #f8f9fa; padding: 10px; border-radius: 6px;
             border-left: 4px solid #ddd;
@@ -139,14 +139,11 @@
             </small>
         </div>
 
+        <!-- KPI Único -->
         <div class="kpi-container">
             <div class="kpi-box">
-                <div class="kpi-title">ZLQ Necessária</div>
-                <div class="kpi-value" id="kpi-zlq">-- m</div>
-            </div>
-            <div class="kpi-box">
-                <div class="kpi-title">Margem de Sobra</div>
-                <div class="kpi-value" id="kpi-margin">-- m</div>
+                <div class="kpi-title">ZLQ RESULTANTE (H − ZLQ necessária)</div>
+                <div class="kpi-value" id="kpi-result">-- m</div>
                 <div class="kpi-status" id="kpi-status">--</div>
             </div>
         </div>
@@ -220,31 +217,15 @@
 
         // Posicionar Trabalhador (Apenas se não estiver rodando)
         if (!running) {
-            // A posição Y é calculada de baixo para cima
-            // GroundY - (Metros * Pixels) = Posição dos Pés
             const feetY = world.groundY - (config.workHeightM * PX_PER_METER);
-            
-            // O Worker.y é o topo da cabeça (top-left do rect), então subtraímos a altura do boneco
             worker.y = feetY - WORKER_H_PX;
             worker.x = canvas.width / 2;
             worker.startY = worker.y;
-            
-            // Posicionar Ancoragem RELATIVA ao trabalhador
-            // D-Ring (conexão) fica nas costas, aprox 30px do topo
             const dRingY = worker.y + 30;
-            
-            if (anchor.fq === 0) {
-                // Acima da cabeça (ex: 1.5m acima do D-Ring)
-                anchor.y = dRingY - (1.5 * PX_PER_METER);
-            } else if (anchor.fq === 1) {
-                // Nível do cinto
-                anchor.y = dRingY;
-            } else {
-                // Nível dos pés (Abaixo do cinto)
-                // Pés estão em feetY.
-                anchor.y = feetY;
-            }
-            anchor.x = worker.x - 20; // Levemente à esquerda
+            if (anchor.fq === 0)      anchor.y = dRingY - (1.5 * PX_PER_METER);
+            else if (anchor.fq === 1) anchor.y = dRingY;
+            else                      anchor.y = feetY;
+            anchor.x = worker.x - 20;
         }
         
         calcKPIs();
@@ -269,14 +250,12 @@
         }
 
         // 2. Colisão com Chão (SOLO)
-        // Pés do trabalhador = worker.y + WORKER_H_PX
         if ((worker.y + WORKER_H_PX) >= world.groundY) {
             if (!crashed && !finished) {
-                // IMPACTO!
                 crashed = true;
                 worker.y = world.groundY - WORKER_H_PX;
                 worker.vy = 0;
-                showResult(false); // False = Morte/Acidente
+                showResult(false);
             }
         }
 
@@ -289,24 +268,20 @@
         const dist = Math.sqrt(dx*dx + dy*dy);
         
         // Comprimento máximo (Corda + Absorvedor abrindo)
-        // Adicionamos 1.2m de absorvedor "virtual" na física
         const maxDistPx = (rope.lengthM + 1.1) * PX_PER_METER;
 
         if (dist > maxDistPx && !crashed) {
-            // Corda esticada -> Força elástica
             const angle = Math.atan2(dy, dx);
             const pullX = Math.cos(angle) * maxDistPx + anchor.x;
             const pullY = Math.sin(angle) * maxDistPx + anchor.y;
 
-            // Mola
             const k = 0.08; // Rigidez
             worker.vx -= (dRingX - pullX) * k;
             worker.vy -= (dRingY - pullY) * k;
             
-            // Se a velocidade for muito baixa, consideramos "Retido"
             if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) {
                 finished = true;
-                showResult(true); // True = Salvo
+                showResult(true);
             }
         }
 
@@ -317,12 +292,8 @@
     // --- Renderização ---
     function drawScene() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // 1. Desenhar Cenário de Fundo (Réguas)
         drawRulers();
 
-        // 2. Desenhar Plataforma de Trabalho
-        // Linha cinza onde começou
         const platformY = worker.startY + WORKER_H_PX;
         ctx.beginPath();
         ctx.moveTo(0, platformY);
@@ -333,53 +304,45 @@
         ctx.stroke();
         ctx.setLineDash([]);
         
-        // Label Plataforma
         ctx.fillStyle = "#7f8c8d";
         ctx.font = "bold 12px Inter";
         ctx.fillText("PLATAFORMA DE TRABALHO", 10, platformY - 5);
 
-        // 3. Desenhar Chão
         ctx.fillStyle = "#5d4037";
         ctx.fillRect(0, world.groundY, canvas.width, canvas.height - world.groundY);
-        ctx.fillStyle = "#8d6e63"; // Borda
+        ctx.fillStyle = "#8d6e63";
         ctx.fillRect(0, world.groundY, canvas.width, 5);
         ctx.fillStyle = "rgba(255,255,255,0.3)";
         ctx.fillText("SOLO (NÍVEL 0)", canvas.width/2 - 40, world.groundY + 25);
 
-        // 4. Corda
         const dRingX = worker.x;
         const dRingY = worker.y + 30;
         
         ctx.beginPath();
         ctx.moveTo(anchor.x, anchor.y);
         
-        // Curva da corda (Simulação visual de frouxidão)
         const dx = dRingX - anchor.x;
         const dy = dRingY - anchor.y;
         const dist = Math.sqrt(dx*dx + dy*dy);
         const ropePx = rope.lengthM * PX_PER_METER;
         
         if (dist < ropePx && !crashed && !finished) {
-            // Curva (Bézier)
             const slack = (ropePx - dist) * 0.6;
             ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + slack, dRingX, dRingY);
             ctx.strokeStyle = "#f39c12";
             ctx.lineWidth = 3;
         } else {
-            // Reta (Tensa)
             ctx.lineTo(dRingX, dRingY);
-            ctx.strokeStyle = (dist > ropePx) ? "#c0392b" : "#f39c12"; // Vermelho se esticando absorvedor
+            ctx.strokeStyle = (dist > ropePx) ? "#c0392b" : "#f39c12";
             ctx.lineWidth = (dist > ropePx) ? 2 : 3;
         }
         ctx.stroke();
 
-        // 5. Ancoragem
         ctx.beginPath();
         ctx.arc(anchor.x, anchor.y, 6, 0, Math.PI*2);
         ctx.fillStyle = "#2980b9";
         ctx.fill();
 
-        // 6. Trabalhador
         ctx.save();
         ctx.translate(worker.x, worker.y);
         
@@ -388,24 +351,18 @@
             ctx.rotate(-Math.PI/2); 
             ctx.translate(0, -WORKER_H_PX);
         } else if (running) {
-            // Balanço leve
             ctx.rotate(worker.vx * 0.05);
         }
 
-        // Corpo Stickman "Gordinho" (Melhor visibilidade)
-        // Cabeça
-        ctx.fillStyle = "#f1c40f"; // Pele
+        // Boneco
+        ctx.fillStyle = "#f1c40f";
         ctx.beginPath(); ctx.arc(0, 10, 10, 0, Math.PI*2); ctx.fill();
-        // Capacete
-        ctx.fillStyle = "#e74c3c"; 
+        ctx.fillStyle = "#e74c3c";
         ctx.beginPath(); ctx.arc(0, 6, 11, Math.PI, 0); ctx.fill();
-        // Torso
         ctx.fillStyle = "#3498db";
         ctx.fillRect(-12, 20, 24, 35);
-        // Cinto
         ctx.fillStyle = "#2c3e50";
-        ctx.fillRect(-13, 28, 26, 6); // Faixa peito
-        // Pernas
+        ctx.fillRect(-13, 28, 26, 6);
         ctx.fillStyle = "#34495e";
         ctx.fillRect(-10, 55, 8, 35);
         ctx.fillRect(2, 55, 8, 35);
@@ -414,7 +371,6 @@
     }
 
     function drawRulers() {
-        // Desenha linhas horizontais a cada metro
         const meters = Math.ceil(canvas.height / PX_PER_METER);
         ctx.strokeStyle = "rgba(0,0,0,0.05)";
         ctx.lineWidth = 1;
@@ -424,12 +380,10 @@
         for(let i=0; i<=meters; i++) {
             const y = world.groundY - (i * PX_PER_METER);
             if (y < 0) break;
-            
             ctx.beginPath();
             ctx.moveTo(0, y);
             ctx.lineTo(canvas.width, y);
             ctx.stroke();
-            
             if (i > 0) ctx.fillText(i + "m", canvas.width - 30, y + 3);
         }
     }
@@ -437,25 +391,18 @@
     // --- Lógica de Controle ---
     function startSimulation() {
         if (running) return;
-        
-        // Atualiza posição uma última vez para garantir
         updateSettings();
-        
         running = true;
         crashed = false;
         finished = false;
-        document.getElementById('alert-overlay').style.opacity = 0;
-        document.getElementById('alert-overlay').className = '';
-        
+        const ov = document.getElementById('alert-overlay');
+        ov.style.opacity = 0; ov.className = '';
         loop();
     }
 
     function resetSimulation() {
-        running = false;
-        crashed = false;
-        finished = false;
-        worker.vx = 0;
-        worker.vy = 0;
+        running = false; crashed = false; finished = false;
+        worker.vx = 0; worker.vy = 0;
         document.getElementById('alert-overlay').style.opacity = 0;
         updateSettings();
     }
@@ -470,57 +417,40 @@
     }
 
     function calcKPIs() {
-        // Cálculos Técnicos para o Painel
-        const l = rope.lengthM;           // comprimento do talabarte (m)
-  	const h = config.workHeightM;     // altura dos pés (m)
-  	const fq = anchor.fq;             // 0=acima | 1=cinto | 2=pés
+        // Entradas
+        const l  = rope.lengthM;       // comprimento do talabarte (m)
+        const h  = config.workHeightM; // altura dos pés (m)
+        const fq = anchor.fq;          // 0=acima | 1=cinto | 2=pés
 
-        // Distância de queda livre estimada por FQ
- 	 // FQ0 ≈ 0,6 m (folga/ativação); FQ1 ≈ L; FQ2 ≈ L + 1,5 m (D-ring→pés)
-  	let quedaLivre;
-  	if (fq === 0) quedaLivre = 0.6;
- 	else if (fq === 1) quedaLivre = l;
-  	else quedaLivre = l + 1.5;
-        
-        // ZLQ requerida = QuedaLivre + Desaceleração + D-ring shift + Corpo abaixo do D-ring + Folga
-  	const zlqReq = +(quedaLivre + DECEL + DR_SHIFT + BODY + SAFETY).toFixed(2);
-  	const margem = +(h - zlqReq).toFixed(2);
+        // Queda livre estimada por FQ
+        // FQ0 ≈ 0,6 m; FQ1 ≈ L; FQ2 ≈ L + 1,5 m
+        let quedaLivre = (fq === 0) ? 0.6 : (fq === 1 ? l : l + 1.5);
 
- 	// Atualização do painel (sem alterar visual da simulação)
-  	document.getElementById('kpi-zlq').innerText = `${zlqReq.toFixed(2)} m`;
+        // ZLQ necessária (componentes conservadores)
+        const zlqNec = quedaLivre + DECEL + DR_SHIFT + BODY + SAFETY;
 
-  	const elMargem = document.getElementById('kpi-margin');
-  	const elStatus = document.getElementById('kpi-status');
+        // ZLQ RESULTANTE = H disponível − ZLQ necessária
+        const zlqRes = +(h - zlqNec).toFixed(2);
 
- 	 elMargem.innerText = (margem > 0 ? "+" : "") + margem.toFixed(2) + " m";
+        // Exibição
+        const elVal = document.getElementById('kpi-result');
+        const elSts = document.getElementById('kpi-status');
 
- 	 if (margem >= 0.5) {
- 	   elMargem.style.color = "#2ecc71"; // verde
- 	   elStatus.innerText = "SEGURO";
-  	   elStatus.style.color = "#2ecc71";
- 	 } else if (margem >= 0) {
- 	   elMargem.style.color = "#f1c40f"; // amarelo
- 	   elStatus.innerText = "ATENÇÃO (Margem Baixa)";
- 	   elStatus.style.color = "#f39c12";
- 	 } else {
-  	  elMargem.style.color = "#e74c3c"; // vermelho
-  	  elStatus.innerText = "CRÍTICO (Colisão)";
-  	  elStatus.style.color = "#e74c3c";
-  }
+        elVal.innerText = `${zlqRes.toFixed(2)} m`;
 
-	 // Aviso técnico não intrusivo: FQ2 com L elevado (prática de fabricantes)
- 	 if (fq === 2 && l > 1.8) {
-   	  elStatus.innerText += " • Aviso: FQ2 com L>1,8 m pode ser vedado por fabricantes";
-  	  // Mantemos a cor já definida acima para não “piscar” a UI
-  }
-}
+        if (zlqRes >= 1.0) {
+            elVal.style.color = "#2ecc71";
+            elSts.innerText = "SEGURO (≥ 1,0 m)";
+            elSts.style.color = "#2ecc71";
+        } else {
+            elVal.style.color = "#e74c3c";
+            elSts.innerText = "CRÍTICO (< 1,0 m)";
+            elSts.style.color = "#e74c3c";
+        }
+    }
 
     // Boot
-    setTimeout(() => {
-        resize();
-        updateSettings();
-    }, 100);
-
+    setTimeout(() => { resize(); updateSettings(); }, 100);
 </script>
 </body>
 </html>
