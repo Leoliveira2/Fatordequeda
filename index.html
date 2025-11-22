@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador NR-35 (V7: ZLQ + Itens do Diagrama + Absorvedor opcional)</title>
+<title>Simulador NR-35 (V8: ZLQ + Absorvedor Configurável)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
 
   :root{
     --cor-fundo:#eef2f6;--cor-painel:#fff;
-    --cor-seguro:#2ecc71;--cor-critico:#e74c3c;--cor-corda:#f39c12
+    --cor-seguro:#2ecc71;--cor-critico:#e74c3c;--cor-atencao:#f1c40f;
+    --cor-corda:#f39c12
   }
   body{font-family:'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;height:100vh;overflow:hidden;display:flex;gap:20px}
   .sidebar{width:320px;background:var(--cor-painel);padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:15px;z-index:10;overflow-y:auto}
@@ -18,8 +19,8 @@
   label{font-size:.85rem;font-weight:600;color:#34495e;display:block;margin-bottom:5px}
   input[type="range"]{width:100%;margin:5px 0;cursor:pointer}
   .val-display{font-size:.9rem;font-weight:bold;color:#2980b9;float:right}
-  .inline{display:flex;align-items:center;gap:10px;font-size:.9rem;color:#34495e}
-  .inline input{transform:scale(1.2)}
+  .inline{display:flex;align-items:center;gap:8px}
+  .hint{color:#7f8c8d;font-size:.75rem}
 
   .btn-action{padding:15px;border:none;border-radius:8px;font-weight:800;cursor:pointer;transition:transform .1s,background .2s;color:#fff;font-size:1rem;text-transform:uppercase;width:100%;margin-top:5px}
   .btn-simular{background:linear-gradient(135deg,#3498db,#2980b9);box-shadow:0 4px 0 #1c5a85}
@@ -37,7 +38,8 @@
   .kpi-list{margin-top:8px}
   .kpi-row{display:flex;justify-content:space-between;font-size:.85rem;padding:4px 0;border-bottom:1px dashed #e5e7eb}
   .kpi-row:last-child{border-bottom:none}
-  .ok{color:var(--cor-seguro)} .bad{color:var(--cor-critico)}
+  .ok{color:var(--cor-seguro)} .bad{color:var(--cor-critico)} .warn{color:var(--cor-atencao)}
+  .tooltip{font-size:.72rem;color:#6b7280;margin-top:6px}
 
   /* Palco */
   .stage-container{flex:1;background:linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%);border-radius:12px;position:relative;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1);border:2px solid #fff}
@@ -58,7 +60,7 @@
       <label>1. Altura de Trabalho (H)</label>
       <span id="val-height" class="val-display">6.0m</span>
       <input type="range" id="input-height" min="2.0" max="10.0" step="0.5" value="6.0">
-      <small style="color:#888;font-size:.7em">Altura dos pés em relação ao solo</small>
+      <div class="hint">Altura dos pés em relação ao solo</div>
     </div>
 
     <div class="control-group">
@@ -68,37 +70,40 @@
     </div>
 
     <div class="control-group">
-      <label>Absorvedor de energia</label>
+      <label>3. Absorvedor de energia</label>
       <div class="inline">
-        <input type="checkbox" id="input-abs" checked>
-        <span id="val-abs">Sim (1,20 m)</span>
+        <input type="checkbox" id="chk-dec" checked>
+        <label for="chk-dec" style="margin:0">Usar absorvedor</label>
       </div>
-      <small style="color:#888;font-size:.7em">Desmarque para simular talabarte <b>sem</b> absorvedor (0,00 m)</small>
+      <div class="inline" style="margin-top:6px">
+        <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20" style="flex:1">
+        <span id="val-dec" class="val-display">1.20m</span>
+      </div>
+      <div id="dec-warning" class="hint"></div>
     </div>
 
     <div class="control-group">
-      <label>3. Posição da Ancoragem</label>
+      <label>4. Posição da Ancoragem</label>
       <span id="val-anchor" class="val-display">Acima (FQ 0)</span>
       <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
-      <small style="color:#888;font-size:.7em;display:block;margin-top:5px">
-        0: Acima (FQ 0) | 1: Cinto (FQ 1) | 2: Pés (FQ 2)
-      </small>
+      <div class="hint">0: Acima (FQ0) | 1: Cinto (FQ1) | 2: Pés (FQ2)</div>
     </div>
 
-    <!-- KPIs (apenas ZLQ + Itens do diagrama) -->
+    <!-- KPIs -->
     <div class="kpi-panel">
       <div class="kpi-box">
         <div class="kpi-title">ZLQ RESULTANTE (H − ZLQ necessária)</div>
         <div class="kpi-value" id="kpi-zlq-res">-- m</div>
         <div class="kpi-status" id="kpi-status">--</div>
+        <div class="tooltip" id="kpi-tip">Critério: simular apenas quando ZLQ ≥ 1,0 m.</div>
       </div>
 
       <div class="kpi-box">
-        <div class="kpi-title">Componentes da ZLQ (conforme NR-35 comentada)</div>
-        <div class="kpi-list" id="kpi-list">
+        <div class="kpi-title">Componentes da ZLQ (conforme prática da NR-35 comentada)</div>
+        <div class="kpi-list">
           <div class="kpi-row"><span>Distância de Queda Livre</span><strong id="kpi-dq">-- m</strong></div>
           <div class="kpi-row"><span>Comprimento do Talabarte (L)</span><strong id="kpi-L">-- m</strong></div>
-          <div class="kpi-row"><span>Absorvedor aberto</span><strong id="kpi-dec">1.20 m</strong></div>
+          <div class="kpi-row"><span>Absorvedor aberto</span><strong id="kpi-dec">-- m</strong></div>
           <div class="kpi-row"><span>D-ring → pé da pessoa</span><strong id="kpi-body">1.50 m</strong></div>
           <div class="kpi-row"><span>Distância de segurança</span><strong id="kpi-safe">1.00 m</strong></div>
           <div class="kpi-row"><span>ZLQ necessária (soma)</span><strong id="kpi-zlq-req">-- m</strong></div>
@@ -116,27 +121,29 @@
   </div>
 
 <script>
-  /* Física/escala */
+  /* Física/escala (visual da simulação inalterado) */
   const GRAVITY=0.6,DAMPING=0.96,PX_PER_METER=50,WORKER_H_PX=90;
-  const DR_SHIFT=0.3,BODY=1.5,SAFETY=1.0; // constantes fixas do diagrama
-  const DECEL_BASE = 1.2;                 // valor do absorvedor quando presente
+  const DR_SHIFT=0.3,BODY=1.5,SAFETY=1.0;
 
   /* Estado */
   const canvas=document.getElementById('simCanvas'); const ctx=canvas.getContext('2d');
   let running=false,crashed=false,finished=false;
   let world={groundY:0},anchor={x:0,y:0,fq:0},worker={x:0,y:0,vx:0,vy:0,startY:0};
-  let rope={lengthM:1.5}; let config={workHeightM:6.0,useAbs:true};
+  let rope={lengthM:1.5};
+  let config={workHeightM:6.0, useDecel:true, decelM:1.20};
 
   /* Inputs */
   const inHeight=document.getElementById('input-height');
   const inLength=document.getElementById('input-l');
   const inAnchor=document.getElementById('input-anchor');
-  const inAbs=document.getElementById('input-abs');
+  const chkDec=document.getElementById('chk-dec');
+  const inDec=document.getElementById('input-dec');
 
   const lblHeight=document.getElementById('val-height');
   const lblLength=document.getElementById('val-l');
   const lblAnchor=document.getElementById('val-anchor');
-  const lblAbs=document.getElementById('val-abs');
+  const lblDec=document.getElementById('val-dec');
+  const decWarn=document.getElementById('dec-warning');
 
   /* KPIs */
   const elDQ=document.getElementById('kpi-dq');
@@ -148,11 +155,12 @@
   const elZLQres=document.getElementById('kpi-zlq-res');
   const elStatus=document.getElementById('kpi-status');
 
-  /* Layout */
+  let lastZLQres = -999; // usado na checagem antes de simular
+
   function resize(){
     canvas.width=document.getElementById('stage').offsetWidth;
     canvas.height=document.getElementById('stage').offsetHeight;
-    world.groundY=canvas.height-40; // 40px de borda do “solo”
+    world.groundY=canvas.height-40;
     resetSimulation();
   }
   window.addEventListener('resize',resize);
@@ -161,12 +169,13 @@
     config.workHeightM=parseFloat(inHeight.value);
     rope.lengthM=parseFloat(inLength.value);
     anchor.fq=parseInt(inAnchor.value);
-    config.useAbs = !!inAbs.checked;
+    config.useDecel=chkDec.checked;
+    config.decelM=parseFloat(inDec.value);
 
     lblHeight.innerText=config.workHeightM.toFixed(1)+"m";
     lblLength.innerText=rope.lengthM.toFixed(1)+"m";
+    lblDec.innerText=config.decelM.toFixed(2)+"m";
     lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
-    lblAbs.innerText = config.useAbs ? "Sim (1,20 m)" : "Não (0,00 m)";
 
     if(!running){
       const feetY=world.groundY-(config.workHeightM*PX_PER_METER);
@@ -178,10 +187,28 @@
       anchor.x=worker.x-20;
     }
 
+    // Regras para absorvedor (bloqueio quando DQ > 0,6 m)
+    const dqTmp = calcDQ(anchor.fq, rope.lengthM);
+    if (dqTmp > 0.6){
+      // força uso do absorvedor
+      chkDec.checked = true;
+      chkDec.disabled = true;
+      config.useDecel = true;
+      decWarn.innerHTML = '<span class="warn">Queda livre &gt; 0,6 m → uso de absorvedor obrigatório.</span>';
+    } else {
+      chkDec.disabled = false;
+      decWarn.textContent = 'Desmarque para simular talabarte sem absorvedor (0,00 m).';
+    }
+
+    // Habilita/desabilita slider do absorvedor
+    inDec.disabled = !config.useDecel;
+    lblDec.style.opacity = config.useDecel ? 1 : 0.5;
+
     calcKPIs();
     if(!running) drawScene();
   }
-  [inHeight,inLength,inAnchor,inAbs].forEach(el=>el.addEventListener('input',updateSettings));
+
+  [inHeight,inLength,inAnchor,chkDec,inDec].forEach(el=>el.addEventListener('input',updateSettings));
 
   /* Simulação */
   function loop(){
@@ -201,8 +228,8 @@
 
     const dRingX=worker.x,dRingY=worker.y+30;
     const dx=dRingX-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
-    // limite de extensão do sistema (corda + absorvedor se presente)
-    const maxDistPx=(rope.lengthM + (config.useAbs ? DECEL_BASE : 0)) * PX_PER_METER;
+    const physDec = config.useDecel ? Math.min(config.decelM, 1.2) : 0.0; // limite visual de 1,2 m
+    const maxDistPx=(rope.lengthM + physDec - 0.1)*PX_PER_METER; // -0,1 para não “colar” infinito
 
     if(dist>maxDistPx && !crashed){
       const angle=Math.atan2(dy,dx);
@@ -219,7 +246,7 @@
     requestAnimationFrame(loop);
   }
 
-  /* Desenho */
+  /* Desenho (inalterado visualmente) */
   function drawScene(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawRulers();
@@ -278,6 +305,11 @@
 
   /* Controle */
   function startSimulation(){
+    // só permite simular quando ZLQ ≥ 1,0 m
+    if (lastZLQres < 1.0){
+      showBanner("ZLQ INSUFICIENTE — ajuste os parâmetros", false);
+      return;
+    }
     if(running) return;
     updateSettings();
     running=true; crashed=false; finished=false;
@@ -288,40 +320,42 @@
     running=false; crashed=false; finished=false; worker.vx=0; worker.vy=0;
     document.getElementById('alert-overlay').style.opacity=0; updateSettings();
   }
-  function showResult(safe){
+  function showResult(safe){ showBanner(safe?"RETIDO COM SUCESSO":"COLISÃO FATAL!", safe); }
+  function showBanner(text, safe){
     const el=document.getElementById('alert-overlay');
-    el.innerText=safe?"RETIDO COM SUCESSO":"COLISÃO FATAL!";
-    el.className=safe?"success-overlay":"";
-    el.style.opacity=1; el.style.transform="translate(-50%,-50%) scale(1.1)";
+    el.innerText=text; el.className=safe?"success-overlay":""; el.style.opacity=1;
+    el.style.transform="translate(-50%,-50%) scale(1.1)";
     setTimeout(()=>el.style.transform="translate(-50%,-50%) scale(1)",200);
+    // esconde automaticamente após 1,5 s se for mensagem de ZLQ insuficiente
+    if(!safe && text.startsWith("ZLQ INSUFICIENTE")) setTimeout(()=>{el.style.opacity=0},1500);
   }
 
-  /* KPIs: apenas ZLQ + itens do diagrama */
+  /* Lógica de cálculo */
+  function calcDQ(fq, L){
+    // FQ0 ≈ 0,6 m; FQ1 ≈ L; FQ2 ≈ L + 1,5 m
+    return (fq===0)?0.6 : (fq===1? L : L+1.5);
+  }
+
   function calcKPIs(){
     const L=rope.lengthM, H=config.workHeightM, FQ=anchor.fq;
-    const DECEL = config.useAbs ? DECEL_BASE : 0.0;
+    const DQ = calcDQ(FQ, L);
+    const DECEL = config.useDecel ? config.decelM : 0.0;
 
-    // Distância de Queda Livre (conservador por FQ)
-    // FQ0 ≈ 0,6 m; FQ1 ≈ L; FQ2 ≈ L + 1,5 m
-    let DQ = (FQ===0)?0.6 : (FQ===1? L : L+1.5);
-
-    // ZLQ necessária = DQ + DECEL + DR_SHIFT + BODY + SAFETY
     const ZLQreq = +(DQ + DECEL + DR_SHIFT + BODY + SAFETY).toFixed(2);
-
-    // ZLQ resultante = H − ZLQ necessária
     const ZLQres = +(H - ZLQreq).toFixed(2);
+    lastZLQres = ZLQres;
 
     // Atualiza painel
-    elDQ.innerText   = DQ.toFixed(2)+" m";
-    elL.innerText    = L.toFixed(2)+" m";
-    elDec.innerText  = DECEL.toFixed(2)+" m";
+    elDQ.innerText = DQ.toFixed(2)+" m";
+    elL.innerText  = L.toFixed(2)+" m";
+    elDec.innerText = DECEL.toFixed(2)+" m";
     elBody.innerText = BODY.toFixed(2)+" m";
     elSafe.innerText = SAFETY.toFixed(2)+" m";
     elZLQreq.innerText = ZLQreq.toFixed(2)+" m";
 
     elZLQres.innerText = (ZLQres>0?"+":"")+ZLQres.toFixed(2)+" m";
     if (ZLQres >= 1.0){ elZLQres.className="kpi-value ok"; elStatus.className="kpi-status ok"; elStatus.innerText="SEGURO (ZLQ ≥ 1,0 m)"; }
-    else if (ZLQres > 0){ elZLQres.className="kpi-value bad"; elStatus.className="kpi-status bad"; elStatus.innerText="CRÍTICO (ZLQ < 1,0 m)"; }
+    else if (ZLQres > 0){ elZLQres.className="kpi-value warn"; elStatus.className="kpi-status warn"; elStatus.innerText="INSUFICIENTE (0–1,0 m)"; }
     else { elZLQres.className="kpi-value bad"; elStatus.className="kpi-status bad"; elStatus.innerText="COLISÃO (ZLQ negativa)"; }
   }
 
