@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador NR-35 (V9: Parâmetros Dinâmicos)</title>
+<title>Simulador NR-35 (V10: Correção de Status)</title>
+<!-- O CSS (style) permanece o mesmo, sem alterações -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap' );
 
@@ -50,6 +51,7 @@
 </style>
 </head>
 <body>
+  <!-- O HTML do body permanece o mesmo, sem alterações -->
   <div class="sidebar">
     <div>
       <h2>⚙️ Simulador NR-35</h2>
@@ -63,7 +65,6 @@
       <div class="hint">Altura dos pés em relação ao solo</div>
     </div>
     
-    <!-- AJUSTE 1: Adicionado input para Altura do Trabalhador -->
     <div class="control-group">
       <label>2. Altura do Trabalhador</label>
       <span id="val-worker-height" class="val-display">1.75m</span>
@@ -89,7 +90,6 @@
       <div id="dec-warning" class="hint"></div>
     </div>
 
-    <!-- AJUSTE 2: Adicionado input para Elasticidade -->
     <div class="control-group">
         <label>5. Elasticidade do Sistema</label>
         <span id="val-elasticity" class="val-display">10%</span>
@@ -119,7 +119,6 @@
           <div class="kpi-row"><span>Distância de Queda Livre (DQ)</span><strong id="kpi-dq">-- m</strong></div>
           <div class="kpi-row"><span>Comprimento do Talabarte (L)</span><strong id="kpi-L">-- m</strong></div>
           <div class="kpi-row"><span>Absorvedor aberto (DEC)</span><strong id="kpi-dec">-- m</strong></div>
-          <!-- AJUSTE 3: Nome do componente alterado para clareza -->
           <div class="kpi-row"><span>Elasticidade do Sistema (EL)</span><strong id="kpi-elasticity">-- m</strong></div>
           <div class="kpi-row"><span>Anel D → pé da pessoa (BODY)</span><strong id="kpi-body">-- m</strong></div>
           <div class="kpi-row"><span>Distância de segurança (S)</span><strong id="kpi-safe">1.00 m</strong></div>
@@ -140,7 +139,6 @@
 <script>
   /* Física/escala */
   const GRAVITY=0.6,DAMPING=0.96,PX_PER_METER=50;
-  // AJUSTE 4: Constantes BODY e DR_SHIFT removidas, agora são calculadas dinamicamente
   const SAFETY=1.0; 
 
   /* Estado */
@@ -149,29 +147,29 @@
   let world={groundY:0},anchor={x:0,y:0,fq:0},worker={x:0,y:0,vx:0,vy:0,startY:0, heightM: 1.75, heightPx: 0};
   let rope={lengthM:1.5};
   let config={workHeightM:6.0, useDecel:true, decelM:1.20, elasticityPerc: 10};
+  
+  // **CORREÇÃO 1: Adicionar uma variável para guardar o resultado do cálculo**
+  let lastCalculatedMargin = 0;
 
-  /* Inputs */
+  /* Inputs e KPIs (sem alterações) */
   const inHeight=document.getElementById('input-height');
-  const inWorkerHeight=document.getElementById('input-worker-height'); // Novo
+  const inWorkerHeight=document.getElementById('input-worker-height');
   const inLength=document.getElementById('input-l');
   const inAnchor=document.getElementById('input-anchor');
   const chkDec=document.getElementById('chk-dec');
   const inDec=document.getElementById('input-dec');
-  const inElasticity=document.getElementById('input-elasticity'); // Novo
-
+  const inElasticity=document.getElementById('input-elasticity');
   const lblHeight=document.getElementById('val-height');
-  const lblWorkerHeight=document.getElementById('val-worker-height'); // Novo
+  const lblWorkerHeight=document.getElementById('val-worker-height');
   const lblLength=document.getElementById('val-l');
   const lblAnchor=document.getElementById('val-anchor');
   const lblDec=document.getElementById('val-dec');
-  const lblElasticity=document.getElementById('val-elasticity'); // Novo
+  const lblElasticity=document.getElementById('val-elasticity');
   const decWarn=document.getElementById('dec-warning');
-
-  /* KPIs */
   const elDQ=document.getElementById('kpi-dq');
   const elL=document.getElementById('kpi-L');
   const elDec=document.getElementById('kpi-dec');
-  const elElasticity=document.getElementById('kpi-elasticity'); // Novo
+  const elElasticity=document.getElementById('kpi-elasticity');
   const elBody=document.getElementById('kpi-body');
   const elSafe=document.getElementById('kpi-safe');
   const elZLQreq=document.getElementById('kpi-zlq-req');
@@ -194,32 +192,23 @@
     config.useDecel=chkDec.checked;
     config.decelM=parseFloat(inDec.value);
     config.elasticityPerc=parseInt(inElasticity.value);
-
-    // Atualiza os displays dos valores
     lblHeight.innerText=config.workHeightM.toFixed(1)+"m";
     lblWorkerHeight.innerText=worker.heightM.toFixed(2)+"m";
     lblLength.innerText=rope.lengthM.toFixed(1)+"m";
     lblDec.innerText=config.decelM.toFixed(2)+"m";
     lblElasticity.innerText=config.elasticityPerc+"%";
     lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
-
-    // AJUSTE 5: Altura do boneco (worker) agora é dinâmica
-    worker.heightPx = worker.heightM * PX_PER_METER * 0.5; // Ajuste visual para o boneco não ficar gigante
-
+    worker.heightPx = worker.heightM * PX_PER_METER * 0.5;
     if(!running){
       const feetY=world.groundY-(config.workHeightM*PX_PER_METER);
       worker.y=feetY-worker.heightPx; worker.x=canvas.width/2; worker.startY=worker.y;
-      
-      // AJUSTE 6: Posição do anel D e da ancoragem agora consideram a altura do trabalhador
       const bodyDist = getBodyDistance(worker.heightM);
       const dRingY=feetY - (bodyDist * PX_PER_METER);
-
-      if(anchor.fq===0) anchor.y=dRingY-(1.5*PX_PER_METER); // Ancoragem 1.5m acima do anel D
-      else if(anchor.fq===1) anchor.y=dRingY; // Ancoragem na altura do anel D
-      else anchor.y=feetY; // Ancoragem na altura dos pés
+      if(anchor.fq===0) anchor.y=dRingY-(1.5*PX_PER_METER);
+      else if(anchor.fq===1) anchor.y=dRingY;
+      else anchor.y=feetY;
       anchor.x=worker.x-20;
     }
-
     const dqTmp = calcDQ(anchor.fq, rope.lengthM, getBodyDistance(worker.heightM));
     if (dqTmp > 0.6){
       chkDec.checked = true; chkDec.disabled = true; config.useDecel = true;
@@ -228,10 +217,8 @@
       chkDec.disabled = false;
       decWarn.textContent = 'Desmarque para simular talabarte sem absorvedor (0,00 m).';
     }
-
     inDec.disabled = !config.useDecel;
     lblDec.style.opacity = config.useDecel ? 1 : 0.5;
-
     calcKPIs();
     if(!running) drawScene();
   }
@@ -243,6 +230,7 @@
     if(!running) return;
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
+    // **CORREÇÃO 2: A animação não chama mais showResult(). Apenas define 'crashed' ou 'finished'.**
     if(!crashed && !finished){
       worker.vy+=GRAVITY; worker.vx*=DAMPING; worker.vy*=DAMPING;
       worker.x+=worker.vx; worker.y+=worker.vy;
@@ -250,11 +238,12 @@
 
     if((worker.y+worker.heightPx)>=world.groundY){
       if(!crashed && !finished){
-        crashed=true; worker.y=world.groundY-worker.heightPx; worker.vy=0; showResult(false);
+        crashed=true; worker.y=world.groundY-worker.heightPx; worker.vy=0;
+        // A chamada showResult() foi removida daqui.
       }
     }
 
-    const dRingY=worker.y + (worker.heightPx * 0.3); // Posição visual do anel D no boneco
+    const dRingY=worker.y + (worker.heightPx * 0.3);
     const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
     const physDec = config.useDecel ? config.decelM : 0.0;
     const maxDistPx=(rope.lengthM + physDec)*PX_PER_METER;
@@ -266,7 +255,8 @@
       const k=0.08; worker.vx-=(worker.x-pullX)*k; worker.vy-=(dRingY-pullY)*k;
 
       if(Math.abs(worker.vy)<0.1 && Math.abs(worker.vx)<0.1 && !finished){
-        finished=true; showResult(true);
+        finished=true;
+        // A chamada showResult() foi removida daqui.
       }
     }
 
@@ -274,25 +264,21 @@
     requestAnimationFrame(loop);
   }
 
-  /* Desenho */
+  /* Desenho (sem alterações) */
   function drawScene(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawRulers();
-
     const platformY=worker.startY+worker.heightPx;
     ctx.beginPath(); ctx.moveTo(0,platformY); ctx.lineTo(canvas.width,platformY);
     ctx.strokeStyle="#bdc3c7"; ctx.lineWidth=4; ctx.setLineDash([10,10]); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle="#7f8c8d"; ctx.font="bold 12px Inter"; ctx.fillText("PLATAFORMA DE TRABALHO",10,platformY-5);
-
     ctx.fillStyle="#5d4037"; ctx.fillRect(0,world.groundY,canvas.width,canvas.height-world.groundY);
     ctx.fillStyle="#8d6e63"; ctx.fillRect(0,world.groundY,canvas.width,5);
     ctx.fillStyle="rgba(255,255,255,0.3)"; ctx.fillText("SOLO (NÍVEL 0)",canvas.width/2-40,world.groundY+25);
-
     const dRingY=worker.y + (worker.heightPx * 0.3);
     ctx.beginPath(); ctx.moveTo(anchor.x,anchor.y);
     const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
     const ropePx=rope.lengthM*PX_PER_METER;
-
     if(dist<ropePx && !crashed && !finished){
       const slack=(ropePx-dist)*0.6;
       ctx.quadraticCurveTo(anchor.x+dx/2,anchor.y+dy+slack,worker.x,dRingY);
@@ -303,25 +289,19 @@
       ctx.lineWidth=(dist>ropePx)?2:3;
     }
     ctx.stroke();
-
     ctx.beginPath(); ctx.arc(anchor.x,anchor.y,6,0,Math.PI*2); ctx.fillStyle="#2980b9"; ctx.fill();
-
     ctx.save(); ctx.translate(worker.x,worker.y);
     if(crashed){ ctx.translate(0,worker.heightPx); ctx.rotate(-Math.PI/2); ctx.translate(0,-worker.heightPx); }
     else if(running){ ctx.rotate(worker.vx*0.05); }
-    
-    // Desenho do boneco (simplificado)
     const wH = worker.heightPx;
-    ctx.fillStyle="#3498db"; ctx.fillRect(-wH*0.15, wH*0.2, wH*0.3, wH*0.4); // Torso
-    ctx.fillStyle="#2c3e50"; ctx.fillRect(-wH*0.16, wH*0.3, wH*0.32, wH*0.08); // Cinto
-    ctx.fillStyle="#34495e"; ctx.fillRect(-wH*0.12, wH*0.6, wH*0.1, wH*0.4); ctx.fillRect(wH*0.02, wH*0.6, wH*0.1, wH*0.4); // Pernas
-    ctx.fillStyle="#f1c40f"; ctx.beginPath(); ctx.arc(0,wH*0.1,wH*0.12,0,Math.PI*2); ctx.fill(); // Cabeça
-    ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(0,wH*0.08,wH*0.13,Math.PI,0); ctx.fill(); // Capacete
+    ctx.fillStyle="#3498db"; ctx.fillRect(-wH*0.15, wH*0.2, wH*0.3, wH*0.4);
+    ctx.fillStyle="#2c3e50"; ctx.fillRect(-wH*0.16, wH*0.3, wH*0.32, wH*0.08);
+    ctx.fillStyle="#34495e"; ctx.fillRect(-wH*0.12, wH*0.6, wH*0.1, wH*0.4); ctx.fillRect(wH*0.02, wH*0.6, wH*0.1, wH*0.4);
+    ctx.fillStyle="#f1c40f"; ctx.beginPath(); ctx.arc(0,wH*0.1,wH*0.12,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(0,wH*0.08,wH*0.13,Math.PI,0); ctx.fill();
     ctx.restore();
   }
-
   function varGet(name){ return getComputedStyle(document.documentElement).getPropertyValue(name)||"#f39c12"; }
-
   function drawRulers(){
     const meters=Math.ceil(canvas.height/PX_PER_METER);
     ctx.strokeStyle="rgba(0,0,0,0.05)"; ctx.lineWidth=1;
@@ -335,56 +315,56 @@
 
   /* Controle */
   function startSimulation(){
-    // AJUSTE 7: Remoção do bloqueio de simulação. Agora sempre executa.
     if(running) return;
-    updateSettings();
+    updateSettings(); // Garante que os KPIs estão calculados antes de simular
     running=true; crashed=false; finished=false;
     const el=document.getElementById('alert-overlay'); el.style.opacity=0; el.className='';
+    
+    // **CORREÇÃO 3: A decisão de qual banner mostrar é feita AQUI, usando o cálculo matemático.**
+    const isSafe = lastCalculatedMargin >= 0;
+    showBanner(isSafe ? "QUEDA AMPARADA" : "COLISÃO COM O SOLO!", isSafe);
+
     loop();
   }
   function resetSimulation(){
     running=false; crashed=false; finished=false; worker.vx=0; worker.vy=0;
     document.getElementById('alert-overlay').style.opacity=0; updateSettings();
   }
-  function showResult(safe){ showBanner(safe?"QUEDA AMPARADA":"COLISÃO COM O SOLO!", safe); }
+  // A função showResult() não é mais necessária.
   function showBanner(text, safe){
     const el=document.getElementById('alert-overlay');
-    el.innerText=text; el.className=safe?"success-overlay":""; el.style.opacity=1;
-    el.style.transform="translate(-50%,-50%) scale(1.1)";
-    setTimeout(()=>el.style.transform="translate(-50%,-50%) scale(1)",200);
+    el.innerText=text; el.className=safe?"success-overlay":"";
+    
+    // Atraso para mostrar o banner apenas quando a animação estiver perto do fim
+    setTimeout(() => {
+        el.style.opacity=1;
+        el.style.transform="translate(-50%,-50%) scale(1.1)";
+        setTimeout(()=>el.style.transform="translate(-50%,-50%) scale(1)",200);
+    }, 800); // Atraso de 800ms
   }
 
-  /* Lógica de cálculo */
-  // AJUSTE 8: Função getBodyDistance para calcular dinamicamente a distância anel D-pés
+  /* Lógica de cálculo (sem alterações) */
   function getBodyDistance(workerHeight) {
-      // Estimativa: distância do anel D (ombro) até os pés é ~85% da altura total.
       return workerHeight * 0.85;
   }
-
-  // AJUSTE 9: calcDQ agora usa a distância do corpo (BODY) dinamicamente
   function calcDQ(fq, L, bodyDist){
-    if (fq === 0) return 0.6; // FQ0: Queda livre estimada de 0.6m (padrão)
-    if (fq === 1) return L; // FQ1: Queda livre = comprimento do talabarte
-    if (fq === 2) return L + bodyDist; // FQ2: Queda livre = Talabarte + distância anel D-pés
+    if (fq === 0) return 0.6;
+    if (fq === 1) return L;
+    if (fq === 2) return L + bodyDist;
     return 0;
   }
-
   function calcKPIs(){
-    const L = rope.lengthM;
-    const H = config.workHeightM;
-    const FQ = anchor.fq;
-    const WORKER_H = worker.heightM;
-    
-    // AJUSTE 10: Cálculos de ZLQ agora usam os parâmetros dinâmicos
+    const L = rope.lengthM, H = config.workHeightM, FQ = anchor.fq, WORKER_H = worker.heightM;
     const BODY = getBodyDistance(WORKER_H);
     const DQ = calcDQ(FQ, L, BODY);
     const DECEL = config.useDecel ? config.decelM : 0.0;
     const ELASTICITY = (L + DECEL) * (config.elasticityPerc / 100);
-
     const ZLQreq = +(DQ + DECEL + ELASTICITY + BODY + SAFETY).toFixed(2);
     const MarginOfSafety = +(H - ZLQreq).toFixed(2);
 
-    // Atualiza painel de KPIs
+    // **CORREÇÃO 4: Armazena o resultado do cálculo para ser usado pela simulação.**
+    lastCalculatedMargin = MarginOfSafety;
+
     elDQ.innerText = DQ.toFixed(2)+" m";
     elL.innerText  = L.toFixed(2)+" m";
     elDec.innerText = DECEL.toFixed(2)+" m";
@@ -392,7 +372,6 @@
     elBody.innerText = BODY.toFixed(2)+" m";
     elSafe.innerText = SAFETY.toFixed(2)+" m";
     elZLQreq.innerText = ZLQreq.toFixed(2)+" m";
-
     elZLQres.innerText = (MarginOfSafety>=0?"+":"")+MarginOfSafety.toFixed(2)+" m";
     if (MarginOfSafety >= 1.0){ elZLQres.className="kpi-value ok"; elStatus.className="kpi-status ok"; elStatus.innerText="SEGURO (Margem ≥ 1,0 m)"; }
     else if (MarginOfSafety >= 0){ elZLQres.className="kpi-value warn"; elStatus.className="kpi-status warn"; elStatus.innerText="INSUFICIENTE (Margem 0–1,0 m)"; }
