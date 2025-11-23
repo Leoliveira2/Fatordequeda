@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Simulador NR-35 (V12: Decisão do Usuário sobre Absorvedor)</title>
+<title>Simulador NR-35 (V12.1: Altura padrão 1,65 m)</title>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
@@ -53,7 +53,7 @@
   .mode-tabs{display:flex;gap:8px;margin-bottom:6px}
   .mode-btn{flex:1;border:1px solid #d1d5db;background:#f9fafb;border-radius:8px;padding:8px 10px;font-weight:700;cursor:pointer}
   .mode-btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
-  .advanced-only{display:none;} /* por padrão escondido no Básico */
+  .advanced-only{display:none;}
 </style>
 </head>
 <body>
@@ -79,8 +79,8 @@
     <!-- Altura do trabalhador (apenas Avançado) -->
     <div class="control-group advanced-only" id="cg-worker">
       <label>2. Altura do Trabalhador</label>
-      <span id="val-worker-height" class="val-display">1.75m</span>
-      <input type="range" id="input-worker-height" min="1.50" max="2.10" step="0.05" value="1.75">
+      <span id="val-worker-height" class="val-display">1.65m</span>
+      <input type="range" id="input-worker-height" min="1.50" max="2.10" step="0.05" value="1.65">
     </div>
 
     <div class="control-group">
@@ -158,7 +158,8 @@
   /* Estado */
   const canvas=document.getElementById('simCanvas'); const ctx=canvas.getContext('2d');
   let running=false,crashed=false,finished=false;
-  let world={groundY:0},anchor={x:0,y:0,fq:0},worker={x:0,y:0,vx:0,vy:0,startY:0, heightM: 1.75, heightPx: 0};
+  let world={groundY:0},anchor={x:0,y:0,fq:0},
+      worker={x:0,y:0,vx:0,vy:0,startY:0, heightM: 1.65, heightPx: 0}; /* <<< 1,65 m padrão */
   let rope={lengthM:1.5};
   let config={workHeightM:6.0, useDecel:true, decelM:1.20, elasticityPerc:10};
 
@@ -182,7 +183,6 @@
   const lblLength=document.getElementById('val-l');
   const lblAnchor=document.getElementById('val-anchor');
   const lblDec=document.getElementById('val-dec');
-  const lblElasticity=document.getElementById('val-elasticity');
 
   const elDQ=document.getElementById('kpi-dq');
   const elL=document.getElementById('kpi-L');
@@ -228,7 +228,7 @@
 
   function updateSettings(){
     config.workHeightM=parseFloat(inHeight.value);
-    worker.heightM=parseFloat(inWorkerHeight?.value || worker.heightM);
+    worker.heightM=parseFloat(inWorkerHeight?.value || worker.heightM); // manter 1,65 m no Básico
     rope.lengthM=parseFloat(inLength.value);
     anchor.fq=parseInt(inAnchor.value);
     config.useDecel=chkDec.checked;
@@ -236,15 +236,12 @@
     config.elasticityPerc=parseInt(inElasticity.value);
 
     lblHeight.innerText=config.workHeightM.toFixed(1)+"m";
-    if (document.getElementById('val-worker-height')) {
-      document.getElementById('val-worker-height').innerText=worker.heightM.toFixed(2)+"m";
-    }
+    if (lblWorkerHeight) lblWorkerHeight.innerText=worker.heightM.toFixed(2)+"m";
     lblLength.innerText=rope.lengthM.toFixed(1)+"m";
     lblDec.innerText=config.decelM.toFixed(2)+"m";
-    document.getElementById('val-elasticity').innerText=config.elasticityPerc+"%";
+    document.getElementById('val-elasticity')?.innerText=config.elasticityPerc+"%";
     lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
 
-    // altura visual do boneco proporcional à altura real (sem alterar dinâmica)
     worker.heightPx = worker.heightM * PX_PER_METER * 0.5;
 
     if(!running){
@@ -259,7 +256,6 @@
       anchor.x=worker.x-20;
     }
 
-    // Slider do absorvedor só fica ativo quando a opção estiver marcada
     inDec.disabled = !config.useDecel;
 
     calcKPIs();
@@ -288,7 +284,6 @@
     const dRingY=worker.y + (worker.heightPx * 0.3);
     const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
 
-    // Para a física visual consideramos apenas L e DEC (EL é efeito de cálculo, não animação)
     const physDec = config.useDecel ? config.decelM : 0.0;
     const maxDistPx=(rope.lengthM + physDec)*PX_PER_METER;
 
@@ -393,9 +388,9 @@
     return workerHeight * 0.85; // distância D-ring → pés (aprox.)
   }
   function calcDQ(fq, L, bodyDist){
-    if (fq === 0) return 0.6;          // FQ0 (folga mínima)
-    if (fq === 1) return L;            // FQ1
-    if (fq === 2) return L + bodyDist; // FQ2
+    if (fq === 0) return 0.6;
+    if (fq === 1) return L;
+    if (fq === 2) return L + bodyDist;
     return 0;
   }
   function calcKPIs(){
@@ -405,18 +400,14 @@
 
     const DECEL = config.useDecel ? config.decelM : 0.0;
 
-    // Elasticidade: apenas no modo Avançado
     const EL = (currentMode === 'advanced') ? ((L + DECEL) * (config.elasticityPerc / 100)) : 0.0;
 
-    // Queda total até ponto de conexão
     const QTOTAL = +(DQ + DECEL + EL).toFixed(3);
 
-    // ZLQ necessária e Margem
     const ZLQreq = +(QTOTAL + BODY + SAFETY).toFixed(2);
     const MarginOfSafety = +(H - ZLQreq).toFixed(2);
     lastCalculatedMargin = MarginOfSafety;
 
-    // UI
     elDQ.innerText = DQ.toFixed(2)+" m";
     elL.innerText  = L.toFixed(2)+" m";
     elDec.innerText = DECEL.toFixed(2)+" m";
@@ -431,7 +422,6 @@
     else if (MarginOfSafety >= 0){ elZLQres.className="kpi-value warn"; elStatus.className="kpi-status warn"; elStatus.innerText="INSUFICIENTE (Margem 0–1,0 m)"; }
     else { elZLQres.className="kpi-value bad";  elStatus.className="kpi-status bad";  elStatus.innerText="COLISÃO (Margem negativa)"; }
 
-    // Mostrar/ocultar campos de elasticidade conforme modo
     const showAdv = (currentMode==='advanced');
     document.getElementById('cg-worker').style.display = showAdv?'block':'none';
     document.getElementById('cg-elasticity').style.display = showAdv?'block':'none';
