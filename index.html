@@ -3,31 +3,28 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Simulador NR-35 — ZLQ e Margem (V11 – Escala Corrigida)</title>
+<title>Simulador NR-35 — ZLQ e Margem (V13 – cota acumulada)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
   :root{
     --cor-fundo:#eef2f6; --cor-painel:#fff;
     --cor-seguro:#2ecc71; --cor-atencao:#f1c40f; --cor-critico:#e74c3c;
-    --cor-corda:#f39c12;
+    --cor-corda:#f39c12; --cor-texto:#2c3e50;
   }
   *{box-sizing:border-box}
-  body{font-family:'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;height:100vh;overflow:hidden;display:flex;gap:20px}
+  body{font-family:'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;height:100vh;overflow:hidden;display:flex;gap:20px;color:var(--cor-texto)}
   .sidebar{width:340px;background:var(--cor-painel);padding:18px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:14px;z-index:10;overflow-y:auto}
   h2{margin:0 0 6px;font-size:1.15rem;color:#2c3e50}
   .subtitle{font-size:.8rem;color:#7f8c8d;margin-bottom:6px}
-  .tabs{display:flex;gap:8px}
-  .tab{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;text-align:center;cursor:pointer;font-weight:700;background:#f8fafc}
-  .tab.active{background:#e8f1fb;border-color:#c9def8;color:#1d4ed8}
   .control-group{border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:6px}
   label{font-size:.86rem;font-weight:700;color:#34495e;display:block;margin-bottom:6px}
   input[type="range"]{width:100%;margin:3px 0 6px;cursor:pointer}
   .val-display{font-size:.9rem;font-weight:900;color:#1f5fa6;float:right}
-  .inline{display:flex;align-items:center;gap:8px}
   .hint{color:#7f8c8d;font-size:.74rem}
-  .btn-action{padding:14px;border:none;border-radius:10px;font-weight:900;cursor:pointer;transition:transform .1s,box-shadow .2s,color .2s;background:#2563eb;color:#fff;text-transform:uppercase}
-  .btn-action:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(37,99,235,.25)}
-  .btn-reset{background:#95a5a6}
+  .btn{padding:14px;border:none;border-radius:10px;font-weight:900;cursor:pointer;transition:transform .1s,box-shadow .2s;color:#fff;text-transform:uppercase}
+  .btn-primary{background:#2563eb}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(37,99,235,.25)}
+  .btn-secondary{background:#95a5a6}
   .kpi-panel{display:grid;grid-template-columns:1fr;gap:10px}
   .kpi-box{background:#f8f9fa;padding:10px;border-radius:8px;border-left:4px solid #e5e7eb}
   .kpi-title{font-size:.68rem;text-transform:uppercase;color:#666;font-weight:800;margin-bottom:6px}
@@ -39,7 +36,8 @@
   .ok{color:var(--cor-seguro)} .warn{color:var(--cor-atencao)} .bad{color:var(--cor-critico)}
   .stage-container{flex:1;background:linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%);border-radius:12px;position:relative;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1);border:2px solid #fff}
   canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2}
-  #alert-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(231,76,60,.95);color:#fff;padding:26px 44px;border-radius:12px;font-size:2.0rem;font-weight:900;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 20px 50px rgba(0,0,0,.35);border:4px solid #fff}
+  #alert-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);background:rgba(231,76,60,.95);color:#fff;padding:26px 44px;border-radius:12px;font-size:2.0rem;font-weight:900;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 20px 50px rgba(0,0,0,.35);border:4px solid #fff}
+  .overlay-visible{opacity:1 !important;transform:translate(-50%, -50%) scale(1) !important}
   .success-overlay{background:rgba(46,204,113,.95)!important}
 </style>
 </head>
@@ -48,86 +46,66 @@
     <div>
       <h2>⚙️ Simulador NR-35</h2>
       <div class="subtitle">Cálculo técnico e visual coerentes com a ZLQ</div>
-      <div class="tabs">
-        <div id="tab-basic" class="tab active">Básico</div>
-        <div id="tab-adv" class="tab">Avançado</div>
-      </div>
     </div>
 
-    <!-- Básico -->
-    <div id="pane-basic">
-      <div class="control-group">
-        <label>1. Altura de Trabalho (H)</label>
-        <span id="val-height" class="val-display">6.0m</span>
-        <input type="range" id="input-height" min="2.0" max="10.0" step="0.5" value="6.0">
-        <div class="hint">Altura dos pés em relação ao solo</div>
-      </div>
-
-      <div class="control-group">
-        <label>2. Comp. Talabarte (L)</label>
-        <span id="val-l" class="val-display">1.50m</span>
-        <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
-      </div>
-
-      <div class="control-group">
-        <label>3. Absorvedor de energia</label>
-        <div class="inline">
-          <input type="checkbox" id="chk-dec" checked>
-          <label for="chk-dec" style="margin:0">Usar absorvedor</label>
-          <span class="val-display" id="val-dec">1.20m</span>
-        </div>
-        <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20">
-        <div class="hint">Você decide usar ou não. O app apenas calcula.</div>
-      </div>
-
-      <div class="control-group">
-        <label>4. Posição da Ancoragem</label>
-        <span id="val-anchor" class="val-display">Acima (FQ 0)</span>
-        <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
-        <div class="hint">0: Acima (FQ0) | 1: Cinto (FQ1) | 2: Pés (FQ2)</div>
-      </div>
+    <div class="control-group">
+      <label>1. Altura de Trabalho (H)</label>
+      <span id="val-height" class="val-display">6.0m</span>
+      <input type="range" id="input-height" min="2.0" max="10.0" step="0.5" value="6.0">
+      <div class="hint">Altura dos pés em relação ao solo</div>
     </div>
 
-    <!-- Avançado -->
-    <div id="pane-adv" style="display:none">
-      <div class="control-group">
-        <label>Altura do Trabalhador (fixo no Básico)</label>
-        <span id="val-worker-height" class="val-display">1.65m</span>
-        <input type="range" id="input-worker-height" min="1.50" max="2.10" step="0.01" value="1.65">
+    <div class="control-group">
+      <label>2. Comp. Talabarte (L)</label>
+      <span id="val-l" class="val-display">1.50m</span>
+      <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
+    </div>
+
+    <div class="control-group">
+      <label>3. Absorvedor de energia</label>
+      <div class="hint" style="margin-top:-2px;margin-bottom:4px">Você decide usar ou não. O app apenas calcula.</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="chk-dec" checked>
+        <label for="chk-dec" style="margin:0">Usar absorvedor</label>
+        <span id="val-dec" class="val-display">1.20m</span>
       </div>
-      <div class="control-group">
-        <label>Elasticidade do Sistema</label>
-        <span id="val-elasticity" class="val-display">10%</span>
-        <input type="range" id="input-elasticity" min="0" max="20" step="1" value="10">
-        <div class="hint">Alongamento adicional de L+DEC sob carga.</div>
-      </div>
+      <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20">
+    </div>
+
+    <div class="control-group">
+      <label>4. Posição da Ancoragem</label>
+      <span id="val-anchor" class="val-display">Acima (FQ 0)</span>
+      <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
+      <div class="hint">0: Acima (FQ0) | 1: Cinto (FQ1) | 2: Pés (FQ2)</div>
     </div>
 
     <!-- KPIs -->
     <div class="kpi-panel">
       <div class="kpi-box">
-        <div class="kpi-title">MARGEM DE SEGURANÇA (distância dos pés ao solo)</div>
+        <div class="kpi-title">Margem de Segurança (distância dos pés ao solo)</div>
         <div class="kpi-value" id="kpi-zlq-res">-- m</div>
         <div class="kpi-status" id="kpi-status">--</div>
-        <div class="hint">Critério: Margem ≥ 1,0 m (NR-35 comentada).</div>
+        <div class="hint">Critério de referência: Margem ≥ 1,0 m.</div>
       </div>
 
       <div class="kpi-box">
         <div class="kpi-title">Componentes da ZLQ</div>
         <div class="kpi-list">
-          <div class="kpi-row"><span>Distância de Queda Livre (DQ)</span><strong id="kpi-dq">-- m</strong></div>
-          <div class="kpi-row"><span>Comprimento do Talabarte (L)</span><strong id="kpi-L">-- m</strong></div>
-          <div class="kpi-row"><span>Absorvedor aberto (DEC)</span><strong id="kpi-dec">-- m</strong></div>
-          <div class="kpi-row"><span>Elasticidade (EL)</span><strong id="kpi-elasticity">-- m</strong></div>
-          <div class="kpi-row"><span>Anel D → pé (BODY)</span><strong id="kpi-body">-- m</strong></div>
-          <div class="kpi-row"><span>Distância de segurança (S)</span><strong id="kpi-safe">1.00 m</strong></div>
-          <div class="kpi-row"><span>ZLQ necessária (soma)</span><strong id="kpi-zlq-req">-- m</strong></div>
+          <div class="kpi-row"><span>Queda Livre (DQ)</span><strong id="kpi-dq">--</strong></div>
+          <div class="kpi-row"><span>Talabarte (L)</span><strong id="kpi-L">--</strong></div>
+          <div class="kpi-row"><span>Absorvedor (DEC)</span><strong id="kpi-dec">--</strong></div>
+          <div class="kpi-row"><span>Elasticidade (EL)</span><strong id="kpi-elasticity">--</strong></div>
+          <div class="kpi-row"><span>D-ring → pé (BODY)</span><strong id="kpi-body">--</strong></div>
+          <div class="kpi-row"><span>Segurança (S)</span><strong id="kpi-safe">1.00 m</strong></div>
+          <div class="kpi-row" style="border-top:1px solid #ddd;margin-top:2px;padding-top:2px">
+            <span>ZLQ necessária (soma)</span><strong id="kpi-zlq-req" style="color:#1f5fa6">--</strong>
+          </div>
         </div>
       </div>
     </div>
 
-    <button class="btn-action" id="btn-sim">⚠️ Simular queda</button>
-    <button class="btn-action btn-reset" id="btn-reset">🔄 Resetar</button>
+    <button class="btn btn-primary" id="btn-sim">⚠️ Simular queda</button>
+    <button class="btn btn-secondary" id="btn-reset">🔄 Resetar</button>
   </div>
 
   <div class="stage-container" id="stage">
@@ -137,29 +115,32 @@
 
 <script>
 /* ==== Constantes e estado ==== */
-const GRAVITY=0.6, DAMPING=0.96, PX_PER_METER=50, SAFETY=1.0;
+const PX_RULER_MAX_M = 10.0;
+const SAFETY = 1.0;
+const DEFAULT_ELASTICITY_PERC = 10;
+let PX_PER_METER = 50;
+
 const canvas=document.getElementById('simCanvas'), ctx=canvas.getContext('2d');
-let running=false, crashed=false, finished=false;
+let running=false, finished=false;
+
 let world={groundY:0}, anchor={x:0,y:0,fq:0};
-let worker={x:0,y:0,vx:0,vy:0,startY:0,heightM:1.65,heightPx:0};
+let worker={x:0,y:0,startY:0,heightM:1.65,heightPx:0}; // ALTURA FIXA
 let rope={lengthM:1.5};
-let config={workHeightM:6.0,useDecel:true,decelM:1.20,elasticityPerc:10};
-let lastMargin=0, lastBody=1.40;
+let config={workHeightM:6.0,useDecel:true,decelM:1.20,elasticityPerc:DEFAULT_ELASTICITY_PERC};
+
+let lastMargin=0, lastBody=1.40, lastComponents=null;
 
 /* ==== DOM ==== */
-const elHeight=document.getElementById('input-height');
-const elL     =document.getElementById('input-l');
-const elDecCk =document.getElementById('chk-dec');
-const elDec   =document.getElementById('input-dec');
-const elAnchor=document.getElementById('input-anchor');
-const elWH    =document.getElementById('input-worker-height');
-const elEla   =document.getElementById('input-elasticity');
-const vHeight =document.getElementById('val-height');
-const vL      =document.getElementById('val-l');
-const vDec    =document.getElementById('val-dec');
-const vAnchor =document.getElementById('val-anchor');
-const vWH     =document.getElementById('val-worker-height');
-const vEla    =document.getElementById('val-elasticity');
+const inH=document.getElementById('input-height');
+const inL=document.getElementById('input-l');
+const inDecOn=document.getElementById('chk-dec');
+const inDec=document.getElementById('input-dec');
+const inAnchor=document.getElementById('input-anchor');
+
+const vH=document.getElementById('val-height');
+const vL=document.getElementById('val-l');
+const vDec=document.getElementById('val-dec');
+const vAnchor=document.getElementById('val-anchor');
 
 const kDQ=document.getElementById('kpi-dq');
 const kL=document.getElementById('kpi-L');
@@ -173,44 +154,32 @@ const kSTAT=document.getElementById('kpi-status');
 
 document.getElementById('btn-sim').addEventListener('click',startSimulation);
 document.getElementById('btn-reset').addEventListener('click',resetSimulation);
+[inH,inL,inDecOn,inDec,inAnchor].forEach(el=>el.addEventListener('input',updateSettings));
 
-document.getElementById('tab-basic').onclick=()=>switchTab('basic');
-document.getElementById('tab-adv').onclick=()=>switchTab('adv');
-
-[elHeight,elL,elDecCk,elDec,elAnchor,elWH,elEla].forEach(i=>i.addEventListener('input',updateSettings));
-
-function switchTab(w){
-  document.getElementById('tab-basic').classList.toggle('active', w==='basic');
-  document.getElementById('tab-adv').classList.toggle('active', w==='adv');
-  document.getElementById('pane-basic').style.display = (w==='basic')?'block':'none';
-  document.getElementById('pane-adv').style.display = (w==='adv')?'block':'none';
-}
-
-/* ==== Geometria e cálculo coerentes ==== */
-function getBODY(h){ return +(h*0.85).toFixed(2); }          // distância D-ring → pés (NR-35 comentada usa ~1,5 m como referência; aqui proporcional)
+/* ==== Cálculo ==== */
+function BODYfromHeight(h){ return +(h*0.85).toFixed(2); }
 function calcDQ(fq,L,BODY){
   if(fq===0) return 0.6;
   if(fq===1) return L;
-  return L + BODY; // FQ2
+  return L + BODY;
 }
 function calcKPIs(){
-  const H=parseFloat(elHeight.value);
-  const L=parseFloat(elL.value);
-  const useDec=elDecCk.checked;
-  const DEC = useDec ? parseFloat(elDec.value) : 0.0;
-  const WH  = parseFloat(elWH.value);
-  const BODY= getBODY(WH);
-  const EL  = (L+DEC) * (parseInt(elEla.value)/100);
+  const H=parseFloat(inH.value);
+  const L=parseFloat(inL.value);
+  const useDec=inDecOn.checked;
+  const DEC = useDec ? parseFloat(inDec.value) : 0.0;
+  const WH  = worker.heightM;
+  const BODY= BODYfromHeight(WH);
+  const EL  = (L+DEC) * (config.elasticityPerc/100);
 
-  const DQ = calcDQ(parseInt(elAnchor.value), L, BODY);
+  const DQ = calcDQ(parseInt(inAnchor.value), L, BODY);
   const ZLQreq = +(DQ + DEC + EL + BODY + SAFETY).toFixed(2);
   const Margin  = +(H - ZLQreq).toFixed(2);
 
-  // guarda para simulação/visual
   lastMargin = Margin;
   lastBody   = BODY;
+  lastComponents = {DQ,L,DEC,EL,BODY,SAFETY,REQ:ZLQreq};
 
-  // KPIs
   kDQ.innerText   = DQ.toFixed(2)+' m';
   kL.innerText    = L.toFixed(2)+' m';
   kDEC.innerText  = DEC.toFixed(2)+' m';
@@ -225,131 +194,76 @@ function calcKPIs(){
   else { kRES.className='kpi-value bad';  kSTAT.className='kpi-status bad';  kSTAT.innerText='COLISÃO (Margem negativa)'; }
 }
 
+/* ==== Atualização/posicionamento ==== */
 function updateSettings(){
-  // modelo
-  config.workHeightM = parseFloat(elHeight.value);
-  rope.lengthM       = parseFloat(elL.value);
-  config.useDecel    = elDecCk.checked;
-  config.decelM      = parseFloat(elDec.value);
-  anchor.fq          = parseInt(elAnchor.value);
-  worker.heightM     = parseFloat(elWH.value);
-  config.elasticityPerc = parseInt(elEla.value);
+  config.workHeightM = parseFloat(inH.value);
+  rope.lengthM       = parseFloat(inL.value);
+  config.useDecel    = inDecOn.checked;
+  config.decelM      = parseFloat(inDec.value);
+  anchor.fq          = parseInt(inAnchor.value);
 
-  // labels
-  vHeight.innerText = config.workHeightM.toFixed(1)+'m';
-  vL.innerText      = rope.lengthM.toFixed(2)+'m';
-  vDec.innerText    = config.decelM.toFixed(2)+'m';
+  vH.innerText  = config.workHeightM.toFixed(1)+'m';
+  vL.innerText  = rope.lengthM.toFixed(2)+'m';
+  vDec.innerText= config.decelM.toFixed(2)+'m';
   vAnchor.innerText = ['Acima (FQ 0)','Cinto (FQ 1)','Pés (FQ 2)'][anchor.fq];
-  vWH.innerText     = worker.heightM.toFixed(2)+'m';
-  vEla.innerText    = config.elasticityPerc+'%';
 
-  // escala 1:1
   worker.heightPx = worker.heightM * PX_PER_METER;
 
-  // posiciona trabalhador parado (plataforma a H)
   if(!running){
     const feetY = world.groundY - (config.workHeightM * PX_PER_METER);
     worker.y = feetY - worker.heightPx;
     worker.x = canvas.width/2;
     worker.startY = worker.y;
 
-    // D-ring coerente com BODY (altura dos pés menos BODY)
-    const dRingY = feetY - (getBODY(worker.heightM) * PX_PER_METER);
+    const dRingY = feetY - (BODYfromHeight(worker.heightM) * PX_PER_METER);
     if(anchor.fq===0) anchor.y = dRingY - (1.5*PX_PER_METER);
     else if(anchor.fq===1) anchor.y = dRingY;
-    else anchor.y = feetY; // FQ2
-    anchor.x = worker.x - 20;
+    else anchor.y = feetY;
+    anchor.x = worker.x - 30;
   }
 
   calcKPIs();
   if(!running) drawScene();
 }
 
+/* ==== Canvas/scene ==== */
 function resize(){
   canvas.width = document.getElementById('stage').offsetWidth;
   canvas.height= document.getElementById('stage').offsetHeight;
   world.groundY = canvas.height - 40;
+  PX_PER_METER = (world.groundY - 40) / PX_RULER_MAX_M;
   resetSimulation();
 }
 window.addEventListener('resize',resize);
 
-/* ==== Simulação (com final sincronizado à margem) ==== */
-function startSimulation(){
-  if(running) return;
-  updateSettings();
-  running=true; crashed=false; finished=false;
-  const overlay=document.getElementById('alert-overlay');
-  overlay.style.opacity=0; overlay.className='';
-
-  // decide texto pelo cálculo (NR-35)
-  const safe = (lastMargin>=0);
-  overlay.innerText = safe ? 'QUEDA AMPARADA' : 'COLISÃO COM O SOLO!';
-  if(safe) overlay.className='success-overlay';
-
-  // alvo final coerente com a margem (pés a margem do solo; <0 encosta)
-  const targetFeetClearM = Math.max(lastMargin, 0);
-  const targetFeetY = world.groundY - (targetFeetClearM*PX_PER_METER);
-  const targetY = targetFeetY - worker.heightPx;
-
-  // animação simples até o ponto final
-  const steps = 35;
-  let t = 0;
-  const startY = worker.y;
-  (function anim(){
-    if(!running) return;
-    t++;
-    const p = Math.min(1, t/steps);
-    worker.y = startY + (targetY - startY)*p;
-    drawScene();
-    if(p<1){ requestAnimationFrame(anim); }
-    else{
-      finished=true; running=false;
-      setTimeout(()=>{ overlay.style.opacity=1; overlay.style.transform='translate(-50%,-50%) scale(1.05)'; setTimeout(()=>overlay.style.transform='translate(-50%,-50%) scale(1)',180); },150);
-    }
-  })();
-}
-
-function resetSimulation(){
-  running=false; crashed=false; finished=false;
-  worker.vx=0; worker.vy=0;
-  document.getElementById('alert-overlay').style.opacity=0;
-  updateSettings();
-}
-
-/* ==== Desenho ==== */
 function drawScene(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
   drawRulers();
 
-  // plataforma no nível H
   const feetY0 = world.groundY - (config.workHeightM * PX_PER_METER);
   ctx.beginPath(); ctx.moveTo(0,feetY0); ctx.lineTo(canvas.width,feetY0);
   ctx.strokeStyle="#bdc3c7"; ctx.lineWidth=4; ctx.setLineDash([10,10]); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle="#7f8c8d"; ctx.font="bold 12px Inter"; ctx.fillText("PLATAFORMA DE TRABALHO", 10, feetY0-6);
+  ctx.fillStyle="#7f8c8d"; ctx.font="bold 12px Inter"; ctx.fillText("PLATAFORMA DE TRABALHO",10,feetY0-6);
 
-  // chão
   ctx.fillStyle="#5d4037"; ctx.fillRect(0,world.groundY,canvas.width,canvas.height-world.groundY);
   ctx.fillStyle="#8d6e63"; ctx.fillRect(0,world.groundY,canvas.width,5);
   ctx.fillStyle="rgba(255,255,255,.35)"; ctx.fillText("SOLO (NÍVEL 0)", canvas.width/2-40, world.groundY+24);
 
-  // corda (reta)
   const dRingY = (worker.y + worker.heightPx) - (lastBody * PX_PER_METER);
-  ctx.beginPath(); ctx.moveTo(anchor.x,anchor.y); ctx.lineTo(worker.x, dRingY);
-  ctx.strokeStyle = varGet('--cor-corda'); ctx.lineWidth=3; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(anchor.x,anchor.y); ctx.lineTo(worker.x,dRingY);
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--cor-corda')||'#f39c12';
+  ctx.lineWidth=3; ctx.stroke();
 
-  // ancoragem
   ctx.beginPath(); ctx.arc(anchor.x,anchor.y,6,0,Math.PI*2); ctx.fillStyle="#2980b9"; ctx.fill();
 
-  // boneco
   ctx.save(); ctx.translate(worker.x,worker.y);
   const wH=worker.heightPx;
-  ctx.fillStyle="#3498db"; ctx.fillRect(-wH*0.12, wH*0.22, wH*0.24, wH*0.42); // tronco
-  ctx.fillStyle="#2c3e50"; ctx.fillRect(-wH*0.13, wH*0.33, wH*0.26, wH*0.08); // cinto
-  ctx.fillStyle="#34495e"; ctx.fillRect(-wH*0.10, wH*0.64, wH*0.10, wH*0.36); // perna esq
-  ctx.fillRect(wH*0.00,  wH*0.64, wH*0.10, wH*0.36); // perna dir
-  ctx.fillStyle="#f1c40f"; ctx.beginPath(); ctx.arc(0, wH*0.10, wH*0.12, 0, Math.PI*2); ctx.fill(); // cabeça
-  ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(0, wH*0.08, wH*0.13, Math.PI, 0); ctx.fill(); // capacete
+  ctx.fillStyle="#3498db"; ctx.fillRect(-wH*0.12, wH*0.22, wH*0.24, wH*0.42);
+  ctx.fillStyle="#2c3e50"; ctx.fillRect(-wH*0.13, wH*0.33, wH*0.26, wH*0.08);
+  ctx.fillStyle="#34495e"; ctx.fillRect(-wH*0.10, wH*0.64, wH*0.10, wH*0.36);
+  ctx.fillRect(wH*0.00,  wH*0.64, wH*0.10, wH*0.36);
+  ctx.fillStyle="#f1c40f"; ctx.beginPath(); ctx.arc(0, wH*0.10, wH*0.12, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(0, wH*0.08, wH*0.13, Math.PI, 0); ctx.fill();
   ctx.restore();
 }
 
@@ -364,15 +278,93 @@ function drawRulers(){
   }
 }
 
-function varGet(name){return getComputedStyle(document.documentElement).getPropertyValue(name)||"#f39c12";}
+/* ==== Guias visuais com COTA ACUMULADA ==== */
+function drawZLQGuides(){
+  if(!lastComponents) return;
+  const comp=lastComponents;
+  let currentY = anchor.y;
+  const xPos = worker.x + 60;
+
+  let acum = 0; // acumulado em metros
+
+  function dim(label,val,color){
+    const hPx = val * PX_PER_METER; if(hPx<2) return;
+    // linhas
+    ctx.beginPath();
+    ctx.moveTo(xPos,currentY); ctx.lineTo(xPos,currentY+hPx);
+    ctx.moveTo(xPos-5,currentY); ctx.lineTo(xPos+5,currentY);
+    ctx.moveTo(xPos-5,currentY+hPx); ctx.lineTo(xPos+5,currentY+hPx);
+    ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
+
+    // texto com valor e acumulado
+    acum += val;
+    ctx.fillStyle=color; ctx.font="bold 11px Inter";
+    ctx.fillText(`${label} (${val.toFixed(2)} m) — acum: ${acum.toFixed(2)} m`, xPos+10, currentY + hPx/2 + 4);
+
+    currentY += hPx;
+  }
+
+  // Ordem física esticada a partir da ancoragem
+  dim("Talabarte", comp.L, "#f39c12");
+  if(comp.DEC>0) dim("Absorvedor", comp.DEC, "#e67e22");
+  dim("Elasticidade", comp.EL, "#9b59b6");
+  dim("Corpo (D-ring→pé)", comp.BODY, "#34495e");
+  dim("Segurança", comp.SAFETY, "#2ecc71");
+
+  // Linha limite ZLQ necessária
+  ctx.beginPath(); ctx.moveTo(xPos-20,currentY); ctx.lineTo(xPos+140,currentY);
+  ctx.strokeStyle="#e74c3c"; ctx.setLineDash([5,5]); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#e74c3c"; ctx.font="bold 11px Inter";
+  ctx.fillText(`Limite ZLQ necessária = ${comp.REQ.toFixed(2)} m`, xPos+10, currentY+15);
+}
+
+/* ==== Simulação (leva pés ao ponto coerente com a margem) ==== */
+function startSimulation(){
+  if(running) return;
+  updateSettings();
+  running=true; finished=false;
+  const overlay=document.getElementById('alert-overlay');
+  overlay.style.opacity=0; overlay.className='';
+
+  const safe=(lastMargin>=0);
+  overlay.innerText = safe ? (lastMargin>=1.0?'QUEDA AMPARADA':'QUEDA AMPARADA (MARGEM BAIXA)') : 'COLISÃO COM O SOLO!';
+  if(safe) overlay.className='success-overlay';
+
+  const targetFeetClearM = Math.max(lastMargin, 0);
+  const targetFeetY = world.groundY - (targetFeetClearM*PX_PER_METER);
+  const targetY = targetFeetY - worker.heightPx;
+
+  const steps=35; let t=0; const startY=worker.y;
+  (function anim(){
+    if(!running) return;
+    t++; const p=Math.min(1,t/steps);
+    worker.y = startY + (targetY - startY)*p;
+    drawScene();
+    if(p<1){ requestAnimationFrame(anim); }
+    else{
+      finished=true; running=false;
+      drawZLQGuides();
+      setTimeout(()=>{ overlay.classList.add('overlay-visible'); },120);
+    }
+  })();
+}
+
+function resetSimulation(){
+  running=false; finished=false;
+  const overlay=document.getElementById('alert-overlay');
+  overlay.style.opacity=0; overlay.className='';
+  updateSettings();
+}
 
 /* ==== Boot ==== */
-function initDefaults(){
-  // “Básico” fixo 1,65 m (visível e editável apenas no Avançado)
-  elWH.value = 1.65; vWH.innerText='1.65m';
-  resize(); updateSettings();
+function boot(){
+  canvas.width = document.getElementById('stage').offsetWidth;
+  canvas.height= document.getElementById('stage').offsetHeight;
+  world.groundY = canvas.height - 40;
+  PX_PER_METER = (world.groundY - 40) / PX_RULER_MAX_M;
+  updateSettings();
 }
-setTimeout(initDefaults,80);
+setTimeout(boot,80);
 </script>
 </body>
 </html>
