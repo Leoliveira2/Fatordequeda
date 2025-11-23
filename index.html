@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador NR-35 (V11: Modos Básico/Avançado)</title>
+<title>Simulador NR-35 (V12: Correção de Modos)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap' );
 
@@ -22,11 +22,10 @@
   .inline{display:flex;align-items:center;gap:8px}
   .hint{color:#7f8c8d;font-size:.75rem}
 
-  /* AJUSTE 1: Estilos para o seletor de modo Básico/Avançado */
   .mode-selector{display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:10px}
   .mode-btn{flex:1;padding:8px;background:#f8f9fa;border:none;cursor:pointer;font-weight:600;color:#7f8c8d;transition:all .2s}
   .mode-btn.active{background:#3498db;color:#fff;box-shadow:inset 0 2px 4px rgba(0,0,0,.1)}
-  .advanced-controls{display:none} /* Escondido por padrão */
+  .advanced-controls{display:none}
 
   .btn-action{padding:15px;border:none;border-radius:8px;font-weight:800;cursor:pointer;transition:transform .1s,background .2s;color:#fff;font-size:1rem;text-transform:uppercase;width:100%;margin-top:5px}
   .btn-simular{background:linear-gradient(135deg,#3498db,#2980b9);box-shadow:0 4px 0 #1c5a85}
@@ -46,7 +45,6 @@
   .ok{color:var(--cor-seguro)} .bad{color:var(--cor-critico)} .warn{color:var(--cor-atencao)}
   .tooltip{font-size:.72rem;color:#6b7280;margin-top:6px}
 
-  /* AJUSTE 2: Ocultar resultado antes da simulação */
   .result-hidden{visibility:hidden}
 
   .stage-container{flex:1;background:linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%);border-radius:12px;position:relative;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1);border:2px solid #fff}
@@ -63,32 +61,17 @@
       <div class="subtitle">Física e Colisão em Tempo Real</div>
     </div>
 
-    <!-- AJUSTE 3: Seletor de modo Básico/Avançado -->
     <div class="mode-selector">
         <button id="btn-basic" class="mode-btn active" onclick="setMode('basic')">Básico</button>
         <button id="btn-advanced" class="mode-btn" onclick="setMode('advanced')">Avançado</button>
     </div>
 
+    <!-- === CONTROLES BÁSICOS === -->
     <div class="control-group">
       <label>1. Altura de Trabalho (H)</label>
       <span id="val-height" class="val-display">6.0m</span>
       <input type="range" id="input-height" min="2.0" max="8.0" step="0.5" value="6.0">
       <div class="hint">Altura dos pés em relação ao solo</div>
-    </div>
-    
-    <!-- Controles Avançados -->
-    <div id="advanced-controls" class="advanced-controls">
-        <div class="control-group">
-            <label>Altura do Trabalhador</label>
-            <span id="val-worker-height" class="val-display">1.75m</span>
-            <input type="range" id="input-worker-height" min="1.50" max="2.10" step="0.05" value="1.75">
-        </div>
-        <div class="control-group">
-            <label>Elasticidade do Sistema</label>
-            <span id="val-elasticity" class="val-display">10%</span>
-            <input type="range" id="input-elasticity" min="0" max="20" step="1" value="10">
-            <div class="hint">Esticamento do talabarte/cinto</div>
-        </div>
     </div>
 
     <div class="control-group">
@@ -116,10 +99,25 @@
       <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
       <div class="hint">0: Acima (FQ0) | 1: Cinto (FQ1) | 2: Pés (FQ2)</div>
     </div>
+    
+    <!-- === CONTROLES AVANÇADOS === -->
+    <!-- CORREÇÃO: Os controles avançados agora estão DENTRO da div correta -->
+    <div id="advanced-controls" class="advanced-controls">
+        <div class="control-group">
+            <label>Altura do Trabalhador</label>
+            <span id="val-worker-height" class="val-display">1.75m</span>
+            <input type="range" id="input-worker-height" min="1.50" max="2.10" step="0.05" value="1.75">
+        </div>
+        <div class="control-group">
+            <label>Elasticidade do Sistema</label>
+            <span id="val-elasticity" class="val-display">10%</span>
+            <input type="range" id="input-elasticity" min="0" max="20" step="1" value="10">
+            <div class="hint">Esticamento do talabarte/cinto</div>
+        </div>
+    </div>
 
     <!-- KPIs -->
     <div class="kpi-panel">
-      <!-- AJUSTE 4: Adicionada classe para ocultar o resultado -->
       <div id="result-kpi-box" class="kpi-box result-hidden">
         <div class="kpi-title">MARGEM DE SEGURANÇA (Distância dos pés ao solo)</div>
         <div class="kpi-value" id="kpi-zlq-res">-- m</div>
@@ -154,7 +152,6 @@
   /* Física/escala */
   const GRAVITY=0.6,DAMPING=0.96;
   const SAFETY=1.0; 
-  // AJUSTE 5: Variáveis de escala e altura máxima da régua
   let PX_PER_METER = 50;
   const MAX_RULER_HEIGHT_M = 8.0;
 
@@ -195,9 +192,8 @@
   function resize(){
     canvas.width=document.getElementById('stage').offsetWidth;
     canvas.height=document.getElementById('stage').offsetHeight;
-    // AJUSTE 6: A escala (PX_PER_METER) agora é calculada dinamicamente
     world.groundY=canvas.height-40;
-    PX_PER_METER = (world.groundY - 20) / MAX_RULER_HEIGHT_M; // 20px de margem no topo
+    PX_PER_METER = (world.groundY - 20) / MAX_RULER_HEIGHT_M;
     resetSimulation();
   }
   window.addEventListener('resize',resize);
@@ -216,10 +212,7 @@
     lblDec.innerText=config.decelM.toFixed(2)+"m";
     lblElasticity.innerText=config.elasticityPerc+"%";
     lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
-    
-    // AJUSTE 7: Tamanho do avatar agora é fixo para melhor visualização
     worker.heightPx = 70; 
-
     if(!running){
       const feetY=world.groundY-(config.workHeightM*PX_PER_METER);
       worker.y=feetY-worker.heightPx; worker.x=canvas.width/2; worker.startY=worker.y;
@@ -246,7 +239,6 @@
 
   [inHeight,inWorkerHeight,inLength,inAnchor,chkDec,inDec,inElasticity].forEach(el=>el.addEventListener('input',updateSettings));
 
-  /* Simulação e Desenho (sem alterações na lógica principal) */
   function loop(){
     if(!running) return;
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -322,16 +314,12 @@
     }
   }
 
-  /* Controle */
   function startSimulation(){
     if(running) return;
     updateSettings();
     running=true; crashed=false; finished=false;
     const el=document.getElementById('alert-overlay'); el.style.opacity=0; el.className='';
-    
-    // AJUSTE 8: Mostrar o resultado do KPI que estava oculto
     resultKpiBox.classList.remove('result-hidden');
-
     const isSafe = lastCalculatedMargin >= 0;
     showBanner(isSafe ? "QUEDA AMPARADA" : "COLISÃO COM O SOLO!", isSafe);
     loop();
@@ -339,7 +327,6 @@
   function resetSimulation(){
     running=false; crashed=false; finished=false; worker.vx=0; worker.vy=0;
     document.getElementById('alert-overlay').style.opacity=0;
-    // AJUSTE 9: Ocultar o resultado do KPI ao resetar
     resultKpiBox.classList.add('result-hidden');
     updateSettings();
   }
@@ -353,7 +340,6 @@
     }, 800);
   }
 
-  /* Lógica de cálculo e modo */
   function getBodyDistance(workerHeight) { return workerHeight * 0.85; }
   function calcDQ(fq, L, bodyDist){
     if (fq === 0) return 0.6; if (fq === 1) return L; if (fq === 2) return L + bodyDist; return 0;
@@ -377,7 +363,6 @@
     else { elZLQres.className="kpi-value bad"; elStatus.className="kpi-status bad"; elStatus.innerText="COLISÃO (Margem negativa)"; }
   }
 
-  // AJUSTE 10: Função para controlar o modo Básico/Avançado
   function setMode(mode) {
       const advancedControls = document.getElementById('advanced-controls');
       const btnBasic = document.getElementById('btn-basic');
