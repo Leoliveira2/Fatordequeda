@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Simulador NR-35 (V12.2: Avatar visível)</title>
+<title>Simulador NR-35 (V13: Visível + Toggle OK)</title>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
@@ -13,9 +13,26 @@
     --cor-seguro:#2ecc71;--cor-critico:#e74c3c;--cor-atencao:#f1c40f;
     --cor-corda:#f39c12
   }
-  body{font-family:'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;height:100vh;overflow:hidden;display:flex;gap:20px}
-  .sidebar{width:320px;background:var(--cor-painel);padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:15px;z-index:10;overflow-y:auto}
-  h2{margin:0 0 5px;font-size:1.2rem;color:#2c3e50}.subtitle{font-size:.8rem;color:#7f8c8d;margin-bottom:10px}
+
+  html, body { height: 100%; }
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--cor-fundo);
+    margin:0;padding:20px;
+    height:100vh;overflow:hidden;
+    display:flex;gap:20px;
+    box-sizing:border-box;
+  }
+
+  .sidebar{
+    width:320px;background:var(--cor-painel);
+    padding:20px;border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.1);
+    display:flex;flex-direction:column;gap:15px;
+    z-index:10;overflow-y:auto
+  }
+  h2{margin:0 0 5px;font-size:1.2rem;color:#2c3e50}
+  .subtitle{font-size:.8rem;color:#7f8c8d;margin-bottom:10px}
   .control-group{border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:5px}
   label{font-size:.85rem;font-weight:600;color:#34495e;display:block;margin-bottom:5px}
   input[type="range"]{width:100%;margin:5px 0;cursor:pointer}
@@ -23,7 +40,10 @@
   .inline{display:flex;align-items:center;gap:8px}
   .hint{color:#7f8c8d;font-size:.75rem}
 
-  .btn-action{padding:15px;border:none;border-radius:8px;font-weight:800;cursor:pointer;transition:transform .1s,background .2s;color:#fff;font-size:1rem;text-transform:uppercase;width:100%;margin-top:5px}
+  .btn-action{
+    padding:15px;border:none;border-radius:8px;font-weight:800;cursor:pointer;
+    transition:transform .1s,background .2s;color:#fff;font-size:1rem;text-transform:uppercase;width:100%;margin-top:5px
+  }
   .btn-simular{background:linear-gradient(135deg,#3498db,#2980b9);box-shadow:0 4px 0 #1c5a85}
   .btn-simular:hover{transform:translateY(-2px);box-shadow:0 6px 0 #1c5a85}
   .btn-simular:active{transform:translateY(2px);box-shadow:0 0 0 #1c5a85}
@@ -43,15 +63,28 @@
   .tooltip{font-size:.72rem;color:#6b7280;margin-top:6px}
 
   /* Palco */
-  .stage-container{flex:1;background:linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%);border-radius:12px;position:relative;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1);border:2px solid #fff}
+  .stage-container{
+    flex:1;background:linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%);
+    border-radius:12px;position:relative;overflow:hidden;
+    box-shadow:0 4px 12px rgba(0,0,0,.1);border:2px solid #fff;
+    min-height:300px;
+  }
   canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2}
 
-  #alert-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(231,76,60,.95);color:#fff;padding:30px 50px;border-radius:12px;font-size:2.0rem;font-weight:900;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 20px 50px rgba(0,0,0,.4);border:4px solid #fff}
+  #alert-overlay{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    background:rgba(231,76,60,.95);color:#fff;padding:30px 50px;border-radius:12px;
+    font-size:2.0rem;font-weight:900;text-align:center;z-index:100;opacity:0;pointer-events:none;
+    transition:opacity .2s,transform .2s;box-shadow:0 20px 50px rgba(0,0,0,.4);border:4px solid #fff
+  }
   .success-overlay{background:rgba(46,204,113,.95)!important}
 
   /* Modo Básico / Avançado */
   .mode-tabs{display:flex;gap:8px;margin-bottom:6px}
-  .mode-btn{flex:1;border:1px solid #d1d5db;background:#f9fafb;border-radius:8px;padding:8px 10px;font-weight:700;cursor:pointer}
+  .mode-btn{
+    flex:1;border:1px solid #d1d5db;background:#f9fafb;border-radius:8px;padding:8px 10px;
+    font-weight:700;cursor:pointer
+  }
   .mode-btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
   .advanced-only{display:none;}
 </style>
@@ -76,7 +109,7 @@
       <div class="hint">Altura dos pés em relação ao solo</div>
     </div>
 
-    <!-- Altura do trabalhador (apenas Avançado) -->
+    <!-- Altura do trabalhador (apenas Avançado; padrão fixo 1,65 m) -->
     <div class="control-group advanced-only" id="cg-worker">
       <label>2. Altura do Trabalhador</label>
       <span id="val-worker-height" class="val-display">1.65m</span>
@@ -99,7 +132,7 @@
         <input type="range" id="input-dec" min="0.00" max="1.80" step="0.05" value="1.20" style="flex:1">
         <span id="val-dec" class="val-display">1.20m</span>
       </div>
-      <div id="dec-warning" class="hint">Opcional — selecione conforme o equipamento a simular.</div>
+      <div id="dec-warning" class="hint">Opcional — simule conforme o equipamento selecionado.</div>
     </div>
 
     <!-- Elasticidade (apenas Avançado) -->
@@ -141,8 +174,8 @@
       </div>
     </div>
 
-    <button class="btn-action btn-simular" onclick="startSimulation()">⚠️ SIMULAR QUEDA</button>
-    <button class="btn-action btn-reset" onclick="resetSimulation()">🔄 RESETAR</button>
+    <button class="btn-action btn-simular" id="btn-simular" type="button">⚠️ SIMULAR QUEDA</button>
+    <button class="btn-action btn-reset" id="btn-reset" type="button">🔄 RESETAR</button>
   </div>
 
   <div class="stage-container" id="stage">
@@ -152,106 +185,113 @@
 
 <script>
   /* Física/escala */
-  const GRAVITY=0.6,DAMPING=0.96,PX_PER_METER=50;
-  const SAFETY=1.0;
+  var GRAVITY=0.6, DAMPING=0.96, PX_PER_METER=50;
+  var SAFETY=1.0;
 
   /* Estado */
-  const canvas=document.getElementById('simCanvas'); const ctx=canvas.getContext('2d');
-  let running=false,crashed=false,finished=false;
-  let world={groundY:0},anchor={x:0,y:0,fq:0},
-      worker={x:0,y:0,vx:0,vy:0,startY:0, heightM: 1.65, heightPx: 0};
-  let rope={lengthM:1.5};
-  let config={workHeightM:6.0, useDecel:true, decelM:1.20, elasticityPerc:10};
-
-  // Modo (Básico/Avançado)
-  let currentMode='basic';
-
-  // Para sincronizar banner com cálculo
-  let lastCalculatedMargin = 0;
+  var canvas=document.getElementById('simCanvas');
+  var ctx=canvas.getContext('2d');
+  var running=false, crashed=false, finished=false;
+  var world={groundY:0};
+  var anchor={x:0,y:0,fq:0};
+  var worker={x:0,y:0,vx:0,vy:0,startY:0, heightM: 1.65, heightPx: 0};
+  var rope={lengthM:1.5};
+  var config={workHeightM:6.0, useDecel:true, decelM:1.20, elasticityPerc:10};
+  var currentMode='basic';
+  var lastCalculatedMargin = 0;
 
   /* Inputs e KPIs */
-  const inHeight=document.getElementById('input-height');
-  const inWorkerHeight=document.getElementById('input-worker-height');
-  const inLength=document.getElementById('input-l');
-  const inAnchor=document.getElementById('input-anchor');
-  const chkDec=document.getElementById('chk-dec');
-  const inDec=document.getElementById('input-dec');
-  const inElasticity=document.getElementById('input-elasticity');
+  var inHeight=document.getElementById('input-height');
+  var inWorkerHeight=document.getElementById('input-worker-height');
+  var inLength=document.getElementById('input-l');
+  var inAnchor=document.getElementById('input-anchor');
+  var chkDec=document.getElementById('chk-dec');
+  var inDec=document.getElementById('input-dec');
+  var inElasticity=document.getElementById('input-elasticity');
 
-  const lblHeight=document.getElementById('val-height');
-  const lblWorkerHeight=document.getElementById('val-worker-height');
-  const lblLength=document.getElementById('val-l');
-  const lblAnchor=document.getElementById('val-anchor');
-  const lblDec=document.getElementById('val-dec');
+  var lblHeight=document.getElementById('val-height');
+  var lblWorkerHeight=document.getElementById('val-worker-height');
+  var lblLength=document.getElementById('val-l');
+  var lblAnchor=document.getElementById('val-anchor');
+  var lblDec=document.getElementById('val-dec');
+  var lblElasticity=document.getElementById('val-elasticity');
 
-  const elDQ=document.getElementById('kpi-dq');
-  const elL=document.getElementById('kpi-L');
-  const elDec=document.getElementById('kpi-dec');
-  const elElasticity=document.getElementById('kpi-elasticity');
-  const elBody=document.getElementById('kpi-body');
-  const elSafe=document.getElementById('kpi-safe');
-  const elQTotal=document.getElementById('kpi-qtotal');
-  const elZLQreq=document.getElementById('kpi-zlq-req');
-  const elZLQres=document.getElementById('kpi-zlq-res');
-  const elStatus=document.getElementById('kpi-status');
+  var elDQ=document.getElementById('kpi-dq');
+  var elL=document.getElementById('kpi-L');
+  var elDec=document.getElementById('kpi-dec');
+  var elElasticity=document.getElementById('kpi-elasticity');
+  var elBody=document.getElementById('kpi-body');
+  var elSafe=document.getElementById('kpi-safe');
+  var elQTotal=document.getElementById('kpi-qtotal');
+  var elZLQreq=document.getElementById('kpi-zlq-req');
+  var elZLQres=document.getElementById('kpi-zlq-res');
+  var elStatus=document.getElementById('kpi-status');
 
-  const btnBasic=document.getElementById('btn-basic');
-  const btnAdv=document.getElementById('btn-adv');
-  const cgWorker=document.getElementById('cg-worker');
-  const cgElasticity=document.getElementById('cg-elasticity');
-  const rowsElasticity=document.querySelectorAll('.row-elasticity');
+  var btnBasic=document.getElementById('btn-basic');
+  var btnAdv=document.getElementById('btn-adv');
+  var cgWorker=document.getElementById('cg-worker');
+  var cgElasticity=document.getElementById('cg-elasticity');
+
+  function rowsElasticitySetDisplay(display){
+    var rows=document.querySelectorAll('.row-elasticity');
+    for(var i=0;i<rows.length;i++){ rows[i].style.display=display; }
+  }
 
   /* Tabs de modo */
-  btnBasic.addEventListener('click', ()=>{ setMode('basic'); });
-  btnAdv.addEventListener('click', ()=>{ setMode('advanced'); });
+  btnBasic.addEventListener('click', function(){ setMode('basic'); });
+  btnAdv.addEventListener('click', function(){ setMode('advanced'); });
 
   function setMode(mode){
     currentMode = mode;
     btnBasic.classList.toggle('active', mode==='basic');
     btnAdv.classList.toggle('active', mode==='advanced');
 
-    const showAdv = (mode==='advanced');
+    var showAdv = (mode==='advanced');
     cgWorker.style.display = showAdv?'block':'none';
     cgElasticity.style.display = showAdv?'block':'none';
-    rowsElasticity.forEach(r=> r.style.display = showAdv?'flex':'none');
+    rowsElasticitySetDisplay(showAdv?'flex':'none');
 
     updateSettings();
   }
 
   function resize(){
-    canvas.width=document.getElementById('stage').offsetWidth;
-    canvas.height=document.getElementById('stage').offsetHeight;
+    var stage=document.getElementById('stage');
+    canvas.width=stage.offsetWidth;
+    canvas.height=stage.offsetHeight;
     world.groundY=canvas.height-40;
     resetSimulation();
-    drawScene(); // garante primeiro desenho
+    drawScene();
   }
   window.addEventListener('resize',resize);
 
   function updateSettings(){
     config.workHeightM=parseFloat(inHeight.value);
-    worker.heightM=parseFloat(inWorkerHeight?.value || worker.heightM);
+    // altura do trabalhador fica fixa em 1,65; só muda se estiver no modo avançado e o usuário ajustar
+    if (currentMode==='advanced' && inWorkerHeight) {
+      worker.heightM=parseFloat(inWorkerHeight.value);
+      lblWorkerHeight.innerText=worker.heightM.toFixed(2)+"m";
+    }
     rope.lengthM=parseFloat(inLength.value);
     anchor.fq=parseInt(inAnchor.value);
     config.useDecel=chkDec.checked;
     config.decelM=parseFloat(inDec.value);
-    config.elasticityPerc=parseInt(inElasticity.value);
+    if (lblElasticity) lblElasticity.innerText = config.elasticityPerc+"%";
+    if (currentMode==='advanced' && inElasticity){ config.elasticityPerc=parseInt(inElasticity.value); }
 
     lblHeight.innerText=config.workHeightM.toFixed(1)+"m";
-    if (lblWorkerHeight) lblWorkerHeight.innerText=worker.heightM.toFixed(2)+"m";
     lblLength.innerText=rope.lengthM.toFixed(1)+"m";
     lblDec.innerText=config.decelM.toFixed(2)+"m";
-    document.getElementById('val-elasticity')?.innerText=config.elasticityPerc+"%";
     lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
 
-    /* >>> CORREÇÃO PRINCIPAL: escala correta do avatar */
-    worker.heightPx = worker.heightM * PX_PER_METER;  // 1,65 m ≈ 82,5 px
+    // Escala visível (mínimo visual para não sumir)
+    worker.heightPx = Math.max(70, worker.heightM * PX_PER_METER);
 
     if(!running){
-      const feetY=world.groundY-(config.workHeightM*PX_PER_METER);
+      var feetY=world.groundY-(config.workHeightM*PX_PER_METER);
       worker.y=feetY-worker.heightPx; worker.x=canvas.width/2; worker.startY=worker.y;
 
-      const bodyDist = getBodyDistance(worker.heightM);
-      const dRingY=feetY - (bodyDist * PX_PER_METER);
+      var bodyDist = getBodyDistance(worker.heightM);
+      var dRingY=feetY - (bodyDist * PX_PER_METER);
       if(anchor.fq===0) anchor.y=dRingY-(1.5*PX_PER_METER);
       else if(anchor.fq===1) anchor.y=dRingY;
       else anchor.y=feetY;
@@ -264,8 +304,18 @@
     if(!running) drawScene();
   }
 
-  [inHeight,inWorkerHeight,inLength,inAnchor,chkDec,inDec,inElasticity]
-  .forEach(el=>el.addEventListener('input',updateSettings));
+  // Listeners dos controles
+  inHeight.addEventListener('input', updateSettings);
+  if (inWorkerHeight) inWorkerHeight.addEventListener('input', updateSettings);
+  inLength.addEventListener('input', updateSettings);
+  inAnchor.addEventListener('input', updateSettings);
+  chkDec.addEventListener('input', updateSettings);
+  inDec.addEventListener('input', updateSettings);
+  if (inElasticity) inElasticity.addEventListener('input', updateSettings);
+
+  // Botões ação
+  document.getElementById('btn-simular').addEventListener('click', startSimulation);
+  document.getElementById('btn-reset').addEventListener('click', resetSimulation);
 
   /* Simulação */
   function loop(){
@@ -283,17 +333,17 @@
       }
     }
 
-    const dRingY=worker.y + (worker.heightPx * 0.3);
-    const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
+    var dRingY=worker.y + (worker.heightPx * 0.3);
+    var dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
 
-    const physDec = config.useDecel ? config.decelM : 0.0;
-    const maxDistPx=(rope.lengthM + physDec)*PX_PER_METER;
+    var physDec = config.useDecel ? config.decelM : 0.0;
+    var maxDistPx=(rope.lengthM + physDec)*PX_PER_METER;
 
     if(dist>maxDistPx && !crashed){
-      const angle=Math.atan2(dy,dx);
-      const pullX=Math.cos(angle)*maxDistPx+anchor.x;
-      const pullY=Math.sin(angle)*maxDistPx+anchor.y;
-      const k=0.08; worker.vx-=(worker.x-pullX)*k; worker.vy-=(dRingY-pullY)*k;
+      var angle=Math.atan2(dy,dx);
+      var pullX=Math.cos(angle)*maxDistPx+anchor.x;
+      var pullY=Math.sin(angle)*maxDistPx+anchor.y;
+      var k=0.08; worker.vx-=(worker.x-pullX)*k; worker.vy-=(dRingY-pullY)*k;
 
       if(Math.abs(worker.vy)<0.1 && Math.abs(worker.vx)<0.1 && !finished){
         finished=true;
@@ -309,7 +359,7 @@
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawRulers();
 
-    const platformY=worker.startY+worker.heightPx;
+    var platformY=worker.startY+worker.heightPx;
     ctx.beginPath(); ctx.moveTo(0,platformY); ctx.lineTo(canvas.width,platformY);
     ctx.strokeStyle="#bdc3c7"; ctx.lineWidth=4; ctx.setLineDash([10,10]); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle="#7f8c8d"; ctx.font="bold 12px Inter"; ctx.fillText("PLATAFORMA DE TRABALHO",10,platformY-5);
@@ -318,18 +368,18 @@
     ctx.fillStyle="#8d6e63"; ctx.fillRect(0,world.groundY,canvas.width,5);
     ctx.fillStyle="rgba(255,255,255,0.3)"; ctx.fillText("SOLO (NÍVEL 0)",canvas.width/2-40,world.groundY+25);
 
-    const dRingY=worker.y + (worker.heightPx * 0.3);
+    var dRingY=worker.y + (worker.heightPx * 0.3);
     ctx.beginPath(); ctx.moveTo(anchor.x,anchor.y);
-    const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
-    const ropePx=rope.lengthM*PX_PER_METER;
+    var dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
+    var ropePx=rope.lengthM*PX_PER_METER;
 
     if(dist<ropePx && !crashed && !finished){
-      const slack=(ropePx-dist)*0.6;
+      var slack=(ropePx-dist)*0.6;
       ctx.quadraticCurveTo(anchor.x+dx/2,anchor.y+dy+slack,worker.x,dRingY);
-      ctx.strokeStyle=varGet('--cor-corda'); ctx.lineWidth=3;
+      ctx.strokeStyle=getVar('--cor-corda'); ctx.lineWidth=3;
     }else{
       ctx.lineTo(worker.x,dRingY);
-      ctx.strokeStyle=(dist>ropePx)?"#c0392b":varGet('--cor-corda');
+      ctx.strokeStyle=(dist>ropePx)?"#c0392b":getVar('--cor-corda');
       ctx.lineWidth=(dist>ropePx)?2:3;
     }
     ctx.stroke();
@@ -339,7 +389,7 @@
     ctx.save(); ctx.translate(worker.x,worker.y);
     if(crashed){ ctx.translate(0,worker.heightPx); ctx.rotate(-Math.PI/2); ctx.translate(0,-worker.heightPx); }
     else if(running){ ctx.rotate(worker.vx*0.05); }
-    const wH = worker.heightPx;
+    var wH = worker.heightPx;
     ctx.fillStyle="#3498db"; ctx.fillRect(-wH*0.15, wH*0.2, wH*0.3, wH*0.4);
     ctx.fillStyle="#2c3e50"; ctx.fillRect(-wH*0.16, wH*0.3, wH*0.32, wH*0.08);
     ctx.fillStyle="#34495e"; ctx.fillRect(-wH*0.12, wH*0.6, wH*0.1, wH*0.4); ctx.fillRect(wH*0.02, wH*0.6, wH*0.1, wH*0.4);
@@ -347,13 +397,18 @@
     ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(0,wH*0.08,wH*0.13,Math.PI,0); ctx.fill();
     ctx.restore();
   }
-  function varGet(name){ return getComputedStyle(document.documentElement).getPropertyValue(name)||"#f39c12"; }
+
+  function getVar(name){
+    var v=getComputedStyle(document.documentElement).getPropertyValue(name);
+    return v && v.trim() ? v : "#f39c12";
+  }
+
   function drawRulers(){
-    const meters=Math.ceil(canvas.height/PX_PER_METER);
+    var meters=Math.ceil(canvas.height/PX_PER_METER);
     ctx.strokeStyle="rgba(0,0,0,0.05)"; ctx.lineWidth=1;
     ctx.fillStyle="rgba(0,0,0,0.3)"; ctx.font="10px Inter";
-    for(let i=0;i<=meters;i++){
-      const y=world.groundY-(i*PX_PER_METER); if(y<0) break;
+    for(var i=0;i<=meters;i++){
+      var y=world.groundY-(i*PX_PER_METER); if(y<0) break;
       ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
       if(i>0) ctx.fillText(i+"m",canvas.width-30,y+3);
     }
@@ -364,24 +419,29 @@
     if(running) return;
     updateSettings();
     running=true; crashed=false; finished=false;
-    const el=document.getElementById('alert-overlay'); el.style.opacity=0; el.className='';
+    var el=document.getElementById('alert-overlay'); el.style.opacity=0; el.className='';
 
-    const isSafe = lastCalculatedMargin >= 0;
+    // Banner alinhado ao cálculo (matemático)
+    var isSafe = lastCalculatedMargin >= 0;
     showBanner(isSafe ? "QUEDA AMPARADA" : "COLISÃO COM O SOLO!", isSafe);
 
     loop();
   }
+
   function resetSimulation(){
     running=false; crashed=false; finished=false; worker.vx=0; worker.vy=0;
-    document.getElementById('alert-overlay').style.opacity=0; updateSettings();
+    document.getElementById('alert-overlay').style.opacity=0;
+    updateSettings();
+    drawScene();
   }
+
   function showBanner(text, safe){
-    const el=document.getElementById('alert-overlay');
+    var el=document.getElementById('alert-overlay');
     el.innerText=text; el.className=safe?"success-overlay":"";
-    setTimeout(() => {
+    setTimeout(function(){
       el.style.opacity=1;
       el.style.transform="translate(-50%,-50%) scale(1.1)";
-      setTimeout(()=>el.style.transform="translate(-50%,-50%) scale(1)",200);
+      setTimeout(function(){ el.style.transform="translate(-50%,-50%) scale(1)"; },200);
     }, 800);
   }
 
@@ -389,25 +449,25 @@
   function getBodyDistance(workerHeight) {
     return workerHeight * 0.85; // distância D-ring → pés (aprox.)
   }
+
   function calcDQ(fq, L, bodyDist){
     if (fq === 0) return 0.6;
     if (fq === 1) return L;
     if (fq === 2) return L + bodyDist;
     return 0;
   }
+
   function calcKPIs(){
-    const L = rope.lengthM, H = config.workHeightM, FQ = anchor.fq, WORKER_H = worker.heightM;
-    const BODY = getBodyDistance(WORKER_H);
-    const DQ = calcDQ(FQ, L, BODY);
+    var L = rope.lengthM, H = config.workHeightM, FQ = anchor.fq, WORKER_H = worker.heightM;
+    var BODY = getBodyDistance(WORKER_H);
+    var DQ = calcDQ(FQ, L, BODY);
 
-    const DECEL = config.useDecel ? config.decelM : 0.0;
+    var DECEL = config.useDecel ? config.decelM : 0.0;
+    var EL = (currentMode === 'advanced') ? ((L + DECEL) * (config.elasticityPerc / 100)) : 0.0;
 
-    const EL = (currentMode === 'advanced') ? ((L + DECEL) * (config.elasticityPerc / 100)) : 0.0;
-
-    const QTOTAL = +(DQ + DECEL + EL).toFixed(3);
-
-    const ZLQreq = +(QTOTAL + BODY + SAFETY).toFixed(2);
-    const MarginOfSafety = +(H - ZLQreq).toFixed(2);
+    var QTOTAL = +(DQ + DECEL + EL).toFixed(3);
+    var ZLQreq = +(QTOTAL + BODY + SAFETY).toFixed(2);
+    var MarginOfSafety = +(H - ZLQreq).toFixed(2);
     lastCalculatedMargin = MarginOfSafety;
 
     elDQ.innerText = DQ.toFixed(2)+" m";
@@ -420,25 +480,36 @@
     elZLQreq.innerText = ZLQreq.toFixed(2)+" m";
 
     elZLQres.innerText = (MarginOfSafety>=0?"+":"")+MarginOfSafety.toFixed(2)+" m";
-    if (MarginOfSafety >= 1.0){ elZLQres.className="kpi-value ok";   elStatus.className="kpi-status ok";   elStatus.innerText="SEGURO (Margem ≥ 1,0 m)"; }
-    else if (MarginOfSafety >= 0){ elZLQres.className="kpi-value warn"; elStatus.className="kpi-status warn"; elStatus.innerText="INSUFICIENTE (Margem 0–1,0 m)"; }
-    else { elZLQres.className="kpi-value bad";  elStatus.className="kpi-status bad";  elStatus.innerText="COLISÃO (Margem negativa)"; }
+    if (MarginOfSafety >= 1.0){
+      elZLQres.className="kpi-value ok";
+      elStatus.className="kpi-status ok";
+      elStatus.innerText="SEGURO (Margem ≥ 1,0 m)";
+    } else if (MarginOfSafety >= 0){
+      elZLQres.className="kpi-value warn";
+      elStatus.className="kpi-status warn";
+      elStatus.innerText="INSUFICIENTE (Margem 0–1,0 m)";
+    } else {
+      elZLQres.className="kpi-value bad";
+      elStatus.className="kpi-status bad";
+      elStatus.innerText="COLISÃO (Margem negativa)";
+    }
 
-    const showAdv = (currentMode==='advanced');
-    document.getElementById('cg-worker').style.display = showAdv?'block':'none';
-    document.getElementById('cg-elasticity').style.display = showAdv?'block':'none';
-    document.querySelectorAll('.row-elasticity').forEach(r=> r.style.display = showAdv?'flex':'none');
-
-    inElasticity.disabled = !showAdv;
+    // Reflete modo na UI
+    var showAdv = (currentMode==='advanced');
+    cgWorker.style.display = showAdv?'block':'none';
+    cgElasticity.style.display = showAdv?'block':'none';
+    rowsElasticitySetDisplay(showAdv?'flex':'none');
+    if (inElasticity) inElasticity.disabled = !showAdv;
   }
 
-  /* Boot */
-  setTimeout(()=>{ 
-    resize(); 
+  /* Boot seguro */
+  window.addEventListener('load', function(){
+    // Garanta que o modo inicial esteja aplicado antes do primeiro cálculo
     setMode('basic'); // inicia em Básico
-    updateSettings(); 
-    drawScene(); // força primeira renderização
-  },100);
+    resize();
+    updateSettings();
+    drawScene();
+  });
 </script>
 </body>
 </html>
