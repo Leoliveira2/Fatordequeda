@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Simulador NR-35 (V11: Básico/Avançado + Consistência EL)</title>
+<title>Simulador NR-35 (V12: Decisão do Usuário sobre Absorvedor)</title>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
@@ -96,10 +96,10 @@
         <label for="chk-dec" style="margin:0">Usar absorvedor</label>
       </div>
       <div class="inline" style="margin-top:6px">
-        <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20" style="flex:1">
+        <input type="range" id="input-dec" min="0.00" max="1.80" step="0.05" value="1.20" style="flex:1">
         <span id="val-dec" class="val-display">1.20m</span>
       </div>
-      <div id="dec-warning" class="hint"></div>
+      <div id="dec-warning" class="hint">Opcional — selecione conforme o equipamento a simular.</div>
     </div>
 
     <!-- Elasticidade (apenas Avançado) -->
@@ -123,7 +123,7 @@
         <div class="kpi-title">MARGEM DE SEGURANÇA (Distância dos pés ao solo)</div>
         <div class="kpi-value" id="kpi-zlq-res">-- m</div>
         <div class="kpi-status" id="kpi-status">--</div>
-        <div class="tooltip" id="kpi-tip">Critério NR-35: Margem de Segurança ≥ 1,0 m.</div>
+        <div class="tooltip" id="kpi-tip">Critério de referência: Margem de Segurança ≥ 1,0 m.</div>
       </div>
 
       <div class="kpi-box">
@@ -183,7 +183,6 @@
   const lblAnchor=document.getElementById('val-anchor');
   const lblDec=document.getElementById('val-dec');
   const lblElasticity=document.getElementById('val-elasticity');
-  const decWarn=document.getElementById('dec-warning');
 
   const elDQ=document.getElementById('kpi-dq');
   const elL=document.getElementById('kpi-L');
@@ -211,13 +210,11 @@
     btnBasic.classList.toggle('active', mode==='basic');
     btnAdv.classList.toggle('active', mode==='advanced');
 
-    // mostrar/ocultar grupos Avançado
     const showAdv = (mode==='advanced');
     cgWorker.style.display = showAdv?'block':'none';
     cgElasticity.style.display = showAdv?'block':'none';
     rowsElasticity.forEach(r=> r.style.display = showAdv?'flex':'none');
 
-    // no Básico, elasticidade não se aplica
     updateSettings();
   }
 
@@ -231,7 +228,7 @@
 
   function updateSettings(){
     config.workHeightM=parseFloat(inHeight.value);
-    worker.heightM=parseFloat(inWorkerHeight.value);
+    worker.heightM=parseFloat(inWorkerHeight?.value || worker.heightM);
     rope.lengthM=parseFloat(inLength.value);
     anchor.fq=parseInt(inAnchor.value);
     config.useDecel=chkDec.checked;
@@ -239,10 +236,12 @@
     config.elasticityPerc=parseInt(inElasticity.value);
 
     lblHeight.innerText=config.workHeightM.toFixed(1)+"m";
-    lblWorkerHeight.innerText=worker.heightM.toFixed(2)+"m";
+    if (document.getElementById('val-worker-height')) {
+      document.getElementById('val-worker-height').innerText=worker.heightM.toFixed(2)+"m";
+    }
     lblLength.innerText=rope.lengthM.toFixed(1)+"m";
     lblDec.innerText=config.decelM.toFixed(2)+"m";
-    lblElasticity.innerText=config.elasticityPerc+"%";
+    document.getElementById('val-elasticity').innerText=config.elasticityPerc+"%";
     lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
 
     // altura visual do boneco proporcional à altura real (sem alterar dinâmica)
@@ -260,19 +259,8 @@
       anchor.x=worker.x-20;
     }
 
-    // DQ para regra do absorvedor
-    const dqTmp = calcDQ(anchor.fq, rope.lengthM, getBodyDistance(worker.heightM));
-
-    // absorvedor obrigatório se DQ > 0,6 m
-    if (dqTmp > 0.6){
-      chkDec.checked = true; chkDec.disabled = true; config.useDecel = true;
-      decWarn.innerHTML = '<span class="warn">Queda livre &gt; 0,6 m → absorvedor obrigatório.</span>';
-    } else {
-      chkDec.disabled = false;
-      decWarn.textContent = 'Desmarque para simular talabarte sem absorvedor (0,00 m).';
-    }
+    // Slider do absorvedor só fica ativo quando a opção estiver marcada
     inDec.disabled = !config.useDecel;
-    lblDec.style.opacity = config.useDecel ? 1 : 0.5;
 
     calcKPIs();
     if(!running) drawScene();
@@ -300,7 +288,7 @@
     const dRingY=worker.y + (worker.heightPx * 0.3);
     const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
 
-    // absorvedor só entra na física visual; elasticidade visual não é aplicada
+    // Para a física visual consideramos apenas L e DEC (EL é efeito de cálculo, não animação)
     const physDec = config.useDecel ? config.decelM : 0.0;
     const maxDistPx=(rope.lengthM + physDec)*PX_PER_METER;
 
@@ -405,8 +393,8 @@
     return workerHeight * 0.85; // distância D-ring → pés (aprox.)
   }
   function calcDQ(fq, L, bodyDist){
-    if (fq === 0) return 0.6;      // FQ0
-    if (fq === 1) return L;        // FQ1
+    if (fq === 0) return 0.6;          // FQ0 (folga mínima)
+    if (fq === 1) return L;            // FQ1
     if (fq === 2) return L + bodyDist; // FQ2
     return 0;
   }
@@ -420,7 +408,7 @@
     // Elasticidade: apenas no modo Avançado
     const EL = (currentMode === 'advanced') ? ((L + DECEL) * (config.elasticityPerc / 100)) : 0.0;
 
-    // Queda total até ponto de conexão (usar SEMPRE esta mesma variável)
+    // Queda total até ponto de conexão
     const QTOTAL = +(DQ + DECEL + EL).toFixed(3);
 
     // ZLQ necessária e Margem
@@ -443,13 +431,12 @@
     else if (MarginOfSafety >= 0){ elZLQres.className="kpi-value warn"; elStatus.className="kpi-status warn"; elStatus.innerText="INSUFICIENTE (Margem 0–1,0 m)"; }
     else { elZLQres.className="kpi-value bad";  elStatus.className="kpi-status bad";  elStatus.innerText="COLISÃO (Margem negativa)"; }
 
-    // Mostrar/ocultar campos de elasticidade conforme modo (também aqui para consistência)
+    // Mostrar/ocultar campos de elasticidade conforme modo
     const showAdv = (currentMode==='advanced');
     document.getElementById('cg-worker').style.display = showAdv?'block':'none';
     document.getElementById('cg-elasticity').style.display = showAdv?'block':'none';
-    rowsElasticity.forEach(r=> r.style.display = showAdv?'flex':'none');
+    document.querySelectorAll('.row-elasticity').forEach(r=> r.style.display = showAdv?'flex':'none');
 
-    // Em Básico, não permitir ajustar a elasticidade (ignorada)
     inElasticity.disabled = !showAdv;
   }
 
