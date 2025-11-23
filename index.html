@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Simulador NR-35 (V12.1: Altura padrão 1,65 m)</title>
+<title>Simulador NR-35 (V12.2: Avatar visível)</title>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
@@ -159,7 +159,7 @@
   const canvas=document.getElementById('simCanvas'); const ctx=canvas.getContext('2d');
   let running=false,crashed=false,finished=false;
   let world={groundY:0},anchor={x:0,y:0,fq:0},
-      worker={x:0,y:0,vx:0,vy:0,startY:0, heightM: 1.65, heightPx: 0}; /* <<< 1,65 m padrão */
+      worker={x:0,y:0,vx:0,vy:0,startY:0, heightM: 1.65, heightPx: 0};
   let rope={lengthM:1.5};
   let config={workHeightM:6.0, useDecel:true, decelM:1.20, elasticityPerc:10};
 
@@ -223,12 +223,13 @@
     canvas.height=document.getElementById('stage').offsetHeight;
     world.groundY=canvas.height-40;
     resetSimulation();
+    drawScene(); // garante primeiro desenho
   }
   window.addEventListener('resize',resize);
 
   function updateSettings(){
     config.workHeightM=parseFloat(inHeight.value);
-    worker.heightM=parseFloat(inWorkerHeight?.value || worker.heightM); // manter 1,65 m no Básico
+    worker.heightM=parseFloat(inWorkerHeight?.value || worker.heightM);
     rope.lengthM=parseFloat(inLength.value);
     anchor.fq=parseInt(inAnchor.value);
     config.useDecel=chkDec.checked;
@@ -242,7 +243,8 @@
     document.getElementById('val-elasticity')?.innerText=config.elasticityPerc+"%";
     lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
 
-    worker.heightPx = worker.heightM * PX_PER_METER * 0.5;
+    /* >>> CORREÇÃO PRINCIPAL: escala correta do avatar */
+    worker.heightPx = worker.heightM * PX_PER_METER;  // 1,65 m ≈ 82,5 px
 
     if(!running){
       const feetY=world.groundY-(config.workHeightM*PX_PER_METER);
@@ -435,6 +437,7 @@
     resize(); 
     setMode('basic'); // inicia em Básico
     updateSettings(); 
+    drawScene(); // força primeira renderização
   },100);
 </script>
 </body>
