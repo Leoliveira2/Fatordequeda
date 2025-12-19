@@ -241,12 +241,9 @@ function updateData(){
   UI.kMargin.innerText = (state.Margin > 0 ? "+":"") + mVal + " m";
   
   UI.cardRes.className = "kpi-card full";
-  if(state.Margin >= 0.5) {
+  if(state.Margin >= 0) {
     UI.cardRes.classList.add('status-safe');
     UI.kStatus.innerText = "✓ ZONA SEGURA";
-  } else if(state.Margin >= 0) {
-    UI.cardRes.classList.add('status-warn');
-    UI.kStatus.innerText = "⚠ ATENÇÃO (Margem baixa)";
   } else {
     UI.cardRes.classList.add('status-danger');
     UI.kStatus.innerText = "✗ COLISÃO COM SOLO";
@@ -448,12 +445,11 @@ function runSim(){
 
 function finishSim(){
   const isSafe = state.Margin >= 0;
-  UI.overlay.className = isSafe ? (state.Margin >= 1 ? "st-ok show" : "st-warn show") : "st-bad show";
+  UI.overlay.className = isSafe ? "st-ok show" : "st-bad show";
   
   let msg = "";
   let icon = "";
-  if(state.Margin >= 1.0){ msg="QUEDA RETIDA COM SEGURANÇA"; icon="🛡️"; }
-  else if(state.Margin >= 0){ msg="MARGEM DE SEGURANÇA INVADIDA"; icon="⚠️"; }
+  if(state.Margin >= 0){ msg="QUEDA RETIDA COM SEGURANÇA"; icon="🛡️"; }
   else { msg="COLISÃO FATAL COM O SOLO"; icon="💀"; }
   
   UI.overlay.innerHTML = `<span>${icon}</span> ${msg}`;
