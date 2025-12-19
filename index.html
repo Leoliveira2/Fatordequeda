@@ -61,7 +61,7 @@
     flex:1; position:relative; background:linear-gradient(to bottom, #dbebf0 0%, #ecf5f7 100%);
     border-radius:12px; border:4px solid #fff; box-shadow:0 8px 24px rgba(0,0,0,0.05); overflow:hidden;
   }
-  canvas{display:block; width:100%; height:100%;}
+  canvas{position:absolute; inset:0; display:block; width:100%; height:100%;}
   
   #overlay-msg{
     position:absolute; top:20px; left:50%; transform:translateX(-50%) translateY(-20px);
@@ -241,12 +241,9 @@ function updateData(){
   UI.kMargin.innerText = (state.Margin > 0 ? "+":"") + mVal + " m";
   
   UI.cardRes.className = "kpi-card full";
-  if(state.Margin >= 0.5) {
+  if(state.Margin >= 0) {
     UI.cardRes.classList.add('status-safe');
     UI.kStatus.innerText = "✓ ZONA SEGURA";
-  } else if(state.Margin >= 0) {
-    UI.cardRes.classList.add('status-warn');
-    UI.kStatus.innerText = "⚠ ATENÇÃO (Margem baixa)";
   } else {
     UI.cardRes.classList.add('status-danger');
     UI.kStatus.innerText = "✗ COLISÃO COM SOLO";
@@ -259,8 +256,15 @@ function updateData(){
 
 function resize(){
   const cont = document.getElementById('stage-cont');
-  W = UI.canvas.width = cont.offsetWidth;
-  H_px = UI.canvas.height = cont.offsetHeight;
+  const rect = cont.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  UI.canvas.width = rect.width * dpr;
+  UI.canvas.height = rect.height * dpr;
+  UI.canvas.style.width = `${rect.width}px`;
+  UI.canvas.style.height = `${rect.height}px`;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  W = rect.width;
+  H_px = rect.height;
   groundY = H_px - 40;
   // Escala dinâmica: tenta encaixar a altura de trabalho + um respiro
   const maxViewM = Math.max(state.H + 2, 8); 
@@ -448,12 +452,11 @@ function runSim(){
 
 function finishSim(){
   const isSafe = state.Margin >= 0;
-  UI.overlay.className = isSafe ? (state.Margin >= 1 ? "st-ok show" : "st-warn show") : "st-bad show";
+  UI.overlay.className = isSafe ? "st-ok show" : "st-bad show";
   
   let msg = "";
   let icon = "";
-  if(state.Margin >= 1.0){ msg="QUEDA RETIDA COM SEGURANÇA"; icon="🛡️"; }
-  else if(state.Margin >= 0){ msg="MARGEM DE SEGURANÇA INVADIDA"; icon="⚠️"; }
+  if(state.Margin >= 0){ msg="QUEDA RETIDA COM SEGURANÇA"; icon="🛡️"; }
   else { msg="COLISÃO FATAL COM O SOLO"; icon="💀"; }
   
   UI.overlay.innerHTML = `<span>${icon}</span> ${msg}`;
@@ -467,7 +470,11 @@ function resetSim(){
 }
 
 // Boot
-init();
+if (document.readyState !== "loading") {
+  init();
+} else {
+  window.addEventListener('load', init);
+}
 
 </script>
 </body>
