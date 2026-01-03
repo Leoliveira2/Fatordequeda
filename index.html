@@ -249,7 +249,10 @@ function updateData(){
     UI.kStatus.innerText = "✗ COLISÃO COM SOLO";
   }
 
-  if(!state.isFallen) draw();
+  if(!state.isFallen) {
+    state.animY = getCoords().dRingY;
+    draw();
+  }
 }
 
 /* ---- CANVAS & VISUALS ---- */
@@ -419,6 +422,7 @@ function runSim(){
   // mas vamos deixar passar para mostrar o erro)
   
   state.isFallen = true;
+  state.animY = c.dRingY;
   
   // Animação
   let start = null;
