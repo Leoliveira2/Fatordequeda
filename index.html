@@ -196,7 +196,6 @@ function init(){
 function addEvents(){
   [UI.inH, UI.inL, UI.inDec, UI.inFq].forEach(el => el.addEventListener('input', () => {
     resetSim();
-    updateData();
   }));
   document.getElementById('btn-sim').addEventListener('click', runSim);
   document.getElementById('btn-rst').addEventListener('click', resetSim);
@@ -220,6 +219,8 @@ function updateData(){
   
   state.ZLQ = state.DQ + state.DEC + state.EL + CFG.BODY + CFG.SAFE;
   state.Margin = state.H - state.ZLQ;
+
+  syncScale();
 
   // 3. Update UI Text
   UI.dispH.innerText = state.H.toFixed(1)+'m';
@@ -257,15 +258,19 @@ function updateData(){
 
 /* ---- CANVAS & VISUALS ---- */
 
+function syncScale(){
+  if(typeof groundY !== 'number') return;
+  const maxViewM = Math.max(state.H + 2, 8);
+  pxPerM = (groundY - 50) / maxViewM;
+}
+
 function resize(){
   const cont = document.getElementById('stage-cont');
   W = UI.canvas.width = cont.offsetWidth;
   H_px = UI.canvas.height = cont.offsetHeight;
   groundY = H_px - 40;
-  // Escala dinâmica: tenta encaixar a altura de trabalho + um respiro
-  const maxViewM = Math.max(state.H + 2, 8); 
-  pxPerM = (groundY - 50) / maxViewM;
-  if(!state.isFallen) draw();
+  syncScale();
+  draw();
 }
 
 function getCoords(){
