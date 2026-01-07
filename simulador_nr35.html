@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador NR-35 (V15: Responsividade Móvel)</title>
+<title>Simulador NR-35 (V16: Correções Essenciais)</title>
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap");
 
@@ -70,35 +70,42 @@
       padding: 10px;
       height: auto; /* Permite que o body se ajuste ao conteúdo */
       overflow-y: auto; /* Permite rolagem no body */
+      gap: 10px; /* Reduz o espaçamento entre os elementos */
     }
 
     .sidebar {
       width: 100%; /* Sidebar ocupa toda a largura */
-      max-height: 80vh; /* Limita a altura da sidebar para não ocupar a tela toda */
+      max-height: 70vh; /* Reduz a altura máxima da sidebar para deixar mais espaço para o stage */
       overflow-y: auto; /* Permite rolagem dentro da sidebar se o conteúdo for muito longo */
-      margin-bottom: 20px; /* Espaçamento entre sidebar e stage */
+      margin-bottom: 10px; /* Espaçamento entre sidebar e stage */
+      padding: 15px; /* Reduz o padding */
     }
 
     .stage-container {
       width: 100%; /* Stage ocupa toda a largura */
-      height: 400px; /* Altura fixa para o stage em mobile */
-      min-height: 300px; /* Altura mínima para o stage */
+      height: 350px; /* Altura fixa para o stage em mobile */
+      min-height: 250px; /* Altura mínima para o stage */
     }
 
     .btn-action {
-      padding: 12px;
-      font-size: 0.9rem;
+      padding: 10px;
+      font-size: 0.8rem;
     }
 
-    h2 { font-size: 1.1rem; }
-    .subtitle { font-size: 0.75rem; }
-    label { font-size: 0.8rem; }
-    .val-display { font-size: 0.8rem; }
-    .hint { font-size: 0.7rem; }
-    .kpi-title { font-size: 0.6rem; }
-    .kpi-value { font-size: 1.0rem; }
+    h2 { font-size: 1.0rem; }
+    .subtitle { font-size: 0.7rem; }
+    label { font-size: 0.75rem; }
+    .val-display { font-size: 0.75rem; }
+    .hint { font-size: 0.65rem; }
+    .kpi-title { font-size: 0.55rem; }
+    .kpi-value { font-size: 0.9rem; }
     .kpi-status { font-size: 0.75rem; }
-    .tooltip { font-size: 0.68rem; }
+    .tooltip { font-size: 0.6rem; }
+
+    /* Ajustes específicos para o canvas em mobile */
+    canvas {
+      font-size: 9px; /* Ajusta o tamanho da fonte para a régua */
+    }
   }
 </style>
 </head>
@@ -110,32 +117,32 @@
     </div>
 
     <div class="mode-selector">
-        <button id="btn-basic" class="mode-btn active" onclick="setMode("basic")">Básico</button>
-        <button id="btn-advanced" class="mode-btn" onclick="setMode("advanced")">Avançado</button>
+        <button id="btn-basic" class="mode-btn active" onclick="setMode(\'basic\')">Básico</button>
+        <button id="btn-advanced" class="mode-btn" onclick="setMode(\'advanced\')">Avançado</button>
     </div>
 
     <!-- === CONTROLES BÁSICOS === -->
     <div class="control-group">
       <label>1. Altura de Trabalho (H)</label>
       <span id="val-height" class="val-display">6.0m</span>
-      <input type="range" id="input-height" min="2.0" max="8.0" step="0.5" value="6.0">
+      <input type="range" id="input-height" min="2.0" max="8.0" step="0.5" value="3.0">
       <div class="hint">Altura dos pés em relação ao solo</div>
     </div>
 
     <div class="control-group">
       <label>2. Comp. Talabarte (L)</label>
       <span id="val-l" class="val-display">1.5m</span>
-      <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
+      <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.3">
     </div>
 
     <div class="control-group">
       <label>3. Absorvedor de energia</label>
       <div class="inline">
-        <input type="checkbox" id="chk-dec" checked>
+        <input type="checkbox" id="chk-dec">
         <label for="chk-dec" style="margin:0">Usar absorvedor</label>
       </div>
       <div class="inline" style="margin-top:6px">
-        <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20" style="flex:1">
+        <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20">
         <span id="val-dec" class="val-display">1.20m</span>
       </div>
       <div id="dec-warning" class="hint"></div>
@@ -208,7 +215,7 @@
   let running=false,crashed=false,finished=false;
   let world={groundY:0},anchor={x:0,y:0,fq:0},worker={x:0,y:0,vx:0,vy:0,startY:0, heightM: 1.75, heightPx: 0};
   let rope={lengthM:1.5};
-  let config={workHeightM:6.0, useDecel:true, decelM:1.20, elasticityPerc: 10};
+  let config={workHeightM:3.0, useDecel:false, decelM:1.20, elasticityPerc: 10}; // Alterado valor inicial de workHeightM e useDecel
   let lastCalculatedMargin = 0;
 
   /* Inputs e KPIs */
@@ -238,6 +245,8 @@
   const resultKpiBox = document.getElementById("result-kpi-box");
   const stageContainer = document.getElementById("stage");
 
+  let previousDecelValue = config.decelM; // Para restaurar o valor do absorvedor
+
   function resize(){
     canvas.width=document.getElementById("stage").offsetWidth;
     canvas.height=document.getElementById("stage").offsetHeight;
@@ -252,41 +261,66 @@
     worker.heightM=parseFloat(inWorkerHeight.value);
     rope.lengthM=parseFloat(inLength.value);
     anchor.fq=parseInt(inAnchor.value);
-    config.useDecel=chkDec.checked;
-    config.decelM=parseFloat(inDec.value);
     config.elasticityPerc=parseInt(inElasticity.value);
+
+    // Lógica do Absorvedor de Energia
+    if (chkDec.checked) {
+      config.useDecel = true;
+      inDec.disabled = false;
+      config.decelM = parseFloat(inDec.value);
+      previousDecelValue = config.decelM; // Salva o valor atual
+    } else {
+      config.useDecel = false;
+      inDec.disabled = true;
+      config.decelM = 0.0; // Zera o valor quando desmarcado
+    }
+
     lblHeight.innerText=config.workHeightM.toFixed(1)+"m";
     lblWorkerHeight.innerText=worker.heightM.toFixed(2)+"m";
     lblLength.innerText=rope.lengthM.toFixed(1)+"m";
     lblDec.innerText=config.decelM.toFixed(2)+"m";
     lblElasticity.innerText=config.elasticityPerc+"%";
     lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
-    worker.heightPx = 70; 
+    
+    // Ajuste do tamanho do avatar baseado na escala
+    worker.heightPx = worker.heightM * PX_PER_METER * 0.4; // Proporcional à altura do trabalhador e escala
+    if (worker.heightPx < 40) worker.heightPx = 40; // Altura mínima para o avatar
+
     if(!running){
-      const feetY=world.groundY-(config.workHeightM*PX_PER_METER);
-      worker.y=feetY-worker.heightPx; worker.x=canvas.width/2; worker.startY=worker.y;
+      // Correção da inconsistência entre slider e régua
+      const platformY = world.groundY - (config.workHeightM * PX_PER_METER); // Posição da plataforma baseada na altura de trabalho
+      worker.y = platformY - worker.heightPx; // Pés do trabalhador na plataforma
+      worker.x = canvas.width / 2;
+      worker.startY = worker.y; // Salva a posição inicial para a plataforma
+
       const bodyDist = getBodyDistance(worker.heightM);
-      const dRingY=feetY - (bodyDist * PX_PER_METER);
-      if(anchor.fq===0) anchor.y=dRingY-(1.5*PX_PER_METER);
-      else if(anchor.fq===1) anchor.y=dRingY;
-      else anchor.y=feetY;
-      anchor.x=worker.x-20;
+      const dRingY = platformY - (bodyDist * PX_PER_METER); // Posição do anel D
+      
+      if(anchor.fq===0) anchor.y = dRingY - (1.5 * PX_PER_METER); // 1.5m acima do anel D
+      else if(anchor.fq===1) anchor.y = dRingY;
+      else anchor.y = platformY; // Ancoragem nos pés
+      anchor.x = worker.x - 20;
     }
+
     const dqTmp = calcDQ(anchor.fq, rope.lengthM, BODY_CONST);
     if (dqTmp > 0.6){
       chkDec.checked = true; chkDec.disabled = true; config.useDecel = true;
-      decWarn.innerHTML = '<span class="warn">Queda livre &gt; 0,6 m → uso de absorvedor obrigatório.</span>';
+      decWarn.innerHTML = \'<span class="warn">Queda livre &gt; 0,6 m → uso de absorvedor obrigatório.</span>\';
+      inDec.disabled = false; // Garante que o slider esteja habilitado se for obrigatório
+      config.decelM = previousDecelValue; // Restaura o valor anterior se for obrigatório
     } else {
       chkDec.disabled = false;
-      decWarn.textContent = 'Desmarque para simular talabarte sem absorvedor (0,00 m).';
+      decWarn.textContent = \'Desmarque para simular talabarte sem absorvedor (0,00 m).\';
+      // O estado de inDec.disabled já é tratado pela lógica do absorvedor acima
     }
-    inDec.disabled = !config.useDecel;
     lblDec.style.opacity = config.useDecel ? 1 : 0.5;
+
     calcKPIs();
     if(!running) drawScene();
   }
 
-  [inHeight,inWorkerHeight,inLength,inAnchor,chkDec,inDec,inElasticity].forEach(el=>el.addEventListener("input",updateSettings));
+  [inHeight,inWorkerHeight,inLength,inAnchor,chkDec,inDec,inElasticity].forEach(el=>el.addEventListener(\'input\',updateSettings));
+  chkDec.addEventListener(\'change\', updateSettings); // Adiciona listener para o checkbox
 
   function loop(){
     if(!running) return;
@@ -320,16 +354,18 @@
   function drawScene(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawRulers();
-    const platformY=worker.startY+worker.heightPx;
+    
+    // Posição da plataforma baseada na altura de trabalho do slider
+    const platformY = world.groundY - (config.workHeightM * PX_PER_METER);
     
     // Desenha a Plataforma Padrão
     ctx.beginPath(); ctx.moveTo(0,platformY); ctx.lineTo(canvas.width,platformY);
     ctx.strokeStyle="#bdc3c7"; ctx.lineWidth=4; ctx.setLineDash([10,10]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle="#7f8c8d"; ctx.font="bold 12px Inter"; ctx.fillText("PLATAFORMA DE TRABALHO",10,platformY-5);
+    ctx.fillStyle="#7f8c8d"; ctx.font="bold 12px Inter"; ctx.fillText("PLATAFORMA DE TRABALHO", 20, platformY - 5); // Ajustado X para não cortar
 
     ctx.fillStyle="#5d4037"; ctx.fillRect(0,world.groundY,canvas.width,canvas.height-world.groundY);
     ctx.fillStyle="#8d6e63"; ctx.fillRect(0,world.groundY,canvas.width,5);
-    ctx.fillStyle="rgba(255,255,255,0.3)"; ctx.fillText("SOLO (NÍVEL 0)",canvas.width/2-40,world.groundY+25);
+    ctx.fillStyle="rgba(255,255,255,0.3)"; ctx.font="10px Inter"; ctx.fillText("SOLO (NÍVEL 0)",canvas.width/2-40,world.groundY+25);
     const dRingY=worker.y + (worker.heightPx * 0.3);
     ctx.beginPath(); ctx.moveTo(anchor.x,anchor.y);
     const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
@@ -359,7 +395,14 @@
   function varGet(name){ return getComputedStyle(document.documentElement).getPropertyValue(name)||"#f39c12"; }
   function drawRulers(){
     ctx.strokeStyle="rgba(0,0,0,0.05)"; ctx.lineWidth=1;
-    ctx.fillStyle="rgba(0,0,0,0.3)"; ctx.font="10px Inter";
+    ctx.fillStyle="rgba(0,0,0,0.3)"; 
+    ctx.font="10px Inter"; // Padrão para desktop
+
+    // Ajuste de fonte para mobile
+    if (window.innerWidth <= 768) {
+      ctx.font="8px Inter";
+    }
+
     for(let i=0;i<=MAX_RULER_HEIGHT_M;i++){
       const y=world.groundY-(i*PX_PER_METER); if(y<0) break;
       ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
@@ -371,7 +414,7 @@
     if(running) return;
     updateSettings();
     running=true; crashed=false; finished=false;
-    const el=document.getElementById("alert-overlay"); el.style.opacity=0; el.className='';
+    const el=document.getElementById("alert-overlay"); el.style.opacity=0; el.className=\'\';
     resultKpiBox.classList.remove("result-hidden");
     const isSafe = lastCalculatedMargin >= 0;
     showBanner(isSafe ? "QUEDA AMPARADA" : "COLISÃO COM O SOLO!", isSafe);
