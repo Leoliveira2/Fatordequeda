@@ -3,16 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador NR-35 (V14: Robusto e Funcional)</title>
+<title>Simulador NR-35 (V15: Responsividade Móvel)</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap");
 
   :root{
     --cor-fundo:#eef2f6;--cor-painel:#fff;
     --cor-seguro:#2ecc71;--cor-critico:#e74c3c;--cor-atencao:#f1c40f;
     --cor-corda:#f39c12
   }
-  body{font-family:'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;height:100vh;overflow:hidden;display:flex;gap:20px}
+  body{font-family:
+'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;height:100vh;overflow:hidden;display:flex;gap:20px}
   .sidebar{width:320px;background:var(--cor-painel);padding:20px;border-radius:12px;box-shadow:0 4px 4px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:15px;z-index:10;overflow-y:auto}
   h2{margin:0 0 5px;font-size:1.2rem;color:#2c3e50}.subtitle{font-size:.8rem;color:#7f8c8d;margin-bottom:10px}
   .control-group{border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:5px}
@@ -47,7 +48,6 @@
 
   .result-hidden{visibility:hidden}
 
-  /* Fundo Padrão (Sem dependência de imagem) */
   .stage-container{
     flex:1;
     background: linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%);
@@ -62,6 +62,44 @@
 
   #alert-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(231,76,60,.95);color:#fff;padding:30px 50px;border-radius:12px;font-size:2.0rem;font-weight:900;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 20px 50px rgba(0,0,0,.4);border:4px solid #fff}
   .success-overlay{background:rgba(46,204,113,.95)!important}
+
+  /* --- Media Queries para Responsividade --- */
+  @media (max-width: 768px) {
+    body {
+      flex-direction: column; /* Empilha sidebar e stage-container */
+      padding: 10px;
+      height: auto; /* Permite que o body se ajuste ao conteúdo */
+      overflow-y: auto; /* Permite rolagem no body */
+    }
+
+    .sidebar {
+      width: 100%; /* Sidebar ocupa toda a largura */
+      max-height: 80vh; /* Limita a altura da sidebar para não ocupar a tela toda */
+      overflow-y: auto; /* Permite rolagem dentro da sidebar se o conteúdo for muito longo */
+      margin-bottom: 20px; /* Espaçamento entre sidebar e stage */
+    }
+
+    .stage-container {
+      width: 100%; /* Stage ocupa toda a largura */
+      height: 400px; /* Altura fixa para o stage em mobile */
+      min-height: 300px; /* Altura mínima para o stage */
+    }
+
+    .btn-action {
+      padding: 12px;
+      font-size: 0.9rem;
+    }
+
+    h2 { font-size: 1.1rem; }
+    .subtitle { font-size: 0.75rem; }
+    label { font-size: 0.8rem; }
+    .val-display { font-size: 0.8rem; }
+    .hint { font-size: 0.7rem; }
+    .kpi-title { font-size: 0.6rem; }
+    .kpi-value { font-size: 1.0rem; }
+    .kpi-status { font-size: 0.75rem; }
+    .tooltip { font-size: 0.68rem; }
+  }
 </style>
 </head>
 <body>
@@ -72,8 +110,8 @@
     </div>
 
     <div class="mode-selector">
-        <button id="btn-basic" class="mode-btn active" onclick="setMode('basic')">Básico</button>
-        <button id="btn-advanced" class="mode-btn" onclick="setMode('advanced')">Avançado</button>
+        <button id="btn-basic" class="mode-btn active" onclick="setMode("basic")">Básico</button>
+        <button id="btn-advanced" class="mode-btn" onclick="setMode("advanced")">Avançado</button>
     </div>
 
     <!-- === CONTROLES BÁSICOS === -->
@@ -166,7 +204,7 @@
   const BODY_CONST = 1.50; // Distância fixa do Anel D aos Pés para o CÁLCULO (padrão de treinamento)
 
   /* Estado */
-  const canvas=document.getElementById('simCanvas'); const ctx=canvas.getContext('2d');
+  const canvas=document.getElementById("simCanvas"); const ctx=canvas.getContext("2d");
   let running=false,crashed=false,finished=false;
   let world={groundY:0},anchor={x:0,y:0,fq:0},worker={x:0,y:0,vx:0,vy:0,startY:0, heightM: 1.75, heightPx: 0};
   let rope={lengthM:1.5};
@@ -174,40 +212,40 @@
   let lastCalculatedMargin = 0;
 
   /* Inputs e KPIs */
-  const inHeight=document.getElementById('input-height');
-  const inWorkerHeight=document.getElementById('input-worker-height');
-  const inLength=document.getElementById('input-l');
-  const inAnchor=document.getElementById('input-anchor');
-  const chkDec=document.getElementById('chk-dec');
-  const inDec=document.getElementById('input-dec');
-  const inElasticity=document.getElementById('input-elasticity');
-  const lblHeight=document.getElementById('val-height');
-  const lblWorkerHeight=document.getElementById('val-worker-height');
-  const lblLength=document.getElementById('val-l');
-  const lblAnchor=document.getElementById('val-anchor');
-  const lblDec=document.getElementById('val-dec');
-  const lblElasticity=document.getElementById('val-elasticity');
-  const decWarn=document.getElementById('dec-warning');
-  const elDQ=document.getElementById('kpi-dq');
-  const elL=document.getElementById('kpi-L');
-  const elDec=document.getElementById('kpi-dec');
-  const elElasticity=document.getElementById('kpi-elasticity');
-  const elBody=document.getElementById('kpi-body');
-  const elSafe=document.getElementById('kpi-safe');
-  const elZLQreq=document.getElementById('kpi-zlq-req');
-  const elZLQres=document.getElementById('kpi-zlq-res');
-  const elStatus=document.getElementById('kpi-status');
-  const resultKpiBox = document.getElementById('result-kpi-box');
-  const stageContainer = document.getElementById('stage');
+  const inHeight=document.getElementById("input-height");
+  const inWorkerHeight=document.getElementById("input-worker-height");
+  const inLength=document.getElementById("input-l");
+  const inAnchor=document.getElementById("input-anchor");
+  const chkDec=document.getElementById("chk-dec");
+  const inDec=document.getElementById("input-dec");
+  const inElasticity=document.getElementById("input-elasticity");
+  const lblHeight=document.getElementById("val-height");
+  const lblWorkerHeight=document.getElementById("val-worker-height");
+  const lblLength=document.getElementById("val-l");
+  const lblAnchor=document.getElementById("val-anchor");
+  const lblDec=document.getElementById("val-dec");
+  const lblElasticity=document.getElementById("val-elasticity");
+  const decWarn=document.getElementById("dec-warning");
+  const elDQ=document.getElementById("kpi-dq");
+  const elL=document.getElementById("kpi-L");
+  const elDec=document.getElementById("kpi-dec");
+  const elElasticity=document.getElementById("kpi-elasticity");
+  const elBody=document.getElementById("kpi-body");
+  const elSafe=document.getElementById("kpi-safe");
+  const elZLQreq=document.getElementById("kpi-zlq-req");
+  const elZLQres=document.getElementById("kpi-zlq-res");
+  const elStatus=document.getElementById("kpi-status");
+  const resultKpiBox = document.getElementById("result-kpi-box");
+  const stageContainer = document.getElementById("stage");
 
   function resize(){
-    canvas.width=document.getElementById('stage').offsetWidth;
-    canvas.height=document.getElementById('stage').offsetHeight;
+    canvas.width=document.getElementById("stage").offsetWidth;
+    canvas.height=document.getElementById("stage").offsetHeight;
     world.groundY=canvas.height-40;
     PX_PER_METER = (world.groundY - 20) / MAX_RULER_HEIGHT_M;
     resetSimulation();
   }
-  window.addEventListener('resize',resize);
+  window.addEventListener("resize",resize);
 
   function updateSettings(){
     config.workHeightM=parseFloat(inHeight.value);
@@ -248,7 +286,7 @@
     if(!running) drawScene();
   }
 
-  [inHeight,inWorkerHeight,inLength,inAnchor,chkDec,inDec,inElasticity].forEach(el=>el.addEventListener('input',updateSettings));
+  [inHeight,inWorkerHeight,inLength,inAnchor,chkDec,inDec,inElasticity].forEach(el=>el.addEventListener("input",updateSettings));
 
   function loop(){
     if(!running) return;
@@ -299,10 +337,10 @@
     if(dist<ropePx && !crashed && !finished){
       const slack=(ropePx-dist)*0.6;
       ctx.quadraticCurveTo(anchor.x+dx/2,anchor.y+dy+slack,worker.x,dRingY);
-      ctx.strokeStyle=varGet('--cor-corda'); ctx.lineWidth=3;
+      ctx.strokeStyle=varGet("--cor-corda"); ctx.lineWidth=3;
     }else{
       ctx.lineTo(worker.x,dRingY);
-      ctx.strokeStyle=(dist>ropePx)?"#c0392b":varGet('--cor-corda');
+      ctx.strokeStyle=(dist>ropePx)?"#c0392b":varGet("--cor-corda");
       ctx.lineWidth=(dist>ropePx)?2:3;
     }
     ctx.stroke();
@@ -333,20 +371,20 @@
     if(running) return;
     updateSettings();
     running=true; crashed=false; finished=false;
-    const el=document.getElementById('alert-overlay'); el.style.opacity=0; el.className='';
-    resultKpiBox.classList.remove('result-hidden');
+    const el=document.getElementById("alert-overlay"); el.style.opacity=0; el.className='';
+    resultKpiBox.classList.remove("result-hidden");
     const isSafe = lastCalculatedMargin >= 0;
     showBanner(isSafe ? "QUEDA AMPARADA" : "COLISÃO COM O SOLO!", isSafe);
     loop();
   }
   function resetSimulation(){
     running=false; crashed=false; finished=false; worker.vx=0; worker.vy=0;
-    document.getElementById('alert-overlay').style.opacity=0;
-    resultKpiBox.classList.add('result-hidden');
+    document.getElementById("alert-overlay").style.opacity=0;
+    resultKpiBox.classList.add("result-hidden");
     updateSettings();
   }
   function showBanner(text, safe){
-    const el=document.getElementById('alert-overlay');
+    const el=document.getElementById("alert-overlay");
     el.innerText=text; el.className=safe?"success-overlay":"";
     setTimeout(() => {
         el.style.opacity=1;
@@ -376,22 +414,20 @@
     else if (MarginOfSafety >= 0){ elZLQres.className="kpi-value warn"; elStatus.className="kpi-status warn"; elStatus.innerText="INSUFICIENTE (Margem 0–1,0 m)"; }
     else { elZLQres.className="kpi-value bad"; elStatus.className="kpi-status bad"; elStatus.innerText="COLISÃO (Margem negativa)"; }
   }
-
   function setMode(mode) {
-      const advancedControls = document.getElementById('advanced-controls');
-      const btnBasic = document.getElementById('btn-basic');
-      const btnAdvanced = document.getElementById('btn-advanced');
-      if (mode === 'advanced') {
-          advancedControls.style.display = 'block';
-          btnAdvanced.classList.add('active');
-          btnBasic.classList.remove('active');
+      const advancedControls = document.getElementById("advanced-controls");
+      const btnBasic = document.getElementById("btn-basic");
+      const btnAdvanced = document.getElementById("btn-advanced");
+      if (mode === "advanced") {
+          advancedControls.style.display = "block";
+          btnAdvanced.classList.add("active");
+          btnBasic.classList.remove("active");
       } else {
-          advancedControls.style.display = 'none';
-          btnBasic.classList.add('active');
-          btnAdvanced.classList.remove('active');
+          advancedControls.style.display = "none";
+          btnBasic.classList.add("active");
+          btnAdvanced.classList.remove("active");
       }
   }
-
   /* Boot */
   setTimeout(()=>{ resize(); updateSettings(); },100);
 </script>
