@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador NR-35 (V16: Correções Essenciais)</title>
+<title>Simulador NR-35 (V18: Correções Finais)</title>
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap");
 
@@ -124,14 +124,14 @@
     <!-- === CONTROLES BÁSICOS === -->
     <div class="control-group">
       <label>1. Altura de Trabalho (H)</label>
-      <span id="val-height" class="val-display">6.0m</span>
+      <span id="val-height" class="val-display">3.0m</span>
       <input type="range" id="input-height" min="2.0" max="8.0" step="0.5" value="3.0">
       <div class="hint">Altura dos pés em relação ao solo</div>
     </div>
 
     <div class="control-group">
       <label>2. Comp. Talabarte (L)</label>
-      <span id="val-l" class="val-display">1.5m</span>
+      <span id="val-l" class="val-display">1.3m</span>
       <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.3">
     </div>
 
@@ -142,10 +142,10 @@
         <label for="chk-dec" style="margin:0">Usar absorvedor</label>
       </div>
       <div class="inline" style="margin-top:6px">
-        <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20">
+        <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20" disabled>
         <span id="val-dec" class="val-display">1.20m</span>
       </div>
-      <div id="dec-warning" class="hint"></div>
+      <div id="dec-warning" class="hint">Desmarque para simular talabarte sem absorvedor (0,00 m).</div>
     </div>
 
     <div class="control-group">
@@ -293,24 +293,25 @@
       worker.x = canvas.width / 2;
       worker.startY = worker.y; // Salva a posição inicial para a plataforma
 
-      const bodyDist = getBodyDistance(worker.heightM);
-      const dRingY = platformY - (bodyDist * PX_PER_METER); // Posição do anel D
+      // Nova lógica para posicionar a ancoragem com base na altura do slider
+      let anchorHeightM;
+      if(anchor.fq===0) anchorHeightM = config.workHeightM + 1.5; // 1.5m acima da plataforma
+      else if(anchor.fq===1) anchorHeightM = config.workHeightM; // Na altura da plataforma
+      else anchorHeightM = config.workHeightM - worker.heightM; // Na altura dos pés do trabalhador (na plataforma)
       
-      if(anchor.fq===0) anchor.y = dRingY - (1.5 * PX_PER_METER); // 1.5m acima do anel D
-      else if(anchor.fq===1) anchor.y = dRingY;
-      else anchor.y = platformY; // Ancoragem nos pés
+      anchor.y = world.groundY - (anchorHeightM * PX_PER_METER);
       anchor.x = worker.x - 20;
     }
 
     const dqTmp = calcDQ(anchor.fq, rope.lengthM, BODY_CONST);
     if (dqTmp > 0.6){
       chkDec.checked = true; chkDec.disabled = true; config.useDecel = true;
-      decWarn.innerHTML = \'<span class="warn">Queda livre &gt; 0,6 m → uso de absorvedor obrigatório.</span>\';
+      decWarn.innerHTML = '<span class="warn">Queda livre &gt; 0,6 m → uso de absorvedor obrigatório.</span>';
       inDec.disabled = false; // Garante que o slider esteja habilitado se for obrigatório
       config.decelM = previousDecelValue; // Restaura o valor anterior se for obrigatório
     } else {
       chkDec.disabled = false;
-      decWarn.textContent = \'Desmarque para simular talabarte sem absorvedor (0,00 m).\';
+      decWarn.textContent = 'Desmarque para simular talabarte sem absorvedor (0,00 m).';
       // O estado de inDec.disabled já é tratado pela lógica do absorvedor acima
     }
     lblDec.style.opacity = config.useDecel ? 1 : 0.5;
@@ -319,8 +320,8 @@
     if(!running) drawScene();
   }
 
-  [inHeight,inWorkerHeight,inLength,inAnchor,chkDec,inDec,inElasticity].forEach(el=>el.addEventListener(\'input\',updateSettings));
-  chkDec.addEventListener(\'change\', updateSettings); // Adiciona listener para o checkbox
+  [inHeight,inWorkerHeight,inLength,inAnchor,chkDec,inDec,inElasticity].forEach(el=>el.addEventListener('input',updateSettings));
+  chkDec.addEventListener('change', updateSettings); // Adiciona listener para o checkbox
 
   function loop(){
     if(!running) return;
@@ -414,7 +415,7 @@
     if(running) return;
     updateSettings();
     running=true; crashed=false; finished=false;
-    const el=document.getElementById("alert-overlay"); el.style.opacity=0; el.className=\'\';
+    const el=document.getElementById("alert-overlay"); el.style.opacity=0; el.className='';
     resultKpiBox.classList.remove("result-hidden");
     const isSafe = lastCalculatedMargin >= 0;
     showBanner(isSafe ? "QUEDA AMPARADA" : "COLISÃO COM O SOLO!", isSafe);
