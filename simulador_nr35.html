@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador NR-35 (V18: Correções Finais)</title>
+<title>Simulador NR-35 (V20: Rolagem Fixa)</title>
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap");
 
@@ -12,9 +12,15 @@
     --cor-seguro:#2ecc71;--cor-critico:#e74c3c;--cor-atencao:#f1c40f;
     --cor-corda:#f39c12
   }
+  html { 
+    height: 100%; /* Garante que o html ocupe 100% da altura da viewport */
+  }
   body{font-family:
-'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;height:100vh;overflow:hidden;display:flex;gap:20px}
-  .sidebar{width:320px;background:var(--cor-painel);padding:20px;border-radius:12px;box-shadow:0 4px 4px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:15px;z-index:10;overflow-y:auto}
+'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;min-height:100vh; /* Garante altura mínima de 100% da viewport */
+    display:flex;gap:20px;overflow-y:auto; /* Permite rolagem vertical no body */
+    overflow-x:hidden; /* Evita rolagem horizontal */
+  }
+  .sidebar{width:320px;background:var(--cor-painel);padding:20px;border-radius:12px;box-shadow:0 4px 4px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:15px;z-index:10; /* Removido overflow-y:auto daqui, pois o body já lida com a rolagem */}
   h2{margin:0 0 5px;font-size:1.2rem;color:#2c3e50}.subtitle{font-size:.8rem;color:#7f8c8d;margin-bottom:10px}
   .control-group{border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:5px}
   label{font-size:.85rem;font-weight:600;color:#34495e;display:block;margin-bottom:5px}
@@ -69,14 +75,14 @@
       flex-direction: column; /* Empilha sidebar e stage-container */
       padding: 10px;
       height: auto; /* Permite que o body se ajuste ao conteúdo */
-      overflow-y: auto; /* Permite rolagem no body */
+      overflow-y: auto; /* Garante rolagem no body */
       gap: 10px; /* Reduz o espaçamento entre os elementos */
     }
 
     .sidebar {
       width: 100%; /* Sidebar ocupa toda a largura */
-      max-height: 70vh; /* Reduz a altura máxima da sidebar para deixar mais espaço para o stage */
-      overflow-y: auto; /* Permite rolagem dentro da sidebar se o conteúdo for muito longo */
+      max-height: none; /* Remove a altura máxima para permitir que o conteúdo dite a altura */
+      overflow-y: visible; /* Permite que o conteúdo da sidebar contribua para a rolagem do body */
       margin-bottom: 10px; /* Espaçamento entre sidebar e stage */
       padding: 15px; /* Reduz o padding */
     }
