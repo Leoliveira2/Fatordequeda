@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador NR-35 (V21: Cenários e Colisão Realista)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Simulador NR-35 (V22: Layout Otimizado Mobile)</title>
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap");
 
@@ -12,80 +12,87 @@
     --cor-seguro:#2ecc71;--cor-critico:#e74c3c;--cor-atencao:#f1c40f;
     --cor-corda:#f39c12
   }
-  html { height: 100%; }
-  body{font-family:'Inter',sans-serif;background:var(--cor-fundo);margin:0;padding:20px;min-height:100vh;display:flex;gap:20px;overflow-y:auto;overflow-x:hidden;}
+  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+  body{font-family:'Inter',sans-serif;background:var(--cor-fundo);display:flex;flex-direction:row;width:100vw;height:100vh;}
   
-  .sidebar{width:320px;background:var(--cor-painel);padding:20px;border-radius:12px;box-shadow:0 4px 4px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:15px;z-index:10;}
-  h2{margin:0 0 5px;font-size:1.2rem;color:#2c3e50}.subtitle{font-size:.8rem;color:#7f8c8d;margin-bottom:10px}
+  /* Sidebar Otimizada */
+  .sidebar{
+    width:320px; min-width:320px;
+    background:var(--cor-painel);
+    padding:15px;
+    display:flex; flex-direction:column; gap:10px;
+    z-index:10; overflow-y:auto; border-right:1px solid #ddd;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  }
   
-  .control-group{border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:5px}
-  label{font-size:.85rem;font-weight:600;color:#34495e;display:block;margin-bottom:5px}
-  input[type="range"], select{width:100%;margin:5px 0;cursor:pointer;padding:8px;border-radius:6px;border:1px solid #ddd;}
-  .val-display{font-size:.9rem;font-weight:bold;color:#2980b9;float:right}
-  .inline{display:flex;align-items:center;gap:8px}
-  .hint{color:#7f8c8d;font-size:.75rem}
+  h2{margin:0;font-size:1.1rem;color:#2c3e50}.subtitle{font-size:.7rem;color:#7f8c8d;margin-bottom:5px}
+  
+  .control-group{border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:2px}
+  label{font-size:.8rem;font-weight:600;color:#34495e;display:block;margin-bottom:3px}
+  input[type="range"], select{width:100%;margin:2px 0;cursor:pointer;padding:5px;border-radius:4px;border:1px solid #ddd;font-size:0.8rem;}
+  .val-display{font-size:.85rem;font-weight:bold;color:#2980b9;float:right}
+  .inline{display:flex;align-items:center;gap:5px}
+  .hint{color:#7f8c8d;font-size:.7rem;line-height:1.2}
 
-  .mode-selector{display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:10px}
-  .mode-btn{flex:1;padding:8px;background:#f8f9fa;border:none;cursor:pointer;font-weight:600;color:#7f8c8d;transition:all .2s}
-  .mode-btn.active{background:#3498db;color:#fff;box-shadow:inset 0 2px 4px rgba(0,0,0,.1)}
-  .advanced-controls{display:none}
+  .mode-selector{display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;margin-bottom:5px}
+  .mode-btn{flex:1;padding:6px;background:#f8f9fa;border:none;cursor:pointer;font-weight:600;color:#7f8c8d;font-size:0.75rem;}
+  .mode-btn.active{background:#3498db;color:#fff;}
 
-  .btn-action{padding:15px;border:none;border-radius:8px;font-weight:800;cursor:pointer;transition:transform .1s,background .2s;color:#fff;font-size:1rem;text-transform:uppercase;width:100%;margin-top:5px}
-  .btn-simular{background:linear-gradient(135deg,#3498db,#2980b9);box-shadow:0 4px 0 #1c5a85}
-  .btn-simular:hover{transform:translateY(-2px);box-shadow:0 6px 0 #1c5a85}
-  .btn-simular:active{transform:translateY(2px);box-shadow:0 0 0 #1c5a85}
-  .btn-reset{background:#95a5a6;box-shadow:0 4px 0 #7f8c8d;margin-top:10px}
-  .btn-reset:hover{background:#7f8c8d}.btn-reset:active{transform:translateY(2px);box-shadow:0 0 0 #7f8c8d}
+  .btn-action{padding:12px;border:none;border-radius:6px;font-weight:800;cursor:pointer;color:#fff;font-size:0.85rem;text-transform:uppercase;width:100%;margin-top:5px}
+  .btn-simular{background:#3498db;box-shadow:0 3px 0 #1c5a85}
+  .btn-reset{background:#95a5a6;box-shadow:0 3px 0 #7f8c8d;margin-top:5px}
 
-  .kpi-panel{display:grid;grid-template-columns:1fr;gap:10px}
-  .kpi-box{background:#f8f9fa;padding:10px;border-radius:6px;border-left:4px solid #ddd}
-  .kpi-title{font-size:.65rem;text-transform:uppercase;color:#666;font-weight:700;margin-bottom:6px}
-  .kpi-value{font-size:1.1rem;font-weight:900;color:#333}
-  .kpi-status{font-size:.8rem;font-weight:800;margin-top:6px}
-  .kpi-list{margin-top:8px}
-  .kpi-row{display:flex;justify-content:space-between;font-size:.85rem;padding:4px 0;border-bottom:1px dashed #e5e7eb}
-  .kpi-row:last-child{border-bottom:none}
+  .kpi-box{background:#f8f9fa;padding:8px;border-radius:6px;border-left:3px solid #ddd;margin-bottom:5px}
+  .kpi-title{font-size:.6rem;text-transform:uppercase;color:#666;font-weight:700;margin-bottom:4px}
+  .kpi-value{font-size:1rem;font-weight:900;color:#333}
+  .kpi-status{font-size:.75rem;font-weight:800;margin-top:4px}
+  .kpi-row{display:flex;justify-content:space-between;font-size:.75rem;padding:2px 0;border-bottom:1px dashed #e5e7eb}
   .ok{color:var(--cor-seguro)} .bad{color:var(--cor-critico)} .warn{color:var(--cor-atencao)}
-  .tooltip{font-size:.72rem;color:#6b7280;margin-top:6px}
 
-  .result-hidden{visibility:hidden}
+  .result-hidden{display:none}
 
+  /* Stage Container Otimizado */
   .stage-container{
     flex:1;
     background: linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%);
     background-size: cover;
     background-position: center;
-    border-radius:12px;
     position:relative;
     overflow:hidden;
-    box-shadow:0 4px 12px rgba(0,0,0,.1);
-    border:2px solid #fff;
   }
 
   canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2}
 
-  #alert-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(231,76,60,.95);color:#fff;padding:30px 50px;border-radius:12px;font-size:2.0rem;font-weight:900;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 20px 50px rgba(0,0,0,.4);border:4px solid #fff}
+  #alert-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(231,76,60,.95);color:#fff;padding:20px 30px;border-radius:10px;font-size:1.5rem;font-weight:900;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;border:3px solid #fff}
   .success-overlay{background:rgba(46,204,113,.95)!important}
 
+  /* --- Media Queries para Mobile (Side-by-Side) --- */
   @media (max-width: 768px) {
-    body { flex-direction: column; padding: 10px; height: auto; overflow-y: auto; gap: 10px; }
-    .sidebar { width: 100%; max-height: none; overflow-y: visible; margin-bottom: 10px; padding: 15px; }
-    .stage-container { width: 100%; height: 350px; min-height: 250px; }
-    .btn-action { padding: 10px; font-size: 0.8rem; }
-    h2 { font-size: 1.0rem; }
-    .subtitle { font-size: 0.7rem; }
-    label { font-size: 0.75rem; }
-    .val-display { font-size: 0.75rem; }
-    .kpi-value { font-size: 0.9rem; }
-    canvas { font-size: 9px; }
+    body { flex-direction: row; } /* Mantém lado a lado */
+    .sidebar { 
+      width: 160px; min-width: 160px; /* Sidebar bem estreita */
+      padding: 10px;
+      gap: 8px;
+    }
+    h2 { font-size: 0.85rem; }
+    .subtitle { display: none; } /* Esconde subtítulo para ganhar espaço */
+    label { font-size: 0.7rem; }
+    .val-display { font-size: 0.7rem; float: none; display: block; }
+    .hint { display: none; } /* Esconde dicas para ganhar espaço */
+    .btn-action { padding: 8px; font-size: 0.7rem; }
+    .kpi-value { font-size: 0.8rem; }
+    .kpi-row { font-size: 0.65rem; }
+    .kpi-title { font-size: 0.5rem; }
+    
+    .stage-container { flex: 1; } /* Ocupa o resto da tela */
   }
 </style>
 </head>
 <body>
   <div class="sidebar">
     <div>
-      <h2>⚙️ Simulador NR-35</h2>
-      <div class="subtitle">Física e Colisão em Tempo Real</div>
+      <h2>⚙️ Simulador</h2>
+      <div class="subtitle">NR-35 em Tempo Real</div>
     </div>
 
     <div class="mode-selector">
@@ -94,55 +101,52 @@
     </div>
 
     <div class="control-group">
-      <label>Cenário de Fundo</label>
+      <label>Cenário</label>
       <select id="input-scenario" onchange="updateScenario()">
-        <option value="none">Céu Padrão</option>
-        <option value="bg_construcao.jpg">Construção Civil</option>
-        <option value="bg_torre.jpg">Torre de Telecom</option>
-        <option value="bg_telhado.jpg">Telhado Industrial</option>
-        <option value="bg_plataforma.jpg">Plataforma Offshore</option>
+        <option value="none">Padrão</option>
+        <option value="bg_construcao.jpg">Construção</option>
+        <option value="bg_torre.jpg">Torre</option>
+        <option value="bg_telhado.jpg">Telhado</option>
+        <option value="bg_plataforma.jpg">Plataforma</option>
       </select>
     </div>
 
     <div class="control-group">
-      <label>1. Altura de Trabalho (H)</label>
+      <label>H (Altura)</label>
       <span id="val-height" class="val-display">3.0m</span>
       <input type="range" id="input-height" min="2.0" max="8.0" step="0.5" value="3.0">
     </div>
 
     <div class="control-group">
-      <label>2. Comp. Talabarte (L)</label>
+      <label>L (Talabarte)</label>
       <span id="val-l" class="val-display">1.3m</span>
       <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.3">
     </div>
 
     <div class="control-group">
-      <label>3. Absorvedor de energia</label>
+      <label>Absorvedor</label>
       <div class="inline">
         <input type="checkbox" id="chk-dec">
-        <label for="chk-dec" style="margin:0">Usar absorvedor</label>
+        <label for="chk-dec" style="margin:0; font-size:0.7rem">Usar</label>
       </div>
-      <div class="inline" style="margin-top:6px">
-        <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20" disabled>
-        <span id="val-dec" class="val-display">1.20m</span>
-      </div>
-      <div id="dec-warning" class="hint">Desmarque para simular talabarte sem absorvedor (0,00 m).</div>
+      <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20" disabled>
+      <span id="val-dec" class="val-display">1.20m</span>
     </div>
 
     <div class="control-group">
-      <label>4. Posição da Ancoragem</label>
-      <span id="val-anchor" class="val-display">Acima (FQ 0)</span>
+      <label>Ancoragem</label>
+      <span id="val-anchor" class="val-display">FQ 0</span>
       <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
     </div>
     
-    <div id="advanced-controls" class="advanced-controls">
+    <div id="advanced-controls" style="display:none">
         <div class="control-group">
-            <label>Altura do Trabalhador</label>
+            <label>Trabalhador</label>
             <span id="val-worker-height" class="val-display">1.75m</span>
             <input type="range" id="input-worker-height" min="1.50" max="2.10" step="0.05" value="1.75">
         </div>
         <div class="control-group">
-            <label>Elasticidade do Sistema</label>
+            <label>Elasticidade</label>
             <span id="val-elasticity" class="val-display">10%</span>
             <input type="range" id="input-elasticity" min="0" max="20" step="1" value="10">
         </div>
@@ -150,31 +154,26 @@
 
     <div class="kpi-panel">
       <div id="result-kpi-box" class="kpi-box result-hidden">
-        <div class="kpi-title">MARGEM DE SEGURANÇA (Distância dos pés ao solo)</div>
+        <div class="kpi-title">MARGEM</div>
         <div class="kpi-value" id="kpi-zlq-res">-- m</div>
         <div class="kpi-status" id="kpi-status">--</div>
       </div>
 
       <div class="kpi-box">
-        <div class="kpi-title">Componentes da ZLQ</div>
-        <div class="kpi-list">
-          <div class="kpi-row"><span>DQ</span><strong id="kpi-dq">-- m</strong></div>
-          <div class="kpi-row"><span>L</span><strong id="kpi-L">-- m</strong></div>
-          <div class="kpi-row"><span>DEC</span><strong id="kpi-dec">-- m</strong></div>
-          <div class="kpi-row"><span>EL</span><strong id="kpi-elasticity">-- m</strong></div>
-          <div class="kpi-row"><span>BODY</span><strong id="kpi-body">-- m</strong></div>
-          <div class="kpi-row"><span>S</span><strong id="kpi-safe">1.00 m</strong></div>
-          <div class="kpi-row"><span>ZLQ necessária</span><strong id="kpi-zlq-req">-- m</strong></div>
-        </div>
+        <div class="kpi-title">ZLQ</div>
+        <div class="kpi-row"><span>DQ</span><strong id="kpi-dq">--</strong></div>
+        <div class="kpi-row"><span>L</span><strong id="kpi-L">--</strong></div>
+        <div class="kpi-row"><span>DEC</span><strong id="kpi-dec">--</strong></div>
+        <div class="kpi-row"><span>ZLQ Req</span><strong id="kpi-zlq-req">--</strong></div>
       </div>
     </div>
 
-    <button class="btn-action btn-simular" onclick="startSimulation()">⚠️ SIMULAR QUEDA</button>
-    <button class="btn-action btn-reset" onclick="resetSimulation()">🔄 RESETAR</button>
+    <button class="btn-action btn-simular" onclick="startSimulation()">SIMULAR</button>
+    <button class="btn-action btn-reset" onclick="resetSimulation()">RESET</button>
   </div>
 
   <div class="stage-container" id="stage">
-    <div id="alert-overlay">COLISÃO COM O SOLO!</div>
+    <div id="alert-overlay">COLISÃO!</div>
     <canvas id="simCanvas"></canvas>
   </div>
 
@@ -194,13 +193,11 @@
         inElasticity=document.getElementById("input-elasticity"), lblHeight=document.getElementById("val-height"),
         lblWorkerHeight=document.getElementById("val-worker-height"), lblLength=document.getElementById("val-l"),
         lblAnchor=document.getElementById("val-anchor"), lblDec=document.getElementById("val-dec"),
-        lblElasticity=document.getElementById("val-elasticity"), decWarn=document.getElementById("dec-warning"),
+        lblElasticity=document.getElementById("val-elasticity"),
         elDQ=document.getElementById("kpi-dq"), elL=document.getElementById("kpi-L"),
-        elDec=document.getElementById("kpi-dec"), elElasticity=document.getElementById("kpi-elasticity"),
-        elBody=document.getElementById("kpi-body"), elSafe=document.getElementById("kpi-safe"),
-        elZLQreq=document.getElementById("kpi-zlq-req"), elZLQres=document.getElementById("kpi-zlq-res"),
-        elStatus=document.getElementById("kpi-status"), resultKpiBox=document.getElementById("result-kpi-box"),
-        stageContainer=document.getElementById("stage");
+        elDec=document.getElementById("kpi-dec"), elZLQreq=document.getElementById("kpi-zlq-req"), 
+        elZLQres=document.getElementById("kpi-zlq-res"), elStatus=document.getElementById("kpi-status"), 
+        resultKpiBox=document.getElementById("result-kpi-box"), stageContainer=document.getElementById("stage");
 
   let previousDecelValue=config.decelM;
 
@@ -225,7 +222,7 @@
     else{ config.useDecel=false; inDec.disabled=true; config.decelM=0.0; }
     lblHeight.innerText=config.workHeightM.toFixed(1)+"m"; lblWorkerHeight.innerText=worker.heightM.toFixed(2)+"m";
     lblLength.innerText=rope.lengthM.toFixed(1)+"m"; lblDec.innerText=config.decelM.toFixed(2)+"m";
-    lblElasticity.innerText=config.elasticityPerc+"%"; lblAnchor.innerText=["Acima (FQ 0)","Cinto (FQ 1)","Pés (FQ 2)"][anchor.fq];
+    lblAnchor.innerText="FQ "+anchor.fq;
     worker.heightPx=worker.heightM*PX_PER_METER*0.4; if(worker.heightPx<40) worker.heightPx=40;
     if(!running){
       const platformY=world.groundY-(config.workHeightM*PX_PER_METER);
@@ -237,9 +234,8 @@
       anchor.y=world.groundY-(anchorHeightM*PX_PER_METER); anchor.x=worker.x-20;
     }
     const dqTmp=calcDQ(anchor.fq,rope.lengthM,BODY_CONST);
-    if(dqTmp>0.6){ chkDec.checked=true; chkDec.disabled=true; config.useDecel=true; inDec.disabled=false; config.decelM=previousDecelValue;
-      decWarn.innerHTML='<span class="warn">Queda livre > 0,6 m → uso de absorvedor obrigatório.</span>';
-    }else{ chkDec.disabled=false; decWarn.textContent='Desmarque para simular talabarte sem absorvedor (0,00 m).'; }
+    if(dqTmp>0.6){ chkDec.checked=true; chkDec.disabled=true; config.useDecel=true; inDec.disabled=false; config.decelM=previousDecelValue; }
+    else{ chkDec.disabled=false; }
     calcKPIs(); if(!running) drawScene();
   }
 
@@ -272,27 +268,22 @@
     ctx.clearRect(0,0,canvas.width,canvas.height); drawRulers();
     const platformY=world.groundY-(config.workHeightM*PX_PER_METER);
     ctx.beginPath(); ctx.moveTo(0,platformY); ctx.lineTo(canvas.width,platformY);
-    ctx.strokeStyle="#bdc3c7"; ctx.lineWidth=4; ctx.setLineDash([10,10]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle="#7f8c8d"; ctx.font="bold 12px Inter"; ctx.fillText("PLATAFORMA DE TRABALHO",20,platformY-5);
+    ctx.strokeStyle="#bdc3c7"; ctx.lineWidth=3; ctx.setLineDash([5,5]); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle="#5d4037"; ctx.fillRect(0,world.groundY,canvas.width,canvas.height-world.groundY);
-    ctx.fillStyle="#8d6e63"; ctx.fillRect(0,world.groundY,canvas.width,5);
     const dRingY=worker.y+(worker.heightPx*0.3);
     ctx.beginPath(); ctx.moveTo(anchor.x,anchor.y);
     const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
     const ropePx=rope.lengthM*PX_PER_METER;
     if(dist<ropePx && !crashed && !finished){
       const slack=(ropePx-dist)*0.6; ctx.quadraticCurveTo(anchor.x+dx/2,anchor.y+dy+slack,worker.x,dRingY);
-      ctx.strokeStyle="#f39c12"; ctx.lineWidth=3;
+      ctx.strokeStyle="#f39c12"; ctx.lineWidth=2;
     }else{
       ctx.lineTo(worker.x,dRingY); ctx.strokeStyle=(dist>ropePx)?"#c0392b":"#f39c12"; ctx.lineWidth=(dist>ropePx)?2:3;
     }
     ctx.stroke();
-    ctx.beginPath(); ctx.arc(anchor.x,anchor.y,6,0,Math.PI*2); ctx.fillStyle="#2980b9"; ctx.fill();
+    ctx.beginPath(); ctx.arc(anchor.x,anchor.y,5,0,Math.PI*2); ctx.fillStyle="#2980b9"; ctx.fill();
     ctx.save(); ctx.translate(worker.x,worker.y);
-    if(crashed){ 
-      // Lógica de Boneco Deitado no Solo
-      ctx.translate(0,worker.heightPx); ctx.rotate(-Math.PI/2); ctx.translate(0,-worker.heightPx); 
-    }
+    if(crashed){ ctx.translate(0,worker.heightPx); ctx.rotate(-Math.PI/2); ctx.translate(0,-worker.heightPx); }
     else if(running) ctx.rotate(worker.vx*0.05);
     const wH=worker.heightPx;
     ctx.fillStyle="#3498db"; ctx.fillRect(-wH*0.15,wH*0.2,wH*0.3,wH*0.4);
@@ -304,27 +295,25 @@
   }
   function drawRulers(){
     ctx.strokeStyle="rgba(0,0,0,0.05)"; ctx.lineWidth=1; ctx.fillStyle="rgba(0,0,0,0.3)"; 
-    ctx.font=(window.innerWidth<=768)?"8px Inter":"10px Inter";
+    ctx.font="8px Inter";
     for(let i=0;i<=MAX_RULER_HEIGHT_M;i++){
       const y=world.groundY-(i*PX_PER_METER); if(y<0) break;
       ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
-      if(i>0) ctx.fillText(i+"m",canvas.width-30,y+3);
+      if(i>0) ctx.fillText(i+"m",canvas.width-25,y+3);
     }
   }
   function startSimulation(){
     if(running) return; updateSettings(); running=true; crashed=false; finished=false;
     const el=document.getElementById("alert-overlay"); el.style.opacity=0; el.className='';
     resultKpiBox.classList.remove("result-hidden");
-    const isSafe=lastCalculatedMargin>=0; showBanner(isSafe?"QUEDA AMPARADA":"COLISÃO COM O SOLO!",isSafe); loop();
+    const isSafe=lastCalculatedMargin>=0; showBanner(isSafe?"OK":"COLISÃO",isSafe); loop();
   }
   function resetSimulation(){ running=false; crashed=false; finished=false; worker.vx=0; worker.vy=0;
     document.getElementById("alert-overlay").style.opacity=0; resultKpiBox.classList.add("result-hidden"); updateSettings();
   }
   function showBanner(text,safe){
     const el=document.getElementById("alert-overlay"); el.innerText=text; el.className=safe?"success-overlay":"";
-    setTimeout(()=>{ el.style.opacity=1; el.style.transform="translate(-50%,-50%) scale(1.1)";
-      setTimeout(()=>el.style.transform="translate(-50%,-50%) scale(1)",200);
-    },800);
+    setTimeout(()=>{ el.style.opacity=1; },500);
   }
   function calcDQ(fq,L,bodyDist){ if(fq===0) return 0.6; if(fq===1) return L; if(fq===2) return L+bodyDist; return 0; }
   function calcKPIs(){
@@ -332,13 +321,11 @@
           DECEL=config.useDecel?config.decelM:0.0, ELASTICITY=(L+DECEL)*(config.elasticityPerc/100),
           ZLQreq=+(DQ+DECEL+ELASTICITY+BODY_CONST+SAFETY).toFixed(2), MarginOfSafety=+(H-ZLQreq).toFixed(2);
     lastCalculatedMargin=MarginOfSafety;
-    elDQ.innerText=DQ.toFixed(2)+" m"; elL.innerText=L.toFixed(2)+" m"; elDec.innerText=DECEL.toFixed(2)+" m";
-    elElasticity.innerText=ELASTICITY.toFixed(2)+" m"; elBody.innerText=BODY_CONST.toFixed(2)+" m";
-    elSafe.innerText=SAFETY.toFixed(2)+" m"; elZLQreq.innerText=ZLQreq.toFixed(2)+" m";
-    elZLQres.innerText=(MarginOfSafety>=0?"+":"")+MarginOfSafety.toFixed(2)+" m";
-    if(MarginOfSafety>=1.0){ elZLQres.className="kpi-value ok"; elStatus.className="kpi-status ok"; elStatus.innerText="SEGURO (Margem ≥ 1,0 m)"; }
-    else if(MarginOfSafety>=0){ elZLQres.className="kpi-value warn"; elStatus.className="kpi-status warn"; elStatus.innerText="INSUFICIENTE (Margem 0–1,0 m)"; }
-    else{ elZLQres.className="kpi-value bad"; elStatus.className="kpi-status bad"; elStatus.innerText="COLISÃO (Margem negativa)"; }
+    elDQ.innerText=DQ.toFixed(2); elL.innerText=L.toFixed(2); elDec.innerText=DECEL.toFixed(2);
+    elZLQreq.innerText=ZLQreq.toFixed(2); elZLQres.innerText=(MarginOfSafety>=0?"+":"")+MarginOfSafety.toFixed(2);
+    if(MarginOfSafety>=1.0){ elZLQres.className="kpi-value ok"; elStatus.innerText="SEGURO"; }
+    else if(MarginOfSafety>=0){ elZLQres.className="kpi-value warn"; elStatus.innerText="ALERTA"; }
+    else{ elZLQres.className="kpi-value bad"; elStatus.innerText="COLISÃO"; }
   }
   function setMode(mode){
     const adv=document.getElementById("advanced-controls"), bB=document.getElementById("btn-basic"), bA=document.getElementById("btn-advanced");
