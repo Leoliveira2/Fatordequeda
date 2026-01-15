@@ -3,336 +3,637 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Simulador NR-35 (V22: Layout Otimizado Mobile)</title>
+<title>Simulador NR-35 | Zona Livre de Queda</title>
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap");
 
-  :root{
-    --cor-fundo:#eef2f6;--cor-painel:#fff;
-    --cor-seguro:#2ecc71;--cor-critico:#e74c3c;--cor-atencao:#f1c40f;
-    --cor-corda:#f39c12
+  :root {
+    --cor-primaria: #2980b9;
+    --cor-primaria-escura: #1a5276;
+    --cor-seguro: #27ae60;
+    --cor-alerta: #f39c12;
+    --cor-perigo: #e74c3c;
+    --cor-fundo: #1a1a2e;
+    --cor-painel: #16213e;
+    --cor-texto: #ecf0f1;
+    --cor-texto-secundario: #95a5a6;
+    --sombra: 0 4px 15px rgba(0,0,0,0.3);
+    --transicao: all 0.3s ease;
   }
-  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
-  body{font-family:'Inter',sans-serif;background:var(--cor-fundo);display:flex;flex-direction:row;width:100vw;height:100vh;}
-  
-  /* Sidebar Otimizada */
-  .sidebar{
-    width:320px; min-width:320px;
-    background:var(--cor-painel);
-    padding:15px;
-    display:flex; flex-direction:column; gap:10px;
-    z-index:10; overflow-y:auto; border-right:1px solid #ddd;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cor-fundo);
+    color: var(--cor-texto);
+    display: flex;
+    flex-direction: row;
   }
-  
-  h2{margin:0;font-size:1.1rem;color:#2c3e50}.subtitle{font-size:.7rem;color:#7f8c8d;margin-bottom:5px}
-  
-  .control-group{border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:2px}
-  label{font-size:.8rem;font-weight:600;color:#34495e;display:block;margin-bottom:3px}
-  input[type="range"], select{width:100%;margin:2px 0;cursor:pointer;padding:5px;border-radius:4px;border:1px solid #ddd;font-size:0.8rem;}
-  .val-display{font-size:.85rem;font-weight:bold;color:#2980b9;float:right}
-  .inline{display:flex;align-items:center;gap:5px}
-  .hint{color:#7f8c8d;font-size:.7rem;line-height:1.2}
 
-  .mode-selector{display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;margin-bottom:5px}
-  .mode-btn{flex:1;padding:6px;background:#f8f9fa;border:none;cursor:pointer;font-weight:600;color:#7f8c8d;font-size:0.75rem;}
-  .mode-btn.active{background:#3498db;color:#fff;}
+  /* === SIDEBAR === */
+  .sidebar {
+    width: 340px;
+    min-width: 340px;
+    background: var(--cor-painel);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
 
-  .btn-action{padding:12px;border:none;border-radius:6px;font-weight:800;cursor:pointer;color:#fff;font-size:0.85rem;text-transform:uppercase;width:100%;margin-top:5px}
-  .btn-simular{background:#3498db;box-shadow:0 3px 0 #1c5a85}
-  .btn-reset{background:#95a5a6;box-shadow:0 3px 0 #7f8c8d;margin-top:5px}
+  .header { text-align: center; margin-bottom: 10px; }
+  .header h1 { font-size: 1.4rem; font-weight: 900; color: var(--cor-primaria); }
+  .header p { font-size: 0.75rem; color: var(--cor-texto-secundario); }
 
-  .kpi-box{background:#f8f9fa;padding:8px;border-radius:6px;border-left:3px solid #ddd;margin-bottom:5px}
-  .kpi-title{font-size:.6rem;text-transform:uppercase;color:#666;font-weight:700;margin-bottom:4px}
-  .kpi-value{font-size:1rem;font-weight:900;color:#333}
-  .kpi-status{font-size:.75rem;font-weight:800;margin-top:4px}
-  .kpi-row{display:flex;justify-content:space-between;font-size:.75rem;padding:2px 0;border-bottom:1px dashed #e5e7eb}
-  .ok{color:var(--cor-seguro)} .bad{color:var(--cor-critico)} .warn{color:var(--cor-atencao)}
-
-  .result-hidden{display:none}
-
-  /* Stage Container Otimizado */
-  .stage-container{
-    flex:1;
-    background: linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%);
+  /* Cenários por Clique */
+  .scenario-section { margin-bottom: 10px; }
+  .scenario-section label { font-size: 0.8rem; font-weight: 700; color: var(--cor-texto-secundario); display: block; margin-bottom: 8px; }
+  .scenario-cards { display: flex; gap: 8px; }
+  .scenario-card {
+    flex: 1;
+    height: 70px;
+    border-radius: 8px;
     background-size: cover;
     background-position: center;
-    position:relative;
-    overflow:hidden;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: var(--transicao);
+    position: relative;
+    overflow: hidden;
+  }
+  .scenario-card:hover { transform: scale(1.05); }
+  .scenario-card.active { border-color: var(--cor-primaria); box-shadow: 0 0 15px var(--cor-primaria); }
+  .scenario-card::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 3px;
   }
 
-  canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2}
+  /* Controles */
+  .control-group { margin-bottom: 12px; }
+  .control-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--cor-texto-secundario);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  .control-group label span { color: var(--cor-primaria); font-weight: 700; }
+  
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.1);
+    outline: none;
+    transition: var(--transicao);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--cor-primaria);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: var(--transicao);
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); background: #3498db; }
+  input[type="range"]:active::-webkit-slider-thumb { transform: scale(0.9); }
 
-  #alert-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(231,76,60,.95);color:#fff;padding:20px 30px;border-radius:10px;font-size:1.5rem;font-weight:900;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;border:3px solid #fff}
-  .success-overlay{background:rgba(46,204,113,.95)!important}
+  .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--cor-primaria); cursor: pointer; }
+  .checkbox-group label { font-size: 0.85rem; cursor: pointer; }
 
-  /* --- Media Queries para Mobile (Side-by-Side) --- */
-  @media (max-width: 768px) {
-    body { flex-direction: row; } /* Mantém lado a lado */
-    .sidebar { 
-      width: 160px; min-width: 160px; /* Sidebar bem estreita */
-      padding: 10px;
-      gap: 8px;
-    }
-    h2 { font-size: 0.85rem; }
-    .subtitle { display: none; } /* Esconde subtítulo para ganhar espaço */
-    label { font-size: 0.7rem; }
-    .val-display { font-size: 0.7rem; float: none; display: block; }
-    .hint { display: none; } /* Esconde dicas para ganhar espaço */
-    .btn-action { padding: 8px; font-size: 0.7rem; }
-    .kpi-value { font-size: 0.8rem; }
-    .kpi-row { font-size: 0.65rem; }
-    .kpi-title { font-size: 0.5rem; }
-    
-    .stage-container { flex: 1; } /* Ocupa o resto da tela */
+  /* Botões */
+  .btn-group { display: flex; gap: 10px; margin-top: auto; }
+  .btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transicao);
+    text-transform: uppercase;
+  }
+  .btn-simular {
+    background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+    color: #fff;
+    box-shadow: 0 4px 0 #0e3a5a;
+  }
+  .btn-simular:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #0e3a5a; }
+  .btn-simular:active { transform: translateY(2px); box-shadow: 0 0 0 #0e3a5a; }
+  .btn-reset { background: #34495e; color: #fff; box-shadow: 0 4px 0 #2c3e50; }
+  .btn-reset:hover { background: #4a6278; }
+
+  /* KPIs */
+  .kpi-panel { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; }
+  .kpi-title { font-size: 0.7rem; text-transform: uppercase; color: var(--cor-texto-secundario); margin-bottom: 8px; font-weight: 700; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .kpi-item { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; text-align: center; }
+  .kpi-item .label { font-size: 0.65rem; color: var(--cor-texto-secundario); }
+  .kpi-item .value { font-size: 1rem; font-weight: 900; color: var(--cor-texto); }
+
+  .result-box { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; text-align: center; display: none; }
+  .result-box.visible { display: block; animation: fadeIn 0.3s ease; }
+  .result-box .margin { font-size: 2rem; font-weight: 900; }
+  .result-box .status { font-size: 0.9rem; font-weight: 700; margin-top: 5px; }
+  .result-box.safe .margin { color: var(--cor-seguro); }
+  .result-box.warn .margin { color: var(--cor-alerta); }
+  .result-box.danger .margin { color: var(--cor-perigo); }
+
+  /* === STAGE === */
+  .stage-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #87CEEB 0%, #e0f7fa 100%);
+    background-size: cover;
+    background-position: center;
+  }
+
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+  /* Overlay de Resultado */
+  #result-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    padding: 30px 50px;
+    border-radius: 15px;
+    font-size: 2rem;
+    font-weight: 900;
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s ease;
+    z-index: 100;
+    border: 4px solid #fff;
+    box-shadow: var(--sombra);
+  }
+  #result-overlay.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  #result-overlay.safe { background: rgba(39, 174, 96, 0.95); }
+  #result-overlay.danger { background: rgba(231, 76, 60, 0.95); animation: shake 0.5s ease; }
+
+  @keyframes shake {
+    0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0); }
+    20% { transform: translate(-50%, -50%) scale(1) rotate(-3deg); }
+    40% { transform: translate(-50%, -50%) scale(1) rotate(3deg); }
+    60% { transform: translate(-50%, -50%) scale(1) rotate(-3deg); }
+    80% { transform: translate(-50%, -50%) scale(1) rotate(3deg); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* === RESPONSIVO === */
+  @media (max-width: 900px) {
+    body { flex-direction: column; }
+    .sidebar { width: 100%; min-width: unset; max-height: 55vh; padding: 15px; gap: 10px; }
+    .stage-container { flex: 1; min-height: 45vh; }
+    .header h1 { font-size: 1.1rem; }
+    .scenario-card { height: 55px; }
+    .btn { padding: 12px; font-size: 0.8rem; }
   }
 </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div>
-      <h2>⚙️ Simulador</h2>
-      <div class="subtitle">NR-35 em Tempo Real</div>
-    </div>
 
-    <div class="mode-selector">
-        <button id="btn-basic" class="mode-btn active" onclick="setMode('basic')">Básico</button>
-        <button id="btn-advanced" class="mode-btn" onclick="setMode('advanced')">Avançado</button>
-    </div>
-
-    <div class="control-group">
-      <label>Cenário</label>
-      <select id="input-scenario" onchange="updateScenario()">
-        <option value="none">Padrão</option>
-        <option value="bg_construcao.jpg">Construção</option>
-        <option value="bg_torre.jpg">Torre</option>
-        <option value="bg_telhado.jpg">Telhado</option>
-        <option value="bg_plataforma.jpg">Plataforma</option>
-      </select>
-    </div>
-
-    <div class="control-group">
-      <label>H (Altura)</label>
-      <span id="val-height" class="val-display">3.0m</span>
-      <input type="range" id="input-height" min="2.0" max="8.0" step="0.5" value="3.0">
-    </div>
-
-    <div class="control-group">
-      <label>L (Talabarte)</label>
-      <span id="val-l" class="val-display">1.3m</span>
-      <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.3">
-    </div>
-
-    <div class="control-group">
-      <label>Absorvedor</label>
-      <div class="inline">
-        <input type="checkbox" id="chk-dec">
-        <label for="chk-dec" style="margin:0; font-size:0.7rem">Usar</label>
-      </div>
-      <input type="range" id="input-dec" min="0.60" max="1.80" step="0.05" value="1.20" disabled>
-      <span id="val-dec" class="val-display">1.20m</span>
-    </div>
-
-    <div class="control-group">
-      <label>Ancoragem</label>
-      <span id="val-anchor" class="val-display">FQ 0</span>
-      <input type="range" id="input-anchor" min="0" max="2" step="1" value="0">
-    </div>
-    
-    <div id="advanced-controls" style="display:none">
-        <div class="control-group">
-            <label>Trabalhador</label>
-            <span id="val-worker-height" class="val-display">1.75m</span>
-            <input type="range" id="input-worker-height" min="1.50" max="2.10" step="0.05" value="1.75">
-        </div>
-        <div class="control-group">
-            <label>Elasticidade</label>
-            <span id="val-elasticity" class="val-display">10%</span>
-            <input type="range" id="input-elasticity" min="0" max="20" step="1" value="10">
-        </div>
-    </div>
-
-    <div class="kpi-panel">
-      <div id="result-kpi-box" class="kpi-box result-hidden">
-        <div class="kpi-title">MARGEM</div>
-        <div class="kpi-value" id="kpi-zlq-res">-- m</div>
-        <div class="kpi-status" id="kpi-status">--</div>
-      </div>
-
-      <div class="kpi-box">
-        <div class="kpi-title">ZLQ</div>
-        <div class="kpi-row"><span>DQ</span><strong id="kpi-dq">--</strong></div>
-        <div class="kpi-row"><span>L</span><strong id="kpi-L">--</strong></div>
-        <div class="kpi-row"><span>DEC</span><strong id="kpi-dec">--</strong></div>
-        <div class="kpi-row"><span>ZLQ Req</span><strong id="kpi-zlq-req">--</strong></div>
-      </div>
-    </div>
-
-    <button class="btn-action btn-simular" onclick="startSimulation()">SIMULAR</button>
-    <button class="btn-action btn-reset" onclick="resetSimulation()">RESET</button>
+<div class="sidebar">
+  <div class="header">
+    <h1>⚙️ Simulador NR-35</h1>
+    <p>Zona Livre de Queda em Tempo Real</p>
   </div>
 
-  <div class="stage-container" id="stage">
-    <div id="alert-overlay">COLISÃO!</div>
-    <canvas id="simCanvas"></canvas>
+  <div class="scenario-section">
+    <label>SELECIONE O CENÁRIO</label>
+    <div class="scenario-cards">
+      <div class="scenario-card active" data-scenario="cenario_construcao.jpg" data-label="Construção" style="background-image: url('cenario_construcao.jpg');" onclick="selectScenario(this)"></div>
+      <div class="scenario-card" data-scenario="cenario_torre.jpg" data-label="Torre" style="background-image: url('cenario_torre.jpg');" onclick="selectScenario(this)"></div>
+      <div class="scenario-card" data-scenario="cenario_plataforma.jpg" data-label="Plataforma" style="background-image: url('cenario_plataforma.jpg');" onclick="selectScenario(this)"></div>
+    </div>
   </div>
+
+  <div class="control-group">
+    <label>Altura de Trabalho (H) <span id="val-height">3.0 m</span></label>
+    <input type="range" id="input-height" min="2" max="8" step="0.5" value="3">
+  </div>
+
+  <div class="control-group">
+    <label>Comprimento do Talabarte (L) <span id="val-l">1.5 m</span></label>
+    <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
+  </div>
+
+  <div class="control-group">
+    <div class="checkbox-group">
+      <input type="checkbox" id="chk-dec" checked>
+      <label for="chk-dec">Usar Absorvedor de Energia</label>
+    </div>
+    <label>Comprimento do Absorvedor (DEC) <span id="val-dec">1.20 m</span></label>
+    <input type="range" id="input-dec" min="0.6" max="1.8" step="0.05" value="1.20">
+  </div>
+
+  <div class="control-group">
+    <label>Fator de Queda (FQ) <span id="val-fq">FQ 0</span></label>
+    <input type="range" id="input-fq" min="0" max="2" step="1" value="0">
+  </div>
+
+  <div class="kpi-panel">
+    <div class="kpi-title">Componentes da ZLQ</div>
+    <div class="kpi-grid">
+      <div class="kpi-item"><div class="label">DQ</div><div class="value" id="kpi-dq">0.60</div></div>
+      <div class="kpi-item"><div class="label">L</div><div class="value" id="kpi-l">1.50</div></div>
+      <div class="kpi-item"><div class="label">DEC</div><div class="value" id="kpi-dec">1.20</div></div>
+      <div class="kpi-item"><div class="label">ZLQ Req.</div><div class="value" id="kpi-zlq">5.80</div></div>
+    </div>
+  </div>
+
+  <div id="result-box" class="result-box">
+    <div class="margin" id="result-margin">+0.00 m</div>
+    <div class="status" id="result-status">SEGURO</div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-simular" onclick="startSimulation()">▶ SIMULAR</button>
+    <button class="btn btn-reset" onclick="resetSimulation()">↺ RESET</button>
+  </div>
+</div>
+
+<div class="stage-container" id="stage">
+  <div id="result-overlay">QUEDA AMPARADA</div>
+  <canvas id="simCanvas"></canvas>
+</div>
 
 <script>
-  const GRAVITY=0.6,DAMPING=0.96,SAFETY=1.0,MAX_RULER_HEIGHT_M=8.0,BODY_CONST=1.50;
-  let PX_PER_METER=50;
-  const canvas=document.getElementById("simCanvas"); const ctx=canvas.getContext("2d");
-  let running=false,crashed=false,finished=false;
-  let world={groundY:0},anchor={x:0,y:0,fq:0},worker={x:0,y:0,vx:0,vy:0,startY:0,heightM:1.75,heightPx:0};
-  let rope={lengthM:1.5};
-  let config={workHeightM:3.0,useDecel:false,decelM:1.20,elasticityPerc:10};
-  let lastCalculatedMargin=0;
+  // === CONSTANTES ===
+  const GRAVITY = 0.5;
+  const DAMPING = 0.97;
+  const SAFETY_MARGIN = 1.0;
+  const BODY_CONST = 1.50;
+  const ELASTICITY_PERC = 0.10;
+  const MAX_HEIGHT_M = 8.0;
 
-  const inHeight=document.getElementById("input-height"), inWorkerHeight=document.getElementById("input-worker-height"),
-        inLength=document.getElementById("input-l"), inAnchor=document.getElementById("input-anchor"),
-        chkDec=document.getElementById("chk-dec"), inDec=document.getElementById("input-dec"),
-        inElasticity=document.getElementById("input-elasticity"), lblHeight=document.getElementById("val-height"),
-        lblWorkerHeight=document.getElementById("val-worker-height"), lblLength=document.getElementById("val-l"),
-        lblAnchor=document.getElementById("val-anchor"), lblDec=document.getElementById("val-dec"),
-        lblElasticity=document.getElementById("val-elasticity"),
-        elDQ=document.getElementById("kpi-dq"), elL=document.getElementById("kpi-L"),
-        elDec=document.getElementById("kpi-dec"), elZLQreq=document.getElementById("kpi-zlq-req"), 
-        elZLQres=document.getElementById("kpi-zlq-res"), elStatus=document.getElementById("kpi-status"), 
-        resultKpiBox=document.getElementById("result-kpi-box"), stageContainer=document.getElementById("stage");
+  // === ELEMENTOS DOM ===
+  const canvas = document.getElementById('simCanvas');
+  const ctx = canvas.getContext('2d');
+  const stageContainer = document.getElementById('stage');
+  const resultOverlay = document.getElementById('result-overlay');
+  const resultBox = document.getElementById('result-box');
 
-  let previousDecelValue=config.decelM;
+  // === ESTADO ===
+  let running = false, crashed = false, finished = false;
+  let pxPerMeter = 50;
+  let groundY = 0;
+  let currentScenario = 'cenario_construcao.jpg';
 
-  function resize(){
-    canvas.width=stageContainer.offsetWidth; canvas.height=stageContainer.offsetHeight;
-    world.groundY=canvas.height-40; PX_PER_METER=(world.groundY-20)/MAX_RULER_HEIGHT_M;
-    resetSimulation();
-  }
-  window.addEventListener("resize",resize);
+  const worker = { x: 0, y: 0, vx: 0, vy: 0, heightPx: 60 };
+  const anchor = { x: 0, y: 0 };
+  const config = { heightM: 3.0, ropeM: 1.5, decM: 1.2, fq: 0, useDec: true };
+  let lastMargin = 0;
 
-  function updateScenario(){
-    const scenario=document.getElementById("input-scenario").value;
-    if(scenario==="none") stageContainer.style.backgroundImage="linear-gradient(to bottom,#87CEEB 0%,#e0f7fa 100%)";
-    else stageContainer.style.backgroundImage=`url('${scenario}')`;
-  }
-
-  function updateSettings(){
-    config.workHeightM=parseFloat(inHeight.value); worker.heightM=parseFloat(inWorkerHeight.value);
-    rope.lengthM=parseFloat(inLength.value); anchor.fq=parseInt(inAnchor.value);
-    config.elasticityPerc=parseInt(inElasticity.value);
-    if(chkDec.checked){ config.useDecel=true; inDec.disabled=false; config.decelM=parseFloat(inDec.value); previousDecelValue=config.decelM; }
-    else{ config.useDecel=false; inDec.disabled=true; config.decelM=0.0; }
-    lblHeight.innerText=config.workHeightM.toFixed(1)+"m"; lblWorkerHeight.innerText=worker.heightM.toFixed(2)+"m";
-    lblLength.innerText=rope.lengthM.toFixed(1)+"m"; lblDec.innerText=config.decelM.toFixed(2)+"m";
-    lblAnchor.innerText="FQ "+anchor.fq;
-    worker.heightPx=worker.heightM*PX_PER_METER*0.4; if(worker.heightPx<40) worker.heightPx=40;
-    if(!running){
-      const platformY=world.groundY-(config.workHeightM*PX_PER_METER);
-      worker.y=platformY-worker.heightPx; worker.x=canvas.width/2; worker.startY=worker.y;
-      let anchorHeightM;
-      if(anchor.fq===0) anchorHeightM=config.workHeightM+1.5;
-      else if(anchor.fq===1) anchorHeightM=config.workHeightM;
-      else anchorHeightM=config.workHeightM-worker.heightM;
-      anchor.y=world.groundY-(anchorHeightM*PX_PER_METER); anchor.x=worker.x-20;
-    }
-    const dqTmp=calcDQ(anchor.fq,rope.lengthM,BODY_CONST);
-    if(dqTmp>0.6){ chkDec.checked=true; chkDec.disabled=true; config.useDecel=true; inDec.disabled=false; config.decelM=previousDecelValue; }
-    else{ chkDec.disabled=false; }
-    calcKPIs(); if(!running) drawScene();
+  // === INICIALIZAÇÃO ===
+  function init() {
+    resize();
+    updateSettings();
+    window.addEventListener('resize', resize);
+    document.querySelectorAll('input').forEach(el => el.addEventListener('input', updateSettings));
+    document.getElementById('chk-dec').addEventListener('change', updateSettings);
+    stageContainer.style.backgroundImage = `url('${currentScenario}')`;
   }
 
-  [inHeight,inWorkerHeight,inLength,inAnchor,chkDec,inDec,inElasticity].forEach(el=>el.addEventListener('input',updateSettings));
-  chkDec.addEventListener('change',updateSettings);
-
-  function loop(){
-    if(!running) return;
-    if(!crashed && !finished){
-      worker.vy+=GRAVITY; worker.vx*=DAMPING; worker.vy*=DAMPING;
-      worker.x+=worker.vx; worker.y+=worker.vy;
-    }
-    if((worker.y+worker.heightPx)>=world.groundY){
-      if(!crashed){ crashed=true; worker.y=world.groundY-worker.heightPx; worker.vy=0; worker.vx=0; }
-    }
-    const dRingY=worker.y+(worker.heightPx*0.3);
-    const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
-    const physDec=config.useDecel?config.decelM:0.0;
-    const maxDistPx=(rope.lengthM+physDec)*PX_PER_METER;
-    if(dist>maxDistPx && !crashed){
-      const angle=Math.atan2(dy,dx);
-      const pullX=Math.cos(angle)*maxDistPx+anchor.x; const pullY=Math.sin(angle)*maxDistPx+anchor.y;
-      const k=0.08; worker.vx-=(worker.x-pullX)*k; worker.vy-=(dRingY-pullY)*k;
-      if(Math.abs(worker.vy)<0.1 && Math.abs(worker.vx)<0.1 && !finished) finished=true;
-    }
-    drawScene(); requestAnimationFrame(loop);
+  function resize() {
+    canvas.width = stageContainer.offsetWidth;
+    canvas.height = stageContainer.offsetHeight;
+    groundY = canvas.height - 50;
+    pxPerMeter = (groundY - 30) / MAX_HEIGHT_M;
+    if (!running) updateSettings();
   }
-  
-  function drawScene(){
-    ctx.clearRect(0,0,canvas.width,canvas.height); drawRulers();
-    const platformY=world.groundY-(config.workHeightM*PX_PER_METER);
-    ctx.beginPath(); ctx.moveTo(0,platformY); ctx.lineTo(canvas.width,platformY);
-    ctx.strokeStyle="#bdc3c7"; ctx.lineWidth=3; ctx.setLineDash([5,5]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle="#5d4037"; ctx.fillRect(0,world.groundY,canvas.width,canvas.height-world.groundY);
-    const dRingY=worker.y+(worker.heightPx*0.3);
-    ctx.beginPath(); ctx.moveTo(anchor.x,anchor.y);
-    const dx=worker.x-anchor.x, dy=dRingY-anchor.y, dist=Math.hypot(dx,dy);
-    const ropePx=rope.lengthM*PX_PER_METER;
-    if(dist<ropePx && !crashed && !finished){
-      const slack=(ropePx-dist)*0.6; ctx.quadraticCurveTo(anchor.x+dx/2,anchor.y+dy+slack,worker.x,dRingY);
-      ctx.strokeStyle="#f39c12"; ctx.lineWidth=2;
-    }else{
-      ctx.lineTo(worker.x,dRingY); ctx.strokeStyle=(dist>ropePx)?"#c0392b":"#f39c12"; ctx.lineWidth=(dist>ropePx)?2:3;
+
+  // === SELEÇÃO DE CENÁRIO ===
+  function selectScenario(el) {
+    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    currentScenario = el.dataset.scenario;
+    stageContainer.style.backgroundImage = `url('${currentScenario}')`;
+  }
+
+  // === ATUALIZAÇÃO DE CONFIGURAÇÕES ===
+  function updateSettings() {
+    config.heightM = parseFloat(document.getElementById('input-height').value);
+    config.ropeM = parseFloat(document.getElementById('input-l').value);
+    config.decM = parseFloat(document.getElementById('input-dec').value);
+    config.fq = parseInt(document.getElementById('input-fq').value);
+    config.useDec = document.getElementById('chk-dec').checked;
+
+    document.getElementById('val-height').textContent = config.heightM.toFixed(1) + ' m';
+    document.getElementById('val-l').textContent = config.ropeM.toFixed(1) + ' m';
+    document.getElementById('val-dec').textContent = config.decM.toFixed(2) + ' m';
+    document.getElementById('val-fq').textContent = 'FQ ' + config.fq;
+
+    document.getElementById('input-dec').disabled = !config.useDec;
+
+    // Posicionar trabalhador e âncora
+    const platformY = groundY - (config.heightM * pxPerMeter);
+    worker.heightPx = Math.max(50, 1.75 * pxPerMeter * 0.5);
+    worker.x = canvas.width / 2;
+    worker.y = platformY - worker.heightPx;
+
+    let anchorHeightM;
+    if (config.fq === 0) anchorHeightM = config.heightM + 1.5;
+    else if (config.fq === 1) anchorHeightM = config.heightM;
+    else anchorHeightM = config.heightM - 1.75;
+    anchor.x = worker.x - 30;
+    anchor.y = groundY - (anchorHeightM * pxPerMeter);
+
+    calcKPIs();
+    if (!running) drawScene();
+  }
+
+  // === CÁLCULOS ===
+  function calcDQ(fq, L) {
+    if (fq === 0) return 0.6;
+    if (fq === 1) return L;
+    return L + BODY_CONST;
+  }
+
+  function calcKPIs() {
+    const DQ = calcDQ(config.fq, config.ropeM);
+    const DEC = config.useDec ? config.decM : 0;
+    const EL = (config.ropeM + DEC) * ELASTICITY_PERC;
+    const ZLQ = DQ + DEC + EL + BODY_CONST + SAFETY_MARGIN;
+    lastMargin = config.heightM - ZLQ;
+
+    document.getElementById('kpi-dq').textContent = DQ.toFixed(2);
+    document.getElementById('kpi-l').textContent = config.ropeM.toFixed(2);
+    document.getElementById('kpi-dec').textContent = DEC.toFixed(2);
+    document.getElementById('kpi-zlq').textContent = ZLQ.toFixed(2);
+  }
+
+  // === SIMULAÇÃO ===
+  function startSimulation() {
+    if (running) return;
+    updateSettings();
+    running = true;
+    crashed = false;
+    finished = false;
+    worker.vx = 0;
+    worker.vy = 0;
+    resultOverlay.className = '';
+    resultOverlay.style.opacity = 0;
+    resultBox.classList.remove('visible', 'safe', 'warn', 'danger');
+    loop();
+  }
+
+  function loop() {
+    if (!running) return;
+
+    if (!crashed && !finished) {
+      worker.vy += GRAVITY;
+      worker.vx *= DAMPING;
+      worker.vy *= DAMPING;
+      worker.x += worker.vx;
+      worker.y += worker.vy;
+    }
+
+    // Colisão com o solo
+    if (worker.y + worker.heightPx >= groundY && !crashed) {
+      crashed = true;
+      worker.y = groundY - worker.heightPx;
+      worker.vy = 0;
+      showResult(false);
+    }
+
+    // Tensão da corda
+    const dRingY = worker.y + (worker.heightPx * 0.3);
+    const dx = worker.x - anchor.x;
+    const dy = dRingY - anchor.y;
+    const dist = Math.hypot(dx, dy);
+    const maxDist = (config.ropeM + (config.useDec ? config.decM : 0)) * pxPerMeter;
+
+    if (dist > maxDist && !crashed) {
+      const angle = Math.atan2(dy, dx);
+      const pullX = Math.cos(angle) * maxDist + anchor.x;
+      const pullY = Math.sin(angle) * maxDist + anchor.y;
+      const k = 0.1;
+      worker.vx -= (worker.x - pullX) * k;
+      worker.vy -= (dRingY - pullY) * k;
+
+      if (Math.abs(worker.vy) < 0.15 && Math.abs(worker.vx) < 0.15 && !finished) {
+        finished = true;
+        showResult(true);
+      }
+    }
+
+    drawScene();
+    requestAnimationFrame(loop);
+  }
+
+  function showResult(safe) {
+    setTimeout(() => {
+      resultOverlay.textContent = safe ? 'QUEDA AMPARADA' : 'COLISÃO COM O SOLO';
+      resultOverlay.className = 'visible ' + (safe ? 'safe' : 'danger');
+
+      const marginText = (lastMargin >= 0 ? '+' : '') + lastMargin.toFixed(2) + ' m';
+      document.getElementById('result-margin').textContent = marginText;
+      
+      let statusClass, statusText;
+      if (lastMargin >= 1) { statusClass = 'safe'; statusText = 'SEGURO'; }
+      else if (lastMargin >= 0) { statusClass = 'warn'; statusText = 'ATENÇÃO'; }
+      else { statusClass = 'danger'; statusText = 'COLISÃO'; }
+
+      resultBox.className = 'result-box visible ' + statusClass;
+      document.getElementById('result-status').textContent = statusText;
+    }, 300);
+  }
+
+  function resetSimulation() {
+    running = false;
+    crashed = false;
+    finished = false;
+    worker.vx = 0;
+    worker.vy = 0;
+    resultOverlay.className = '';
+    resultBox.classList.remove('visible');
+    updateSettings();
+  }
+
+  // === DESENHO ===
+  function drawScene() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawRuler();
+    drawPlatform();
+    drawGround();
+    drawRope();
+    drawAnchor();
+    drawWorker();
+  }
+
+  function drawRuler() {
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = 'bold 11px Inter';
+    for (let i = 0; i <= MAX_HEIGHT_M; i++) {
+      const y = groundY - (i * pxPerMeter);
+      if (y < 10) break;
+      ctx.beginPath();
+      ctx.moveTo(canvas.width - 40, y);
+      ctx.lineTo(canvas.width - 25, y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      if (i > 0) ctx.fillText(i + 'm', canvas.width - 22, y + 4);
+    }
+  }
+
+  function drawPlatform() {
+    const platformY = groundY - (config.heightM * pxPerMeter);
+    ctx.beginPath();
+    ctx.moveTo(50, platformY);
+    ctx.lineTo(canvas.width - 50, platformY);
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 8]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = 'bold 10px Inter';
+    ctx.fillText('PLATAFORMA DE TRABALHO', 55, platformY - 8);
+  }
+
+  function drawGround() {
+    ctx.fillStyle = '#5d4037';
+    ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+    ctx.fillStyle = '#8d6e63';
+    ctx.fillRect(0, groundY, canvas.width, 5);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = 'bold 10px Inter';
+    ctx.fillText('SOLO', 55, groundY + 20);
+  }
+
+  function drawRope() {
+    const dRingY = worker.y + (worker.heightPx * 0.3);
+    ctx.beginPath();
+    ctx.moveTo(anchor.x, anchor.y);
+
+    const dx = worker.x - anchor.x;
+    const dy = dRingY - anchor.y;
+    const dist = Math.hypot(dx, dy);
+    const ropePx = config.ropeM * pxPerMeter;
+
+    if (dist < ropePx && !crashed && !finished) {
+      const slack = (ropePx - dist) * 0.5;
+      ctx.quadraticCurveTo(anchor.x + dx / 2, anchor.y + dy + slack, worker.x, dRingY);
+      ctx.strokeStyle = '#f39c12';
+      ctx.lineWidth = 3;
+    } else {
+      ctx.lineTo(worker.x, dRingY);
+      ctx.strokeStyle = dist > ropePx ? '#e74c3c' : '#f39c12';
+      ctx.lineWidth = 3;
     }
     ctx.stroke();
-    ctx.beginPath(); ctx.arc(anchor.x,anchor.y,5,0,Math.PI*2); ctx.fillStyle="#2980b9"; ctx.fill();
-    ctx.save(); ctx.translate(worker.x,worker.y);
-    if(crashed){ ctx.translate(0,worker.heightPx); ctx.rotate(-Math.PI/2); ctx.translate(0,-worker.heightPx); }
-    else if(running) ctx.rotate(worker.vx*0.05);
-    const wH=worker.heightPx;
-    ctx.fillStyle="#3498db"; ctx.fillRect(-wH*0.15,wH*0.2,wH*0.3,wH*0.4);
-    ctx.fillStyle="#2c3e50"; ctx.fillRect(-wH*0.16,wH*0.3,wH*0.32,wH*0.08);
-    ctx.fillStyle="#34495e"; ctx.fillRect(-wH*0.12,wH*0.6,wH*0.1,wH*0.4); ctx.fillRect(wH*0.02,wH*0.6,wH*0.1,wH*0.4);
-    ctx.fillStyle="#f1c40f"; ctx.beginPath(); ctx.arc(0,wH*0.1,wH*0.12,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(0,wH*0.08,wH*0.13,Math.PI,0); ctx.fill();
+  }
+
+  function drawAnchor() {
+    ctx.beginPath();
+    ctx.arc(anchor.x, anchor.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#3498db';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function drawWorker() {
+    ctx.save();
+    ctx.translate(worker.x, worker.y);
+
+    if (crashed) {
+      ctx.translate(0, worker.heightPx);
+      ctx.rotate(-Math.PI / 2);
+      ctx.translate(0, -worker.heightPx);
+    } else if (running) {
+      ctx.rotate(worker.vx * 0.03);
+    }
+
+    const h = worker.heightPx;
+    const w = h * 0.4;
+
+    // Pernas
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillRect(-w * 0.35, h * 0.55, w * 0.3, h * 0.45);
+    ctx.fillRect(w * 0.05, h * 0.55, w * 0.3, h * 0.45);
+
+    // Botas
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(-w * 0.4, h * 0.92, w * 0.4, h * 0.1);
+    ctx.fillRect(w * 0.0, h * 0.92, w * 0.4, h * 0.1);
+
+    // Corpo (macacão)
+    ctx.fillStyle = '#e67e22';
+    ctx.fillRect(-w * 0.45, h * 0.25, w * 0.9, h * 0.35);
+
+    // Cinto de segurança
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillRect(-w * 0.5, h * 0.28, w * 1.0, h * 0.06);
+    // Ponto de ancoragem (anel D)
+    ctx.beginPath();
+    ctx.arc(0, h * 0.31, h * 0.04, 0, Math.PI * 2);
+    ctx.fillStyle = '#bdc3c7';
+    ctx.fill();
+
+    // Braços
+    ctx.fillStyle = '#e67e22';
+    ctx.fillRect(-w * 0.65, h * 0.28, w * 0.2, h * 0.25);
+    ctx.fillRect(w * 0.45, h * 0.28, w * 0.2, h * 0.25);
+
+    // Mãos
+    ctx.fillStyle = '#f5cba7';
+    ctx.beginPath();
+    ctx.arc(-w * 0.55, h * 0.55, h * 0.04, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(w * 0.55, h * 0.55, h * 0.04, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Cabeça
+    ctx.fillStyle = '#f5cba7';
+    ctx.beginPath();
+    ctx.arc(0, h * 0.15, h * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Capacete
+    ctx.fillStyle = '#e74c3c';
+    ctx.beginPath();
+    ctx.arc(0, h * 0.12, h * 0.14, Math.PI, 0);
+    ctx.fill();
+    ctx.fillRect(-h * 0.16, h * 0.10, h * 0.32, h * 0.04);
+
+    // Olhos
+    ctx.fillStyle = '#2c3e50';
+    ctx.beginPath();
+    ctx.arc(-h * 0.04, h * 0.14, h * 0.02, 0, Math.PI * 2);
+    ctx.arc(h * 0.04, h * 0.14, h * 0.02, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.restore();
   }
-  function drawRulers(){
-    ctx.strokeStyle="rgba(0,0,0,0.05)"; ctx.lineWidth=1; ctx.fillStyle="rgba(0,0,0,0.3)"; 
-    ctx.font="8px Inter";
-    for(let i=0;i<=MAX_RULER_HEIGHT_M;i++){
-      const y=world.groundY-(i*PX_PER_METER); if(y<0) break;
-      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
-      if(i>0) ctx.fillText(i+"m",canvas.width-25,y+3);
-    }
-  }
-  function startSimulation(){
-    if(running) return; updateSettings(); running=true; crashed=false; finished=false;
-    const el=document.getElementById("alert-overlay"); el.style.opacity=0; el.className='';
-    resultKpiBox.classList.remove("result-hidden");
-    const isSafe=lastCalculatedMargin>=0; showBanner(isSafe?"OK":"COLISÃO",isSafe); loop();
-  }
-  function resetSimulation(){ running=false; crashed=false; finished=false; worker.vx=0; worker.vy=0;
-    document.getElementById("alert-overlay").style.opacity=0; resultKpiBox.classList.add("result-hidden"); updateSettings();
-  }
-  function showBanner(text,safe){
-    const el=document.getElementById("alert-overlay"); el.innerText=text; el.className=safe?"success-overlay":"";
-    setTimeout(()=>{ el.style.opacity=1; },500);
-  }
-  function calcDQ(fq,L,bodyDist){ if(fq===0) return 0.6; if(fq===1) return L; if(fq===2) return L+bodyDist; return 0; }
-  function calcKPIs(){
-    const L=rope.lengthM, H=config.workHeightM, FQ=anchor.fq, DQ=calcDQ(FQ,L,BODY_CONST),
-          DECEL=config.useDecel?config.decelM:0.0, ELASTICITY=(L+DECEL)*(config.elasticityPerc/100),
-          ZLQreq=+(DQ+DECEL+ELASTICITY+BODY_CONST+SAFETY).toFixed(2), MarginOfSafety=+(H-ZLQreq).toFixed(2);
-    lastCalculatedMargin=MarginOfSafety;
-    elDQ.innerText=DQ.toFixed(2); elL.innerText=L.toFixed(2); elDec.innerText=DECEL.toFixed(2);
-    elZLQreq.innerText=ZLQreq.toFixed(2); elZLQres.innerText=(MarginOfSafety>=0?"+":"")+MarginOfSafety.toFixed(2);
-    if(MarginOfSafety>=1.0){ elZLQres.className="kpi-value ok"; elStatus.innerText="SEGURO"; }
-    else if(MarginOfSafety>=0){ elZLQres.className="kpi-value warn"; elStatus.innerText="ALERTA"; }
-    else{ elZLQres.className="kpi-value bad"; elStatus.innerText="COLISÃO"; }
-  }
-  function setMode(mode){
-    const adv=document.getElementById("advanced-controls"), bB=document.getElementById("btn-basic"), bA=document.getElementById("btn-advanced");
-    if(mode==="advanced"){ adv.style.display="block"; bA.classList.add("active"); bB.classList.remove("active"); }
-    else{ adv.style.display="none"; bB.classList.add("active"); bA.classList.remove("active"); }
-  }
-  setTimeout(()=>{ resize(); updateSettings(); },100);
+
+  // === BOOT ===
+  setTimeout(init, 100);
 </script>
 </body>
 </html>
