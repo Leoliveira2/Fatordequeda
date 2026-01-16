@@ -3,29 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Simulador NR-35 | Zona Livre de Queda</title>
+<title>Simulador NR-35 | Engenharia de Queda</title>
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap");
 
   :root {
-    --cor-primaria: #2980b9;
-    --cor-primaria-escura: #1a5276;
-    --cor-seguro: #27ae60;
-    --cor-alerta: #f39c12;
+    --cor-primaria: #3498db;
+    --cor-primaria-escura: #2980b9;
+    --cor-seguro: #2ecc71;
+    --cor-alerta: #f1c40f;
     --cor-perigo: #e74c3c;
-    --cor-fundo: #1a1a2e;
-    --cor-painel: #16213e;
-    --cor-texto: #ecf0f1;
-    --cor-texto-secundario: #95a5a6;
-    --sombra: 0 4px 15px rgba(0,0,0,0.3);
-    --transicao: all 0.3s ease;
+    --cor-fundo: #f4f7f6;
+    --cor-painel: #ffffff;
+    --cor-texto: #2c3e50;
+    --cor-texto-secundario: #7f8c8d;
+    --sombra: 0 10px 30px rgba(0,0,0,0.1);
+    --transicao: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; }
+  html, body { height: 100%; overflow: hidden; background: var(--cor-fundo); }
   body {
     font-family: 'Inter', sans-serif;
-    background: var(--cor-fundo);
     color: var(--cor-texto);
     display: flex;
     flex-direction: row;
@@ -33,182 +32,154 @@
 
   /* === SIDEBAR === */
   .sidebar {
-    width: 340px;
-    min-width: 340px;
+    width: 360px;
+    min-width: 360px;
     background: var(--cor-painel);
-    padding: 20px;
+    padding: 25px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
     overflow-y: auto;
-    border-right: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.05);
+    z-index: 10;
   }
 
-  .header { text-align: center; margin-bottom: 10px; }
-  .header h1 { font-size: 1.4rem; font-weight: 900; color: var(--cor-primaria); }
-  .header p { font-size: 0.75rem; color: var(--cor-texto-secundario); }
+  .header { margin-bottom: 5px; }
+  .header h1 { font-size: 1.5rem; font-weight: 900; color: var(--cor-primaria-escura); letter-spacing: -0.5px; }
+  .header p { font-size: 0.8rem; color: var(--cor-texto-secundario); font-weight: 500; }
 
-  /* Cenários por Clique */
-  .scenario-section { margin-bottom: 10px; }
-  .scenario-section label { font-size: 0.8rem; font-weight: 700; color: var(--cor-texto-secundario); display: block; margin-bottom: 8px; }
-  .scenario-cards { display: flex; gap: 8px; }
+  /* Cenários Vetoriais */
+  .scenario-section label { font-size: 0.75rem; font-weight: 800; color: var(--cor-texto-secundario); text-transform: uppercase; display: block; margin-bottom: 10px; letter-spacing: 1px; }
+  .scenario-cards { display: flex; gap: 10px; }
   .scenario-card {
     flex: 1;
-    height: 70px;
-    border-radius: 8px;
-    background-size: cover;
-    background-position: center;
+    height: 60px;
+    border-radius: 12px;
     cursor: pointer;
-    border: 3px solid transparent;
+    border: 2px solid #edf2f7;
     transition: var(--transicao);
-    position: relative;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    flex-direction: column;
+    gap: 4px;
   }
-  .scenario-card:hover { transform: scale(1.05); }
-  .scenario-card.active { border-color: var(--cor-primaria); box-shadow: 0 0 15px var(--cor-primaria); }
-  .scenario-card::after {
-    content: attr(data-label);
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0,0,0,0.7);
-    color: #fff;
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-align: center;
-    padding: 3px;
-  }
+  .scenario-card i { font-size: 1.2rem; }
+  .scenario-card span { font-size: 0.65rem; font-weight: 700; }
+  .scenario-card:hover { border-color: var(--cor-primaria); background: #f0f7ff; }
+  .scenario-card.active { border-color: var(--cor-primaria); background: var(--cor-primaria); color: white; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3); }
 
   /* Controles */
-  .control-group { margin-bottom: 12px; }
+  .control-group { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #edf2f7; }
   .control-group label {
     font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--cor-texto-secundario);
+    font-weight: 700;
+    color: var(--cor-texto);
     display: flex;
     justify-content: space-between;
-    margin-bottom: 5px;
+    margin-bottom: 12px;
   }
-  .control-group label span { color: var(--cor-primaria); font-weight: 700; }
+  .control-group label span { color: var(--cor-primaria-escura); font-size: 0.9rem; }
   
   input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
-    height: 8px;
-    border-radius: 4px;
-    background: rgba(255,255,255,0.1);
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
     outline: none;
-    transition: var(--transicao);
   }
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    background: var(--cor-primaria);
+    background: white;
+    border: 2px solid var(--cor-primaria);
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     transition: var(--transicao);
   }
-  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); background: #3498db; }
-  input[type="range"]:active::-webkit-slider-thumb { transform: scale(0.9); }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
 
-  .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--cor-primaria); cursor: pointer; }
-  .checkbox-group label { font-size: 0.85rem; cursor: pointer; }
+  .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--cor-primaria); cursor: pointer; }
+  .checkbox-group label { font-size: 0.85rem; font-weight: 600; color: var(--cor-texto); cursor: pointer; margin: 0; }
+
+  /* KPIs */
+  .kpi-panel { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .kpi-item { background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #edf2f7; text-align: center; }
+  .kpi-item .label { font-size: 0.6rem; font-weight: 800; color: var(--cor-texto-secundario); text-transform: uppercase; margin-bottom: 4px; }
+  .kpi-item .value { font-size: 1.1rem; font-weight: 900; color: var(--cor-texto); }
+
+  .result-box { margin-top: 5px; padding: 20px; border-radius: 16px; text-align: center; display: none; border: 2px solid transparent; }
+  .result-box.visible { display: block; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .result-box .margin { font-size: 2.2rem; font-weight: 900; line-height: 1; }
+  .result-box .status { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; margin-top: 8px; letter-spacing: 1px; }
+  
+  .result-box.safe { background: #f0fff4; border-color: #c6f6d5; color: #22543d; }
+  .result-box.warn { background: #fffaf0; border-color: #feebc8; color: #744210; }
+  .result-box.danger { background: #fff5f5; border-color: #fed7d7; color: #742a2a; }
 
   /* Botões */
-  .btn-group { display: flex; gap: 10px; margin-top: auto; }
+  .btn-group { display: flex; gap: 12px; margin-top: auto; padding-top: 10px; }
   .btn {
     flex: 1;
-    padding: 15px;
+    padding: 16px;
     border: none;
-    border-radius: 10px;
+    border-radius: 14px;
     font-weight: 800;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: var(--transicao);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-  .btn-simular {
-    background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
-    color: #fff;
-    box-shadow: 0 4px 0 #0e3a5a;
-  }
-  .btn-simular:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #0e3a5a; }
-  .btn-simular:active { transform: translateY(2px); box-shadow: 0 0 0 #0e3a5a; }
-  .btn-reset { background: #34495e; color: #fff; box-shadow: 0 4px 0 #2c3e50; }
-  .btn-reset:hover { background: #4a6278; }
-
-  /* KPIs */
-  .kpi-panel { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; }
-  .kpi-title { font-size: 0.7rem; text-transform: uppercase; color: var(--cor-texto-secundario); margin-bottom: 8px; font-weight: 700; }
-  .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .kpi-item { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; text-align: center; }
-  .kpi-item .label { font-size: 0.65rem; color: var(--cor-texto-secundario); }
-  .kpi-item .value { font-size: 1rem; font-weight: 900; color: var(--cor-texto); }
-
-  .result-box { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; text-align: center; display: none; }
-  .result-box.visible { display: block; animation: fadeIn 0.3s ease; }
-  .result-box .margin { font-size: 2rem; font-weight: 900; }
-  .result-box .status { font-size: 0.9rem; font-weight: 700; margin-top: 5px; }
-  .result-box.safe .margin { color: var(--cor-seguro); }
-  .result-box.warn .margin { color: var(--cor-alerta); }
-  .result-box.danger .margin { color: var(--cor-perigo); }
+  .btn-simular { background: var(--cor-primaria); color: white; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
+  .btn-simular:hover { background: var(--cor-primaria-escura); transform: translateY(-2px); }
+  .btn-reset { background: #edf2f7; color: #4a5568; }
+  .btn-reset:hover { background: #e2e8f0; }
 
   /* === STAGE === */
   .stage-container {
     flex: 1;
     position: relative;
+    background: #ffffff;
     overflow: hidden;
-    background: linear-gradient(to bottom, #87CEEB 0%, #e0f7fa 100%);
-    background-size: cover;
-    background-position: center;
   }
 
   canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-  /* Overlay de Resultado */
   #result-overlay {
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0.8);
-    padding: 30px 50px;
-    border-radius: 15px;
-    font-size: 2rem;
+    transform: translate(-50%, -50%) scale(0.5);
+    padding: 25px 45px;
+    border-radius: 20px;
+    font-size: 1.8rem;
     font-weight: 900;
     text-align: center;
     color: #fff;
     opacity: 0;
     pointer-events: none;
-    transition: all 0.4s ease;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     z-index: 100;
-    border: 4px solid #fff;
-    box-shadow: var(--sombra);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
   }
   #result-overlay.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  #result-overlay.safe { background: rgba(39, 174, 96, 0.95); }
-  #result-overlay.danger { background: rgba(231, 76, 60, 0.95); animation: shake 0.5s ease; }
+  #result-overlay.safe { background: var(--cor-seguro); }
+  #result-overlay.danger { background: var(--cor-perigo); }
 
-  @keyframes shake {
-    0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0); }
-    20% { transform: translate(-50%, -50%) scale(1) rotate(-3deg); }
-    40% { transform: translate(-50%, -50%) scale(1) rotate(3deg); }
-    60% { transform: translate(-50%, -50%) scale(1) rotate(-3deg); }
-    80% { transform: translate(-50%, -50%) scale(1) rotate(3deg); }
-  }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
   /* === RESPONSIVO === */
-  @media (max-width: 900px) {
+  @media (max-width: 1000px) {
     body { flex-direction: column; }
-    .sidebar { width: 100%; min-width: unset; max-height: 55vh; padding: 15px; gap: 10px; }
-    .stage-container { flex: 1; min-height: 45vh; }
-    .header h1 { font-size: 1.1rem; }
-    .scenario-card { height: 55px; }
-    .btn { padding: 12px; font-size: 0.8rem; }
+    .sidebar { width: 100%; min-width: unset; max-height: 50vh; padding: 20px; gap: 15px; }
+    .stage-container { flex: 1; min-height: 50vh; }
+    .btn-group { position: sticky; bottom: 0; background: white; padding-bottom: 0; }
   }
 </style>
 </head>
@@ -216,16 +187,25 @@
 
 <div class="sidebar">
   <div class="header">
-    <h1>⚙️ Simulador NR-35</h1>
-    <p>Zona Livre de Queda em Tempo Real</p>
+    <h1>Simulador NR-35</h1>
+    <p>Análise Técnica de Zona Livre de Queda</p>
   </div>
 
   <div class="scenario-section">
-    <label>SELECIONE O CENÁRIO</label>
+    <label>Cenário de Trabalho</label>
     <div class="scenario-cards">
-      <div class="scenario-card active" data-scenario="cenario_construcao.jpg" data-label="Construção" style="background-image: url('cenario_construcao.jpg');" onclick="selectScenario(this)"></div>
-      <div class="scenario-card" data-scenario="cenario_torre.jpg" data-label="Torre" style="background-image: url('cenario_torre.jpg');" onclick="selectScenario(this)"></div>
-      <div class="scenario-card" data-scenario="cenario_plataforma.jpg" data-label="Plataforma" style="background-image: url('cenario_plataforma.jpg');" onclick="selectScenario(this)"></div>
+      <div class="scenario-card active" onclick="selectScenario('obra', this)">
+        <span>🏗️</span>
+        <span>Obra</span>
+      </div>
+      <div class="scenario-card" onclick="selectScenario('torre', this)">
+        <span>🗼</span>
+        <span>Torre</span>
+      </div>
+      <div class="scenario-card" onclick="selectScenario('galpao', this)">
+        <span>🏭</span>
+        <span>Galpão</span>
+      </div>
     </div>
   </div>
 
@@ -235,16 +215,16 @@
   </div>
 
   <div class="control-group">
-    <label>Comprimento do Talabarte (L) <span id="val-l">1.5 m</span></label>
+    <label>Talabarte (L) <span id="val-l">1.5 m</span></label>
     <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
   </div>
 
   <div class="control-group">
     <div class="checkbox-group">
       <input type="checkbox" id="chk-dec" checked>
-      <label for="chk-dec">Usar Absorvedor de Energia</label>
+      <label for="chk-dec">Absorvedor de Energia</label>
     </div>
-    <label>Comprimento do Absorvedor (DEC) <span id="val-dec">1.20 m</span></label>
+    <label>Comprimento (DEC) <span id="val-dec">1.20 m</span></label>
     <input type="range" id="input-dec" min="0.6" max="1.8" step="0.05" value="1.20">
   </div>
 
@@ -254,13 +234,8 @@
   </div>
 
   <div class="kpi-panel">
-    <div class="kpi-title">Componentes da ZLQ</div>
-    <div class="kpi-grid">
-      <div class="kpi-item"><div class="label">DQ</div><div class="value" id="kpi-dq">0.60</div></div>
-      <div class="kpi-item"><div class="label">L</div><div class="value" id="kpi-l">1.50</div></div>
-      <div class="kpi-item"><div class="label">DEC</div><div class="value" id="kpi-dec">1.20</div></div>
-      <div class="kpi-item"><div class="label">ZLQ Req.</div><div class="value" id="kpi-zlq">5.80</div></div>
-    </div>
+    <div class="kpi-item"><div class="label">DQ</div><div class="value" id="kpi-dq">0.60</div></div>
+    <div class="kpi-item"><div class="label">ZLQ Req.</div><div class="value" id="kpi-zlq">5.80</div></div>
   </div>
 
   <div id="result-box" class="result-box">
@@ -269,8 +244,8 @@
   </div>
 
   <div class="btn-group">
-    <button class="btn btn-simular" onclick="startSimulation()">▶ SIMULAR</button>
-    <button class="btn btn-reset" onclick="resetSimulation()">↺ RESET</button>
+    <button class="btn btn-simular" onclick="startSimulation()">Simular Queda</button>
+    <button class="btn btn-reset" onclick="resetSimulation()">Reset</button>
   </div>
 </div>
 
@@ -280,30 +255,29 @@
 </div>
 
 <script>
-  // === CONSTANTES ===
-  const GRAVITY = 0.5;
-  const DAMPING = 0.97;
+  // === CONFIGURAÇÕES TÉCNICAS ===
+  const GRAVITY = 0.45;
+  const DAMPING = 0.98;
   const SAFETY_MARGIN = 1.0;
   const BODY_CONST = 1.50;
   const ELASTICITY_PERC = 0.10;
   const MAX_HEIGHT_M = 8.0;
 
-  // === ELEMENTOS DOM ===
+  // === ESTADO GLOBAL ===
   const canvas = document.getElementById('simCanvas');
   const ctx = canvas.getContext('2d');
-  const stageContainer = document.getElementById('stage');
+  const stage = document.getElementById('stage');
   const resultOverlay = document.getElementById('result-overlay');
   const resultBox = document.getElementById('result-box');
 
-  // === ESTADO ===
   let running = false, crashed = false, finished = false;
-  let pxPerMeter = 50;
+  let pxPerMeter = 60;
   let groundY = 0;
-  let currentScenario = 'cenario_construcao.jpg';
+  let currentScenario = 'obra';
 
-  const worker = { x: 0, y: 0, vx: 0, vy: 0, heightPx: 60 };
+  const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0 };
   const anchor = { x: 0, y: 0 };
-  const config = { heightM: 3.0, ropeM: 1.5, decM: 1.2, fq: 0, useDec: true };
+  const config = { hM: 3.0, lM: 1.5, decM: 1.2, fq: 0, useDec: true };
   let lastMargin = 0;
 
   // === INICIALIZAÇÃO ===
@@ -313,89 +287,81 @@
     window.addEventListener('resize', resize);
     document.querySelectorAll('input').forEach(el => el.addEventListener('input', updateSettings));
     document.getElementById('chk-dec').addEventListener('change', updateSettings);
-    stageContainer.style.backgroundImage = `url('${currentScenario}')`;
   }
 
   function resize() {
-    canvas.width = stageContainer.offsetWidth;
-    canvas.height = stageContainer.offsetHeight;
-    groundY = canvas.height - 50;
-    pxPerMeter = (groundY - 30) / MAX_HEIGHT_M;
+    canvas.width = stage.offsetWidth;
+    canvas.height = stage.offsetHeight;
+    groundY = canvas.height - 60;
+    pxPerMeter = (groundY - 40) / MAX_HEIGHT_M;
     if (!running) updateSettings();
   }
 
-  // === SELEÇÃO DE CENÁRIO ===
-  function selectScenario(el) {
+  function selectScenario(type, el) {
     document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
-    currentScenario = el.dataset.scenario;
-    stageContainer.style.backgroundImage = `url('${currentScenario}')`;
+    currentScenario = type;
+    if (!running) drawScene();
   }
 
-  // === ATUALIZAÇÃO DE CONFIGURAÇÕES ===
   function updateSettings() {
-    config.heightM = parseFloat(document.getElementById('input-height').value);
-    config.ropeM = parseFloat(document.getElementById('input-l').value);
+    config.hM = parseFloat(document.getElementById('input-height').value);
+    config.lM = parseFloat(document.getElementById('input-l').value);
     config.decM = parseFloat(document.getElementById('input-dec').value);
     config.fq = parseInt(document.getElementById('input-fq').value);
     config.useDec = document.getElementById('chk-dec').checked;
 
-    document.getElementById('val-height').textContent = config.heightM.toFixed(1) + ' m';
-    document.getElementById('val-l').textContent = config.ropeM.toFixed(1) + ' m';
+    document.getElementById('val-height').textContent = config.hM.toFixed(1) + ' m';
+    document.getElementById('val-l').textContent = config.lM.toFixed(1) + ' m';
     document.getElementById('val-dec').textContent = config.decM.toFixed(2) + ' m';
     document.getElementById('val-fq').textContent = 'FQ ' + config.fq;
-
     document.getElementById('input-dec').disabled = !config.useDec;
 
-    // Posicionar trabalhador e âncora
-    const platformY = groundY - (config.heightM * pxPerMeter);
-    worker.heightPx = Math.max(50, 1.75 * pxPerMeter * 0.5);
+    // Escala do Trabalhador (1.75m real)
+    worker.hPx = 1.75 * pxPerMeter;
+    worker.wPx = worker.hPx * 0.35;
+    
+    const platformY = groundY - (config.hM * pxPerMeter);
     worker.x = canvas.width / 2;
-    worker.y = platformY - worker.heightPx;
+    worker.y = platformY - worker.hPx;
 
-    let anchorHeightM;
-    if (config.fq === 0) anchorHeightM = config.heightM + 1.5;
-    else if (config.fq === 1) anchorHeightM = config.heightM;
-    else anchorHeightM = config.heightM - 1.75;
-    anchor.x = worker.x - 30;
-    anchor.y = groundY - (anchorHeightM * pxPerMeter);
+    // Posição da Âncora
+    let anchorHM;
+    if (config.fq === 0) anchorHM = config.hM + 1.5;
+    else if (config.fq === 1) anchorHM = config.hM;
+    else anchorHM = config.hM - 1.5;
+    
+    anchor.x = worker.x - 40;
+    anchor.y = groundY - (anchorHM * pxPerMeter);
 
     calcKPIs();
     if (!running) drawScene();
   }
 
-  // === CÁLCULOS ===
-  function calcDQ(fq, L) {
-    if (fq === 0) return 0.6;
-    if (fq === 1) return L;
-    return L + BODY_CONST;
-  }
-
   function calcKPIs() {
-    const DQ = calcDQ(config.fq, config.ropeM);
-    const DEC = config.useDec ? config.decM : 0;
-    const EL = (config.ropeM + DEC) * ELASTICITY_PERC;
-    const ZLQ = DQ + DEC + EL + BODY_CONST + SAFETY_MARGIN;
-    lastMargin = config.heightM - ZLQ;
+    let dq;
+    if (config.fq === 0) dq = 0.6;
+    else if (config.fq === 1) dq = config.lM;
+    else dq = config.lM + BODY_CONST;
 
-    document.getElementById('kpi-dq').textContent = DQ.toFixed(2);
-    document.getElementById('kpi-l').textContent = config.ropeM.toFixed(2);
-    document.getElementById('kpi-dec').textContent = DEC.toFixed(2);
-    document.getElementById('kpi-zlq').textContent = ZLQ.toFixed(2);
+    const dec = config.useDec ? config.decM : 0;
+    const el = (config.lM + dec) * ELASTICITY_PERC;
+    const zlq = dq + dec + el + BODY_CONST + SAFETY_MARGIN;
+    lastMargin = config.hM - zlq;
+
+    document.getElementById('kpi-dq').textContent = dq.toFixed(2);
+    document.getElementById('kpi-zlq').textContent = zlq.toFixed(2);
   }
 
-  // === SIMULAÇÃO ===
+  // === LOOP DE SIMULAÇÃO ===
   function startSimulation() {
     if (running) return;
     updateSettings();
-    running = true;
-    crashed = false;
-    finished = false;
-    worker.vx = 0;
-    worker.vy = 0;
+    running = true; crashed = false; finished = false;
+    worker.vx = 0; worker.vy = 0;
     resultOverlay.className = '';
     resultOverlay.style.opacity = 0;
-    resultBox.classList.remove('visible', 'safe', 'warn', 'danger');
+    resultBox.classList.remove('visible');
     loop();
   }
 
@@ -410,30 +376,30 @@
       worker.y += worker.vy;
     }
 
-    // Colisão com o solo
-    if (worker.y + worker.heightPx >= groundY && !crashed) {
+    // Colisão Solo
+    if (worker.y + worker.hPx >= groundY && !crashed) {
       crashed = true;
-      worker.y = groundY - worker.heightPx;
+      worker.y = groundY - worker.hPx;
       worker.vy = 0;
       showResult(false);
     }
 
-    // Tensão da corda
-    const dRingY = worker.y + (worker.heightPx * 0.3);
+    // Tensão Corda (Anel D no peito ~30% do topo)
+    const dRingY = worker.y + (worker.hPx * 0.3);
     const dx = worker.x - anchor.x;
     const dy = dRingY - anchor.y;
     const dist = Math.hypot(dx, dy);
-    const maxDist = (config.ropeM + (config.useDec ? config.decM : 0)) * pxPerMeter;
+    const maxDist = (config.lM + (config.useDec ? config.decM : 0)) * pxPerMeter;
 
     if (dist > maxDist && !crashed) {
       const angle = Math.atan2(dy, dx);
       const pullX = Math.cos(angle) * maxDist + anchor.x;
       const pullY = Math.sin(angle) * maxDist + anchor.y;
-      const k = 0.1;
+      const k = 0.12;
       worker.vx -= (worker.x - pullX) * k;
       worker.vy -= (dRingY - pullY) * k;
 
-      if (Math.abs(worker.vy) < 0.15 && Math.abs(worker.vx) < 0.15 && !finished) {
+      if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) {
         finished = true;
         showResult(true);
       }
@@ -445,114 +411,137 @@
 
   function showResult(safe) {
     setTimeout(() => {
-      resultOverlay.textContent = safe ? 'QUEDA AMPARADA' : 'COLISÃO COM O SOLO';
+      resultOverlay.textContent = safe ? 'QUEDA AMPARADA' : 'COLISÃO DETECTADA';
       resultOverlay.className = 'visible ' + (safe ? 'safe' : 'danger');
 
-      const marginText = (lastMargin >= 0 ? '+' : '') + lastMargin.toFixed(2) + ' m';
-      document.getElementById('result-margin').textContent = marginText;
+      const m = lastMargin;
+      document.getElementById('result-margin').textContent = (m >= 0 ? '+' : '') + m.toFixed(2) + ' m';
       
-      let statusClass, statusText;
-      if (lastMargin >= 1) { statusClass = 'safe'; statusText = 'SEGURO'; }
-      else if (lastMargin >= 0) { statusClass = 'warn'; statusText = 'ATENÇÃO'; }
-      else { statusClass = 'danger'; statusText = 'COLISÃO'; }
+      let cls = 'danger', txt = 'COLISÃO';
+      if (m >= 1) { cls = 'safe'; txt = 'SEGURO'; }
+      else if (m >= 0) { cls = 'warn'; txt = 'ALERTA'; }
 
-      resultBox.className = 'result-box visible ' + statusClass;
-      document.getElementById('result-status').textContent = statusText;
-    }, 300);
+      resultBox.className = 'result-box visible ' + cls;
+      document.getElementById('result-status').textContent = txt;
+    }, 400);
   }
 
   function resetSimulation() {
-    running = false;
-    crashed = false;
-    finished = false;
-    worker.vx = 0;
-    worker.vy = 0;
+    running = false; crashed = false; finished = false;
     resultOverlay.className = '';
     resultBox.classList.remove('visible');
     updateSettings();
   }
 
-  // === DESENHO ===
+  // === DESENHO VETORIAL ===
   function drawScene() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground();
     drawRuler();
-    drawPlatform();
-    drawGround();
+    drawScenario();
     drawRope();
     drawAnchor();
     drawWorker();
   }
 
+  function drawBackground() {
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
   function drawRuler() {
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = 'bold 11px Inter';
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1;
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "600 10px Inter";
     for (let i = 0; i <= MAX_HEIGHT_M; i++) {
       const y = groundY - (i * pxPerMeter);
-      if (y < 10) break;
       ctx.beginPath();
-      ctx.moveTo(canvas.width - 40, y);
-      ctx.lineTo(canvas.width - 25, y);
-      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-      ctx.lineWidth = 1;
+      ctx.moveTo(canvas.width - 50, y);
+      ctx.lineTo(canvas.width, y);
       ctx.stroke();
-      if (i > 0) ctx.fillText(i + 'm', canvas.width - 22, y + 4);
+      if (i > 0) ctx.fillText(i + "m", canvas.width - 35, y - 5);
     }
   }
 
-  function drawPlatform() {
-    const platformY = groundY - (config.heightM * pxPerMeter);
+  function drawScenario() {
+    const platY = groundY - (config.hM * pxPerMeter);
+    
+    // Solo
+    ctx.fillStyle = "#334155";
+    ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+    
+    // Plataforma (Linha técnica)
+    ctx.setLineDash([10, 5]);
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(50, platformY);
-    ctx.lineTo(canvas.width - 50, platformY);
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-    ctx.lineWidth = 3;
-    ctx.setLineDash([8, 8]);
+    ctx.moveTo(0, platY);
+    ctx.lineTo(canvas.width, platY);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.font = 'bold 10px Inter';
-    ctx.fillText('PLATAFORMA DE TRABALHO', 55, platformY - 8);
-  }
 
-  function drawGround() {
-    ctx.fillStyle = '#5d4037';
-    ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-    ctx.fillStyle = '#8d6e63';
-    ctx.fillRect(0, groundY, canvas.width, 5);
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.font = 'bold 10px Inter';
-    ctx.fillText('SOLO', 55, groundY + 20);
+    // Elementos Vetoriais por Cenário
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 4;
+    
+    if (currentScenario === 'obra') {
+      // Vigas de aço
+      for(let x=100; x<canvas.width; x+=300) {
+        ctx.strokeRect(x, platY, 20, groundY - platY);
+        ctx.fillStyle = "#e2e8f0";
+        ctx.fillRect(x+2, platY, 16, groundY - platY);
+      }
+    } else if (currentScenario === 'torre') {
+      // Treliça
+      ctx.beginPath();
+      ctx.moveTo(canvas.width/2 - 60, canvas.height);
+      ctx.lineTo(canvas.width/2 - 20, 0);
+      ctx.moveTo(canvas.width/2 + 60, canvas.height);
+      ctx.lineTo(canvas.width/2 + 20, 0);
+      ctx.stroke();
+      for(let y=0; y<canvas.height; y+=100) {
+        ctx.moveTo(canvas.width/2 - 50, y);
+        ctx.lineTo(canvas.width/2 + 50, y+50);
+        ctx.moveTo(canvas.width/2 + 50, y);
+        ctx.lineTo(canvas.width/2 - 50, y+50);
+      }
+      ctx.stroke();
+    } else {
+      // Galpão / Fachada
+      ctx.strokeRect(50, 50, canvas.width-100, groundY-50);
+      ctx.beginPath();
+      ctx.moveTo(0, 100); ctx.lineTo(canvas.width, 100);
+      ctx.stroke();
+    }
   }
 
   function drawRope() {
-    const dRingY = worker.y + (worker.heightPx * 0.3);
-    ctx.beginPath();
-    ctx.moveTo(anchor.x, anchor.y);
-
+    const dRingY = worker.y + (worker.hPx * 0.3);
     const dx = worker.x - anchor.x;
     const dy = dRingY - anchor.y;
     const dist = Math.hypot(dx, dy);
-    const ropePx = config.ropeM * pxPerMeter;
+    const ropePx = config.lM * pxPerMeter;
 
+    ctx.beginPath();
+    ctx.moveTo(anchor.x, anchor.y);
     if (dist < ropePx && !crashed && !finished) {
-      const slack = (ropePx - dist) * 0.5;
-      ctx.quadraticCurveTo(anchor.x + dx / 2, anchor.y + dy + slack, worker.x, dRingY);
-      ctx.strokeStyle = '#f39c12';
-      ctx.lineWidth = 3;
+      const slack = (ropePx - dist) * 0.6;
+      ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + slack, worker.x, dRingY);
     } else {
       ctx.lineTo(worker.x, dRingY);
-      ctx.strokeStyle = dist > ropePx ? '#e74c3c' : '#f39c12';
-      ctx.lineWidth = 3;
     }
+    ctx.strokeStyle = dist > ropePx ? varColor('--cor-perigo') : "#f39c12";
+    ctx.lineWidth = 3;
     ctx.stroke();
   }
 
   function drawAnchor() {
     ctx.beginPath();
-    ctx.arc(anchor.x, anchor.y, 8, 0, Math.PI * 2);
-    ctx.fillStyle = '#3498db';
+    ctx.arc(anchor.x, anchor.y, 6, 0, Math.PI*2);
+    ctx.fillStyle = varColor('--cor-primaria');
     ctx.fill();
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = "#fff";
     ctx.lineWidth = 2;
     ctx.stroke();
   }
@@ -560,79 +549,48 @@
   function drawWorker() {
     ctx.save();
     ctx.translate(worker.x, worker.y);
-
     if (crashed) {
-      ctx.translate(0, worker.heightPx);
-      ctx.rotate(-Math.PI / 2);
-      ctx.translate(0, -worker.heightPx);
+      ctx.translate(0, worker.hPx);
+      ctx.rotate(-Math.PI/2);
+      ctx.translate(0, -worker.hPx);
     } else if (running) {
-      ctx.rotate(worker.vx * 0.03);
+      ctx.rotate(worker.vx * 0.04);
     }
 
-    const h = worker.heightPx;
-    const w = h * 0.4;
+    const h = worker.hPx;
+    const w = worker.wPx;
 
+    // Estilo Flat/Vetor
     // Pernas
-    ctx.fillStyle = '#2c3e50';
-    ctx.fillRect(-w * 0.35, h * 0.55, w * 0.3, h * 0.45);
-    ctx.fillRect(w * 0.05, h * 0.55, w * 0.3, h * 0.45);
-
-    // Botas
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(-w * 0.4, h * 0.92, w * 0.4, h * 0.1);
-    ctx.fillRect(w * 0.0, h * 0.92, w * 0.4, h * 0.1);
-
-    // Corpo (macacão)
-    ctx.fillStyle = '#e67e22';
-    ctx.fillRect(-w * 0.45, h * 0.25, w * 0.9, h * 0.35);
-
-    // Cinto de segurança
-    ctx.fillStyle = '#2c3e50';
-    ctx.fillRect(-w * 0.5, h * 0.28, w * 1.0, h * 0.06);
-    // Ponto de ancoragem (anel D)
-    ctx.beginPath();
-    ctx.arc(0, h * 0.31, h * 0.04, 0, Math.PI * 2);
-    ctx.fillStyle = '#bdc3c7';
-    ctx.fill();
-
-    // Braços
-    ctx.fillStyle = '#e67e22';
-    ctx.fillRect(-w * 0.65, h * 0.28, w * 0.2, h * 0.25);
-    ctx.fillRect(w * 0.45, h * 0.28, w * 0.2, h * 0.25);
-
-    // Mãos
-    ctx.fillStyle = '#f5cba7';
-    ctx.beginPath();
-    ctx.arc(-w * 0.55, h * 0.55, h * 0.04, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(w * 0.55, h * 0.55, h * 0.04, 0, Math.PI * 2);
-    ctx.fill();
-
+    ctx.fillStyle = "#334155";
+    ctx.fillRect(-w*0.3, h*0.6, w*0.25, h*0.4);
+    ctx.fillRect(w*0.05, h*0.6, w*0.25, h*0.4);
+    
+    // Tronco
+    ctx.fillStyle = "#475569";
+    ctx.fillRect(-w*0.4, h*0.2, w*0.8, h*0.45);
+    
+    // Cinto (Linhas técnicas)
+    ctx.strokeStyle = "#f1c40f";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-w*0.4, h*0.25, w*0.8, h*0.1);
+    
     // Cabeça
-    ctx.fillStyle = '#f5cba7';
-    ctx.beginPath();
-    ctx.arc(0, h * 0.15, h * 0.12, 0, Math.PI * 2);
-    ctx.fill();
-
+    ctx.fillStyle = "#f1f5f9";
+    ctx.beginPath(); ctx.arc(0, h*0.1, h*0.1, 0, Math.PI*2); ctx.fill();
+    
     // Capacete
-    ctx.fillStyle = '#e74c3c';
-    ctx.beginPath();
-    ctx.arc(0, h * 0.12, h * 0.14, Math.PI, 0);
-    ctx.fill();
-    ctx.fillRect(-h * 0.16, h * 0.10, h * 0.32, h * 0.04);
-
-    // Olhos
-    ctx.fillStyle = '#2c3e50';
-    ctx.beginPath();
-    ctx.arc(-h * 0.04, h * 0.14, h * 0.02, 0, Math.PI * 2);
-    ctx.arc(h * 0.04, h * 0.14, h * 0.02, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillStyle = "#e74c3c";
+    ctx.beginPath(); ctx.arc(0, h*0.08, h*0.11, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-h*0.13, h*0.07, h*0.26, h*0.03);
 
     ctx.restore();
   }
 
-  // === BOOT ===
+  function varColor(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
   setTimeout(init, 100);
 </script>
 </body>
