@@ -259,7 +259,7 @@
   const GRAVITY = 0.45;
   const DAMPING = 0.98;
   const SAFETY_MARGIN = 1.0;
-  const BODY_CONST = 1.50;
+  const BODY_CONST = 1.50; // Distância anel D -> pés
   const ELASTICITY_PERC = 0.10;
   const MAX_HEIGHT_M = 8.0;
 
@@ -325,24 +325,35 @@
     worker.x = canvas.width / 2;
     worker.y = platformY - worker.hPx;
 
-    // Posição da Âncora
-    let anchorHM;
-    if (config.fq === 0) anchorHM = config.hM + 1.5;
-    else if (config.fq === 1) anchorHM = config.hM;
-    else anchorHM = config.hM - 1.5;
+    // === LÓGICA FÍSICA DA ANCORAGEM (NR-35) ===
+    // Ponto de conexão (Anel D) está a ~1.5m dos pés
+    const dRingHeightM = config.hM + 1.5; 
+    let anchorHeightM;
+
+    if (config.fq === 0) {
+      // Ancoragem acima: Ponto de conexão + Comprimento do Talabarte
+      anchorHeightM = dRingHeightM + config.lM;
+    } else if (config.fq === 1) {
+      // Ancoragem no nível do ponto de conexão
+      anchorHeightM = dRingHeightM;
+    } else {
+      // Ancoragem no nível dos pés (FQ 2)
+      anchorHeightM = config.hM;
+    }
     
     anchor.x = worker.x - 40;
-    anchor.y = groundY - (anchorHM * pxPerMeter);
+    anchor.y = groundY - (anchorHeightM * pxPerMeter);
 
     calcKPIs();
     if (!running) drawScene();
   }
 
   function calcKPIs() {
+    // DQ = Distância de Queda Livre
     let dq;
-    if (config.fq === 0) dq = 0.6;
+    if (config.fq === 0) dq = 0.1; // Mínimo físico (folga)
     else if (config.fq === 1) dq = config.lM;
-    else dq = config.lM + BODY_CONST;
+    else dq = 2 * config.lM; // FQ 2: Queda é 2x o talabarte
 
     const dec = config.useDec ? config.decM : 0;
     const el = (config.lM + dec) * ELASTICITY_PERC;
@@ -389,13 +400,15 @@
     const dx = worker.x - anchor.x;
     const dy = dRingY - anchor.y;
     const dist = Math.hypot(dx, dy);
+    
+    // Comprimento máximo estendido (Talabarte + Absorvedor)
     const maxDist = (config.lM + (config.useDec ? config.decM : 0)) * pxPerMeter;
 
     if (dist > maxDist && !crashed) {
       const angle = Math.atan2(dy, dx);
       const pullX = Math.cos(angle) * maxDist + anchor.x;
       const pullY = Math.sin(angle) * maxDist + anchor.y;
-      const k = 0.12;
+      const k = 0.15; // Rigidez da corda
       worker.vx -= (worker.x - pullX) * k;
       worker.vy -= (dRingY - pullY) * k;
 
@@ -486,14 +499,12 @@
     ctx.lineWidth = 4;
     
     if (currentScenario === 'obra') {
-      // Vigas de aço
       for(let x=100; x<canvas.width; x+=300) {
         ctx.strokeRect(x, platY, 20, groundY - platY);
         ctx.fillStyle = "#e2e8f0";
         ctx.fillRect(x+2, platY, 16, groundY - platY);
       }
     } else if (currentScenario === 'torre') {
-      // Treliça
       ctx.beginPath();
       ctx.moveTo(canvas.width/2 - 60, canvas.height);
       ctx.lineTo(canvas.width/2 - 20, 0);
@@ -508,7 +519,6 @@
       }
       ctx.stroke();
     } else {
-      // Galpão / Fachada
       ctx.strokeRect(50, 50, canvas.width-100, groundY-50);
       ctx.beginPath();
       ctx.moveTo(0, 100); ctx.lineTo(canvas.width, 100);
@@ -531,7 +541,7 @@
     } else {
       ctx.lineTo(worker.x, dRingY);
     }
-    ctx.strokeStyle = dist > ropePx ? varColor('--cor-perigo') : "#f39c12";
+    ctx.strokeStyle = dist > ropePx ? "#e74c3c" : "#f39c12";
     ctx.lineWidth = 3;
     ctx.stroke();
   }
@@ -539,7 +549,7 @@
   function drawAnchor() {
     ctx.beginPath();
     ctx.arc(anchor.x, anchor.y, 6, 0, Math.PI*2);
-    ctx.fillStyle = varColor('--cor-primaria');
+    ctx.fillStyle = "#3498db";
     ctx.fill();
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 2;
@@ -560,7 +570,6 @@
     const h = worker.hPx;
     const w = worker.wPx;
 
-    // Estilo Flat/Vetor
     // Pernas
     ctx.fillStyle = "#334155";
     ctx.fillRect(-w*0.3, h*0.6, w*0.25, h*0.4);
@@ -570,7 +579,7 @@
     ctx.fillStyle = "#475569";
     ctx.fillRect(-w*0.4, h*0.2, w*0.8, h*0.45);
     
-    // Cinto (Linhas técnicas)
+    // Cinto
     ctx.strokeStyle = "#f1c40f";
     ctx.lineWidth = 2;
     ctx.strokeRect(-w*0.4, h*0.25, w*0.8, h*0.1);
@@ -585,10 +594,6 @@
     ctx.fillRect(-h*0.13, h*0.07, h*0.26, h*0.03);
 
     ctx.restore();
-  }
-
-  function varColor(name) {
-    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   }
 
   setTimeout(init, 100);
