@@ -183,9 +183,9 @@
   <div class="scenario-section">
     <label>Cenário de Trabalho</label>
     <div class="scenario-cards">
-      <div class="scenario-card active" onclick="selectScenario('obra', this)"><span>🏗️ Obra</span></div>
+      <div class="scenario-card" onclick="selectScenario('obra', this)"><span>🏗️ Obra</span></div>
       <div class="scenario-card" onclick="selectScenario('torre', this)"><span>🗼 Torre</span></div>
-      <div class="scenario-card" onclick="selectScenario('galpao', this)"><span>🏭 Galpão</span></div>
+      <div class="scenario-card active" onclick="selectScenario('galpao', this)"><span>🏭 Galpão</span></div>
     </div>
   </div>
 
@@ -209,12 +209,12 @@
   </div>
 
   <div class="control-group">
-    <label>Fator de Queda (FQ) <span id="val-fq">FQ 0</span></label>
-    <input type="range" id="input-fq" min="0" max="2" step="1" value="0">
+    <label>Fator de Queda (FQ) <span id="val-fq">FQ 1</span></label>
+    <input type="range" id="input-fq" min="0" max="2" step="1" value="1">
   </div>
 
   <div class="kpi-panel">
-    <div class="kpi-item"><div class="label">DQ</div><div class="value" id="kpi-dq">0.10</div></div>
+    <div class="kpi-item"><div class="label">DQ</div><div class="value" id="kpi-dq">1.50</div></div>
     <div class="kpi-item"><div class="label">ZLQ Req.</div><div class="value" id="kpi-zlq">5.30</div></div>
   </div>
 
@@ -239,9 +239,9 @@
   const GRAVITY = 0.4;
   const DAMPING = 0.98;
   const SAFETY_MARGIN = 1.0;
-  const BODY_CONST = 1.50; // Distância anel D -> pés
+  const BODY_CONST = 1.50; 
   const ELASTICITY_PERC = 0.10;
-  const MAX_HEIGHT_M = 10.0; // Régua até 10m
+  const MAX_HEIGHT_M = 10.0;
 
   // === ESTADO GLOBAL ===
   const canvas = document.getElementById('simCanvas');
@@ -253,11 +253,11 @@
   let running = false, crashed = false, finished = false;
   let pxPerMeter = 60;
   let groundY = 0;
-  let currentScenario = 'obra';
+  let currentScenario = 'galpao';
 
   const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0, rotation: 0 };
   const anchor = { x: 0, y: 0 };
-  const config = { hM: 3.0, lM: 1.5, decM: 1.2, fq: 0, useDec: true };
+  const config = { hM: 3.0, lM: 1.5, decM: 1.2, fq: 1, useDec: true };
   let lastMargin = 0;
 
   // === INICIALIZAÇÃO ===
@@ -273,7 +273,7 @@
     canvas.width = stage.offsetWidth;
     canvas.height = stage.offsetHeight;
     groundY = canvas.height - 40;
-    pxPerMeter = (groundY - 100) / MAX_HEIGHT_M; // Deixa espaço para ancoragem FQ0
+    pxPerMeter = (groundY - 100) / MAX_HEIGHT_M;
     if (!running) updateSettings();
   }
 
@@ -281,6 +281,13 @@
     document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     currentScenario = type;
+    
+    // Restrição específica do Galpão
+    if (type === 'galpao' && config.fq === 0) {
+      config.fq = 1;
+      document.getElementById('input-fq').value = 1;
+    }
+    
     if (!running) updateSettings();
   }
 
@@ -291,34 +298,29 @@
     config.fq = parseInt(document.getElementById('input-fq').value);
     config.useDec = document.getElementById('chk-dec').checked;
 
+    // Bloqueio FQ0 no Galpão
+    if (currentScenario === 'galpao' && config.fq === 0) {
+      config.fq = 1;
+      document.getElementById('input-fq').value = 1;
+    }
+
     document.getElementById('val-height').textContent = config.hM.toFixed(1) + ' m';
     document.getElementById('val-l').textContent = config.lM.toFixed(1) + ' m';
     document.getElementById('val-dec').textContent = config.decM.toFixed(2) + ' m';
-    document.getElementById('val-fq').textContent = 'FQ ' + config.fq;
+    document.getElementById('val-fq').textContent = 'FQ ' + config.fq + (currentScenario === 'galpao' && config.fq === 0 ? ' (N/A)' : '');
     document.getElementById('input-dec').disabled = !config.useDec;
 
-    // Escala do Trabalhador (1.75m real)
     worker.hPx = 1.75 * pxPerMeter;
     worker.wPx = worker.hPx * 0.35;
     
-    // POSIÇÃO INICIAL: Pés na plataforma
     const platformY = groundY - (config.hM * pxPerMeter);
     worker.x = canvas.width / 2;
     worker.y = platformY - worker.hPx;
     worker.rotation = 0;
 
-    // ANCORAGEM ESTRUTURAL (Sincronizada com o cenário)
     const dRingHeightM = config.hM + 1.5; 
     let anchorHeightM;
     
-    // Lógica de ancoragem baseada no cenário
-    if (currentScenario === 'galpao' && config.fq === 0) {
-      // Galpão não tem estrutura superior para FQ0
-      config.fq = 1;
-      document.getElementById('input-fq').value = 1;
-      document.getElementById('val-fq').textContent = 'FQ 1 (Restrito)';
-    }
-
     if (config.fq === 0) anchorHeightM = dRingHeightM + config.lM;
     else if (config.fq === 1) anchorHeightM = dRingHeightM;
     else anchorHeightM = config.hM;
@@ -432,7 +434,7 @@
     drawScenario();
     drawRope();
     drawAnchor();
-    drawWorker();
+    drawWorker(); // Personagem desenhado por último (z-index maior)
   }
 
   function drawRuler() {
@@ -449,8 +451,7 @@
 
   function drawScenario() {
     const platY = groundY - (config.hM * pxPerMeter);
-    const dRingY = platY - (worker.hPx * 0.7); // Altura do anel D parado
-
+    
     // Solo
     ctx.fillStyle = "#334155";
     ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
@@ -465,43 +466,75 @@
     ctx.fillStyle = "#64748b";
     ctx.fillText("PLATAFORMA (" + config.hM + "m)", 10, platY - 5);
 
-    // Estruturas de Ancoragem
+    if (currentScenario === 'galpao') {
+      drawGalpao(platY);
+    } else if (currentScenario === 'obra') {
+      drawObra(platY);
+    } else {
+      drawTorre(platY);
+    }
+  }
+
+  function drawGalpao(platY) {
+    // Colunas Industriais
+    ctx.fillStyle = "#cbd5e1";
+    for(let x=100; x<canvas.width; x+=400) {
+      ctx.fillRect(x, 0, 40, groundY);
+      // Detalhes da coluna
+      ctx.strokeStyle = "#94a3b8";
+      ctx.strokeRect(x, 0, 40, groundY);
+    }
+
+    // Treliça de Telhado (Tesoura)
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 3;
+    const roofY = 50;
+    ctx.beginPath();
+    ctx.moveTo(0, roofY);
+    ctx.lineTo(canvas.width, roofY);
+    for(let x=0; x<canvas.width; x+=60) {
+      ctx.lineTo(x+30, roofY+40);
+      ctx.lineTo(x+60, roofY);
+    }
+    ctx.stroke();
+
+    // Linha de Vida (FQ1)
+    const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath(); ctx.moveTo(0, fq1Y); ctx.lineTo(canvas.width, fq1Y); ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Suportes da linha de vida nas colunas
+    ctx.fillStyle = "#475569";
+    for(let x=100; x<canvas.width; x+=400) {
+      ctx.fillRect(x-5, fq1Y-5, 50, 10);
+    }
+  }
+
+  function drawObra(platY) {
     ctx.strokeStyle = "#cbd5e1";
     ctx.lineWidth = 4;
-    
-    if (currentScenario === 'obra') {
-      // Viga Superior (FQ0)
-      const fq0Y = groundY - ((config.hM + 1.5 + config.lM) * pxPerMeter);
-      ctx.strokeRect(0, fq0Y - 10, canvas.width, 10);
-      ctx.fillStyle = "#e2e8f0"; ctx.fillRect(0, fq0Y - 10, canvas.width, 10);
-      
-      // Viga Média (FQ1)
-      const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
-      ctx.strokeRect(canvas.width/2 - 100, fq1Y - 5, 200, 10);
-      
-      // Pilares
-      for(let x=150; x<canvas.width; x+=300) {
-        ctx.strokeRect(x, platY, 20, groundY - platY);
-      }
-    } else if (currentScenario === 'torre') {
-      ctx.beginPath();
-      ctx.moveTo(canvas.width/2 - 50, groundY); ctx.lineTo(canvas.width/2 - 15, 0);
-      ctx.moveTo(canvas.width/2 + 50, groundY); ctx.lineTo(canvas.width/2 + 15, 0);
-      // Travessas de ancoragem
-      for(let i=0; i<=MAX_HEIGHT_M; i+=2) {
-        const y = groundY - (i * pxPerMeter);
-        ctx.moveTo(canvas.width/2 - 40, y); ctx.lineTo(canvas.width/2 + 40, y);
-      }
-      ctx.stroke();
-    } else {
-      // Galpão (Apenas FQ1 e FQ2)
-      ctx.strokeRect(50, 50, canvas.width-100, groundY-50);
-      // Linha de vida horizontal (FQ1)
-      const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
-      ctx.setLineDash([5, 5]);
-      ctx.beginPath(); ctx.moveTo(50, fq1Y); ctx.lineTo(canvas.width-50, fq1Y); ctx.stroke();
-      ctx.setLineDash([]);
+    const fq0Y = groundY - ((config.hM + 1.5 + config.lM) * pxPerMeter);
+    ctx.strokeRect(0, fq0Y - 10, canvas.width, 10);
+    ctx.fillStyle = "#e2e8f0"; ctx.fillRect(0, fq0Y - 10, canvas.width, 10);
+    for(let x=150; x<canvas.width; x+=300) {
+      ctx.strokeRect(x, platY, 20, groundY - platY);
     }
+  }
+
+  function drawTorre(platY) {
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width/2 - 40, groundY); ctx.lineTo(canvas.width/2 - 15, 0);
+    ctx.moveTo(canvas.width/2 + 40, groundY); ctx.lineTo(canvas.width/2 + 15, 0);
+    for(let i=0; i<=MAX_HEIGHT_M; i+=2) {
+      const y = groundY - (i * pxPerMeter);
+      ctx.moveTo(canvas.width/2 - 40, y); ctx.lineTo(canvas.width/2 + 40, y);
+    }
+    ctx.stroke();
   }
 
   function drawRope() {
@@ -537,41 +570,58 @@
     const h = worker.hPx;
     const w = worker.wPx;
 
-    // Pernas e Botas
-    ctx.fillStyle = "#1a202c"; // Botas
-    ctx.fillRect(-w*0.35, h*0.9, w*0.3, h*0.1);
-    ctx.fillRect(w*0.05, h*0.9, w*0.3, h*0.1);
+    // Pernas e Botas (Mais detalhadas)
+    ctx.fillStyle = "#1a202c"; 
+    ctx.beginPath(); // Bota Esquerda
+    ctx.roundRect(-w*0.4, h*0.9, w*0.35, h*0.1, 2); ctx.fill();
+    ctx.beginPath(); // Bota Direita
+    ctx.roundRect(w*0.05, h*0.9, w*0.35, h*0.1, 2); ctx.fill();
+    
     ctx.fillStyle = "#4a5568"; // Calças
-    ctx.fillRect(-w*0.3, h*0.6, w*0.25, h*0.35);
-    ctx.fillRect(w*0.05, h*0.6, w*0.25, h*0.35);
+    ctx.fillRect(-w*0.35, h*0.6, w*0.3, h*0.35);
+    ctx.fillRect(w*0.05, h*0.6, w*0.3, h*0.35);
     
-    // Tronco (Macacão)
+    // Tronco (Macacão com curvas)
     ctx.fillStyle = "#2d3748";
-    ctx.fillRect(-w*0.45, h*0.2, w*0.9, h*0.45);
+    ctx.beginPath();
+    ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 5);
+    ctx.fill();
     
-    // Cinto Tipo Paraquedista (Amarelo)
+    // Faixas Refletivas
+    ctx.fillStyle = "#e2e8f0";
+    ctx.fillRect(-w*0.5, h*0.35, w, h*0.03);
+    ctx.fillRect(-w*0.5, h*0.5, w, h*0.03);
+    
+    // Cinto Tipo Paraquedista (Amarelo - Detalhado)
     ctx.strokeStyle = "#f6e05e";
-    ctx.lineWidth = 2.5;
-    // Alças ombro
-    ctx.beginPath(); ctx.moveTo(-w*0.3, h*0.2); ctx.lineTo(-w*0.3, h*0.6); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(w*0.3, h*0.2); ctx.lineTo(w*0.3, h*0.6); ctx.stroke();
-    // Tira peitoral (Anel D)
-    ctx.beginPath(); ctx.moveTo(-w*0.4, h*0.3); ctx.lineTo(w*0.4, h*0.3); ctx.stroke();
-    ctx.fillStyle = "#718096"; // Anel D
-    ctx.beginPath(); ctx.arc(0, h*0.3, 4, 0, Math.PI*2); ctx.fill();
+    ctx.lineWidth = 3;
+    // Alças ombro em V
+    ctx.beginPath(); ctx.moveTo(-w*0.35, h*0.2); ctx.lineTo(-w*0.2, h*0.6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(w*0.35, h*0.2); ctx.lineTo(w*0.2, h*0.6); ctx.stroke();
+    // Tira peitoral e cintura
+    ctx.beginPath(); ctx.moveTo(-w*0.5, h*0.3); ctx.lineTo(w*0.5, h*0.3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-w*0.5, h*0.58); ctx.lineTo(w*0.5, h*0.58); ctx.stroke();
+    
+    // Anel D (Ponto de ancoragem)
+    ctx.fillStyle = "#718096";
+    ctx.beginPath(); ctx.arc(0, h*0.3, 5, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = "#4a5568"; ctx.lineWidth = 1; ctx.stroke();
     
     // Cabeça
     ctx.fillStyle = "#f7fafc";
-    ctx.beginPath(); ctx.arc(0, h*0.1, h*0.1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, h*0.1, h*0.12, 0, Math.PI*2); ctx.fill();
     // Olhos
     ctx.fillStyle = "#000";
-    ctx.beginPath(); ctx.arc(-3, h*0.1, 1.5, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(3, h*0.1, 1.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-4, h*0.1, 2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, h*0.1, 2, 0, Math.PI*2); ctx.fill();
     
-    // Capacete (Vermelho)
+    // Capacete (Vermelho - Design Arredondado)
     ctx.fillStyle = "#e53e3e";
-    ctx.beginPath(); ctx.arc(0, h*0.08, h*0.12, Math.PI, 0); ctx.fill();
-    ctx.fillRect(-h*0.14, h*0.07, h*0.28, h*0.03); // Aba
+    ctx.beginPath(); ctx.arc(0, h*0.08, h*0.14, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-h*0.16, h*0.07, h*0.32, h*0.04); // Aba
+    // Detalhe do capacete
+    ctx.strokeStyle = "#c53030"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(0, h*0.08, h*0.1, Math.PI, 0); ctx.stroke();
 
     ctx.restore();
   }
