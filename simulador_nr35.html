@@ -38,23 +38,22 @@
     padding: 25px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     overflow-y: auto;
     box-shadow: 10px 0 30px rgba(0,0,0,0.05);
     z-index: 10;
   }
 
   .header { margin-bottom: 5px; }
-  .header h1 { font-size: 1.5rem; font-weight: 900; color: var(--cor-primaria-escura); letter-spacing: -0.5px; }
-  .header p { font-size: 0.8rem; color: var(--cor-texto-secundario); font-weight: 500; }
+  .header h1 { font-size: 1.4rem; font-weight: 900; color: var(--cor-primaria-escura); letter-spacing: -0.5px; }
+  .header p { font-size: 0.75rem; color: var(--cor-texto-secundario); font-weight: 500; }
 
-  /* Cenários Vetoriais */
-  .scenario-section label { font-size: 0.75rem; font-weight: 800; color: var(--cor-texto-secundario); text-transform: uppercase; display: block; margin-bottom: 10px; letter-spacing: 1px; }
-  .scenario-cards { display: flex; gap: 10px; }
+  .scenario-section label { font-size: 0.7rem; font-weight: 800; color: var(--cor-texto-secundario); text-transform: uppercase; display: block; margin-bottom: 8px; letter-spacing: 1px; }
+  .scenario-cards { display: flex; gap: 8px; }
   .scenario-card {
     flex: 1;
-    height: 60px;
-    border-radius: 12px;
+    height: 50px;
+    border-radius: 10px;
     cursor: pointer;
     border: 2px solid #edf2f7;
     transition: var(--transicao);
@@ -63,83 +62,74 @@
     justify-content: center;
     background: #f8fafc;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
   }
-  .scenario-card i { font-size: 1.2rem; }
-  .scenario-card span { font-size: 0.65rem; font-weight: 700; }
-  .scenario-card:hover { border-color: var(--cor-primaria); background: #f0f7ff; }
+  .scenario-card span { font-size: 0.6rem; font-weight: 700; }
   .scenario-card.active { border-color: var(--cor-primaria); background: var(--cor-primaria); color: white; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3); }
 
-  /* Controles */
-  .control-group { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #edf2f7; }
+  .control-group { background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #edf2f7; }
   .control-group label {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--cor-texto);
     display: flex;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
-  .control-group label span { color: var(--cor-primaria-escura); font-size: 0.9rem; }
+  .control-group label span { color: var(--cor-primaria-escura); font-size: 0.85rem; }
   
   input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
-    height: 6px;
-    border-radius: 3px;
+    height: 4px;
+    border-radius: 2px;
     background: #e2e8f0;
     outline: none;
   }
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: white;
     border: 2px solid var(--cor-primaria);
     cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: var(--transicao);
   }
-  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
 
-  .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--cor-primaria); cursor: pointer; }
-  .checkbox-group label { font-size: 0.85rem; font-weight: 600; color: var(--cor-texto); cursor: pointer; margin: 0; }
+  .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--cor-primaria); cursor: pointer; }
+  .checkbox-group label { font-size: 0.8rem; font-weight: 600; color: var(--cor-texto); cursor: pointer; margin: 0; }
 
-  /* KPIs */
-  .kpi-panel { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .kpi-item { background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #edf2f7; text-align: center; }
-  .kpi-item .label { font-size: 0.6rem; font-weight: 800; color: var(--cor-texto-secundario); text-transform: uppercase; margin-bottom: 4px; }
-  .kpi-item .value { font-size: 1.1rem; font-weight: 900; color: var(--cor-texto); }
+  .kpi-panel { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .kpi-item { background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #edf2f7; text-align: center; }
+  .kpi-item .label { font-size: 0.55rem; font-weight: 800; color: var(--cor-texto-secundario); text-transform: uppercase; margin-bottom: 2px; }
+  .kpi-item .value { font-size: 1rem; font-weight: 900; color: var(--cor-texto); }
 
-  .result-box { margin-top: 5px; padding: 20px; border-radius: 16px; text-align: center; display: none; border: 2px solid transparent; }
+  .result-box { margin-top: 5px; padding: 15px; border-radius: 12px; text-align: center; display: none; border: 2px solid transparent; }
   .result-box.visible { display: block; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  .result-box .margin { font-size: 2.2rem; font-weight: 900; line-height: 1; }
-  .result-box .status { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; margin-top: 8px; letter-spacing: 1px; }
+  .result-box .margin { font-size: 1.8rem; font-weight: 900; line-height: 1; }
+  .result-box .status { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-top: 6px; letter-spacing: 1px; }
   
   .result-box.safe { background: #f0fff4; border-color: #c6f6d5; color: #22543d; }
   .result-box.warn { background: #fffaf0; border-color: #feebc8; color: #744210; }
   .result-box.danger { background: #fff5f5; border-color: #fed7d7; color: #742a2a; }
 
-  /* Botões */
-  .btn-group { display: flex; gap: 12px; margin-top: auto; padding-top: 10px; }
+  .btn-group { display: flex; gap: 10px; margin-top: auto; padding-top: 10px; }
   .btn {
     flex: 1;
-    padding: 16px;
+    padding: 14px;
     border: none;
-    border-radius: 14px;
+    border-radius: 12px;
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: var(--transicao);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
   .btn-simular { background: var(--cor-primaria); color: white; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
   .btn-simular:hover { background: var(--cor-primaria-escura); transform: translateY(-2px); }
   .btn-reset { background: #edf2f7; color: #4a5568; }
-  .btn-reset:hover { background: #e2e8f0; }
 
   /* === STAGE === */
   .stage-container {
@@ -153,12 +143,12 @@
 
   #result-overlay {
     position: absolute;
-    top: 40%;
+    top: 30%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.5);
-    padding: 25px 45px;
-    border-radius: 20px;
-    font-size: 1.8rem;
+    padding: 20px 40px;
+    border-radius: 15px;
+    font-size: 1.5rem;
     font-weight: 900;
     text-align: center;
     color: #fff;
@@ -166,20 +156,19 @@
     pointer-events: none;
     transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     z-index: 100;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
   }
   #result-overlay.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   #result-overlay.safe { background: var(--cor-seguro); }
+  #result-overlay.warn { background: var(--cor-alerta); color: #000; }
   #result-overlay.danger { background: var(--cor-perigo); }
 
   @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* === RESPONSIVO === */
   @media (max-width: 1000px) {
     body { flex-direction: column; }
-    .sidebar { width: 100%; min-width: unset; max-height: 50vh; padding: 20px; gap: 15px; }
-    .stage-container { flex: 1; min-height: 50vh; }
-    .btn-group { position: sticky; bottom: 0; background: white; padding-bottom: 0; }
+    .sidebar { width: 100%; min-width: unset; max-height: 45vh; padding: 15px; gap: 10px; }
+    .stage-container { flex: 1; min-height: 55vh; }
   }
 </style>
 </head>
@@ -194,18 +183,9 @@
   <div class="scenario-section">
     <label>Cenário de Trabalho</label>
     <div class="scenario-cards">
-      <div class="scenario-card active" onclick="selectScenario('obra', this)">
-        <span>🏗️</span>
-        <span>Obra</span>
-      </div>
-      <div class="scenario-card" onclick="selectScenario('torre', this)">
-        <span>🗼</span>
-        <span>Torre</span>
-      </div>
-      <div class="scenario-card" onclick="selectScenario('galpao', this)">
-        <span>🏭</span>
-        <span>Galpão</span>
-      </div>
+      <div class="scenario-card active" onclick="selectScenario('obra', this)"><span>🏗️ Obra</span></div>
+      <div class="scenario-card" onclick="selectScenario('torre', this)"><span>🗼 Torre</span></div>
+      <div class="scenario-card" onclick="selectScenario('galpao', this)"><span>🏭 Galpão</span></div>
     </div>
   </div>
 
@@ -234,8 +214,8 @@
   </div>
 
   <div class="kpi-panel">
-    <div class="kpi-item"><div class="label">DQ</div><div class="value" id="kpi-dq">0.60</div></div>
-    <div class="kpi-item"><div class="label">ZLQ Req.</div><div class="value" id="kpi-zlq">5.80</div></div>
+    <div class="kpi-item"><div class="label">DQ</div><div class="value" id="kpi-dq">0.10</div></div>
+    <div class="kpi-item"><div class="label">ZLQ Req.</div><div class="value" id="kpi-zlq">5.30</div></div>
   </div>
 
   <div id="result-box" class="result-box">
@@ -256,12 +236,12 @@
 
 <script>
   // === CONFIGURAÇÕES TÉCNICAS ===
-  const GRAVITY = 0.45;
+  const GRAVITY = 0.4;
   const DAMPING = 0.98;
   const SAFETY_MARGIN = 1.0;
   const BODY_CONST = 1.50; // Distância anel D -> pés
   const ELASTICITY_PERC = 0.10;
-  const MAX_HEIGHT_M = 8.0;
+  const MAX_HEIGHT_M = 9.0; // Régua até 9m para folga visual
 
   // === ESTADO GLOBAL ===
   const canvas = document.getElementById('simCanvas');
@@ -275,7 +255,7 @@
   let groundY = 0;
   let currentScenario = 'obra';
 
-  const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0 };
+  const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0, rotation: 0 };
   const anchor = { x: 0, y: 0 };
   const config = { hM: 3.0, lM: 1.5, decM: 1.2, fq: 0, useDec: true };
   let lastMargin = 0;
@@ -292,8 +272,9 @@
   function resize() {
     canvas.width = stage.offsetWidth;
     canvas.height = stage.offsetHeight;
-    groundY = canvas.height - 60;
-    pxPerMeter = (groundY - 40) / MAX_HEIGHT_M;
+    groundY = canvas.height - 40; // Solo fixo no fundo
+    // Escala: Solo (0m) até o topo do canvas
+    pxPerMeter = (groundY - 50) / MAX_HEIGHT_M;
     if (!running) updateSettings();
   }
 
@@ -321,27 +302,20 @@
     worker.hPx = 1.75 * pxPerMeter;
     worker.wPx = worker.hPx * 0.35;
     
+    // POSIÇÃO INICIAL: Pés na plataforma
     const platformY = groundY - (config.hM * pxPerMeter);
     worker.x = canvas.width / 2;
     worker.y = platformY - worker.hPx;
+    worker.rotation = 0;
 
-    // === LÓGICA FÍSICA DA ANCORAGEM (NR-35) ===
-    // Ponto de conexão (Anel D) está a ~1.5m dos pés
+    // ANCORAGEM (NR-35)
     const dRingHeightM = config.hM + 1.5; 
     let anchorHeightM;
-
-    if (config.fq === 0) {
-      // Ancoragem acima: Ponto de conexão + Comprimento do Talabarte
-      anchorHeightM = dRingHeightM + config.lM;
-    } else if (config.fq === 1) {
-      // Ancoragem no nível do ponto de conexão
-      anchorHeightM = dRingHeightM;
-    } else {
-      // Ancoragem no nível dos pés (FQ 2)
-      anchorHeightM = config.hM;
-    }
+    if (config.fq === 0) anchorHeightM = dRingHeightM + config.lM;
+    else if (config.fq === 1) anchorHeightM = dRingHeightM;
+    else anchorHeightM = config.hM;
     
-    anchor.x = worker.x - 40;
+    anchor.x = worker.x - 30;
     anchor.y = groundY - (anchorHeightM * pxPerMeter);
 
     calcKPIs();
@@ -349,11 +323,10 @@
   }
 
   function calcKPIs() {
-    // DQ = Distância de Queda Livre
     let dq;
-    if (config.fq === 0) dq = 0.1; // Mínimo físico (folga)
+    if (config.fq === 0) dq = 0.1;
     else if (config.fq === 1) dq = config.lM;
-    else dq = 2 * config.lM; // FQ 2: Queda é 2x o talabarte
+    else dq = 2 * config.lM;
 
     const dec = config.useDec ? config.decM : 0;
     const el = (config.lM + dec) * ELASTICITY_PERC;
@@ -364,7 +337,6 @@
     document.getElementById('kpi-zlq').textContent = zlq.toFixed(2);
   }
 
-  // === LOOP DE SIMULAÇÃO ===
   function startSimulation() {
     if (running) return;
     updateSettings();
@@ -392,28 +364,32 @@
       crashed = true;
       worker.y = groundY - worker.hPx;
       worker.vy = 0;
+      worker.vx = 0;
+      worker.rotation = -Math.PI/2;
       showResult(false);
     }
 
-    // Tensão Corda (Anel D no peito ~30% do topo)
+    // Tensão Corda
     const dRingY = worker.y + (worker.hPx * 0.3);
     const dx = worker.x - anchor.x;
     const dy = dRingY - anchor.y;
     const dist = Math.hypot(dx, dy);
-    
-    // Comprimento máximo estendido (Talabarte + Absorvedor)
     const maxDist = (config.lM + (config.useDec ? config.decM : 0)) * pxPerMeter;
 
     if (dist > maxDist && !crashed) {
       const angle = Math.atan2(dy, dx);
       const pullX = Math.cos(angle) * maxDist + anchor.x;
       const pullY = Math.sin(angle) * maxDist + anchor.y;
-      const k = 0.15; // Rigidez da corda
+      const k = 0.15;
       worker.vx -= (worker.x - pullX) * k;
       worker.vy -= (dRingY - pullY) * k;
+      
+      // Rotação suave ao ser amparado
+      worker.rotation = Math.max(-0.5, Math.min(0.5, worker.vx * 0.1));
 
       if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) {
         finished = true;
+        worker.vx = 0; worker.vy = 0;
         showResult(true);
       }
     }
@@ -424,19 +400,22 @@
 
   function showResult(safe) {
     setTimeout(() => {
-      resultOverlay.textContent = safe ? 'QUEDA AMPARADA' : 'COLISÃO DETECTADA';
-      resultOverlay.className = 'visible ' + (safe ? 'safe' : 'danger');
-
       const m = lastMargin;
-      document.getElementById('result-margin').textContent = (m >= 0 ? '+' : '') + m.toFixed(2) + ' m';
+      let status = 'danger', txt = 'COLISÃO NO SOLO';
       
-      let cls = 'danger', txt = 'COLISÃO';
-      if (m >= 1) { cls = 'safe'; txt = 'SEGURO'; }
-      else if (m >= 0) { cls = 'warn'; txt = 'ALERTA'; }
+      if (safe) {
+        if (m >= 1) { status = 'safe'; txt = 'QUEDA AMPARADA (SEGURO)'; }
+        else if (m >= 0) { status = 'warn'; txt = 'QUEDA AMPARADA (ALERTA)'; }
+        else { status = 'danger'; txt = 'COLISÃO (ZLQ INSUFICIENTE)'; }
+      }
 
-      resultBox.className = 'result-box visible ' + cls;
-      document.getElementById('result-status').textContent = txt;
-    }, 400);
+      resultOverlay.textContent = txt;
+      resultOverlay.className = 'visible ' + status;
+
+      document.getElementById('result-margin').textContent = (m >= 0 ? '+' : '') + m.toFixed(2) + ' m';
+      document.getElementById('result-status').textContent = m >= 1 ? 'SEGURO' : (m >= 0 ? 'ALERTA' : 'COLISÃO');
+      resultBox.className = 'result-box visible ' + (m >= 1 ? 'safe' : (m >= 0 ? 'warn' : 'danger'));
+    }, 300);
   }
 
   function resetSimulation() {
@@ -446,10 +425,9 @@
     updateSettings();
   }
 
-  // === DESENHO VETORIAL ===
+  // === DESENHO ===
   function drawScene() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBackground();
     drawRuler();
     drawScenario();
     drawRope();
@@ -457,72 +435,48 @@
     drawWorker();
   }
 
-  function drawBackground() {
-    ctx.fillStyle = "#f8fafc";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
-
   function drawRuler() {
     ctx.strokeStyle = "#e2e8f0";
     ctx.lineWidth = 1;
     ctx.fillStyle = "#94a3b8";
-    ctx.font = "600 10px Inter";
+    ctx.font = "600 11px Inter";
     for (let i = 0; i <= MAX_HEIGHT_M; i++) {
       const y = groundY - (i * pxPerMeter);
       ctx.beginPath();
-      ctx.moveTo(canvas.width - 50, y);
+      ctx.moveTo(canvas.width - 60, y);
       ctx.lineTo(canvas.width, y);
       ctx.stroke();
-      if (i > 0) ctx.fillText(i + "m", canvas.width - 35, y - 5);
+      ctx.fillText(i + "m", canvas.width - 40, y + 4);
     }
   }
 
   function drawScenario() {
     const platY = groundY - (config.hM * pxPerMeter);
-    
-    // Solo
     ctx.fillStyle = "#334155";
     ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-    
-    // Plataforma (Linha técnica)
-    ctx.setLineDash([10, 5]);
+    ctx.fillText("SOLO (0m)", 10, groundY - 5);
+
+    ctx.setLineDash([8, 4]);
     ctx.strokeStyle = "#64748b";
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, platY);
-    ctx.lineTo(canvas.width, platY);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, platY); ctx.lineTo(canvas.width, platY); ctx.stroke();
     ctx.setLineDash([]);
+    ctx.fillStyle = "#64748b";
+    ctx.fillText("PLATAFORMA (" + config.hM + "m)", 10, platY - 5);
 
-    // Elementos Vetoriais por Cenário
     ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 4;
-    
+    ctx.lineWidth = 3;
     if (currentScenario === 'obra') {
-      for(let x=100; x<canvas.width; x+=300) {
+      for(let x=150; x<canvas.width; x+=300) {
         ctx.strokeRect(x, platY, 20, groundY - platY);
-        ctx.fillStyle = "#e2e8f0";
-        ctx.fillRect(x+2, platY, 16, groundY - platY);
       }
     } else if (currentScenario === 'torre') {
       ctx.beginPath();
-      ctx.moveTo(canvas.width/2 - 60, canvas.height);
-      ctx.lineTo(canvas.width/2 - 20, 0);
-      ctx.moveTo(canvas.width/2 + 60, canvas.height);
-      ctx.lineTo(canvas.width/2 + 20, 0);
-      ctx.stroke();
-      for(let y=0; y<canvas.height; y+=100) {
-        ctx.moveTo(canvas.width/2 - 50, y);
-        ctx.lineTo(canvas.width/2 + 50, y+50);
-        ctx.moveTo(canvas.width/2 + 50, y);
-        ctx.lineTo(canvas.width/2 - 50, y+50);
-      }
+      ctx.moveTo(canvas.width/2 - 40, groundY); ctx.lineTo(canvas.width/2 - 10, 0);
+      ctx.moveTo(canvas.width/2 + 40, groundY); ctx.lineTo(canvas.width/2 + 10, 0);
       ctx.stroke();
     } else {
       ctx.strokeRect(50, 50, canvas.width-100, groundY-50);
-      ctx.beginPath();
-      ctx.moveTo(0, 100); ctx.lineTo(canvas.width, 100);
-      ctx.stroke();
     }
   }
 
@@ -536,8 +490,7 @@
     ctx.beginPath();
     ctx.moveTo(anchor.x, anchor.y);
     if (dist < ropePx && !crashed && !finished) {
-      const slack = (ropePx - dist) * 0.6;
-      ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + slack, worker.x, dRingY);
+      ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + 20, worker.x, dRingY);
     } else {
       ctx.lineTo(worker.x, dRingY);
     }
@@ -547,25 +500,15 @@
   }
 
   function drawAnchor() {
-    ctx.beginPath();
-    ctx.arc(anchor.x, anchor.y, 6, 0, Math.PI*2);
-    ctx.fillStyle = "#3498db";
-    ctx.fill();
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.beginPath(); ctx.arc(anchor.x, anchor.y, 6, 0, Math.PI*2);
+    ctx.fillStyle = "#3498db"; ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
   }
 
   function drawWorker() {
     ctx.save();
     ctx.translate(worker.x, worker.y);
-    if (crashed) {
-      ctx.translate(0, worker.hPx);
-      ctx.rotate(-Math.PI/2);
-      ctx.translate(0, -worker.hPx);
-    } else if (running) {
-      ctx.rotate(worker.vx * 0.04);
-    }
+    ctx.rotate(worker.rotation);
 
     const h = worker.hPx;
     const w = worker.wPx;
@@ -574,21 +517,15 @@
     ctx.fillStyle = "#334155";
     ctx.fillRect(-w*0.3, h*0.6, w*0.25, h*0.4);
     ctx.fillRect(w*0.05, h*0.6, w*0.25, h*0.4);
-    
     // Tronco
     ctx.fillStyle = "#475569";
     ctx.fillRect(-w*0.4, h*0.2, w*0.8, h*0.45);
-    
     // Cinto
-    ctx.strokeStyle = "#f1c40f";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 2;
     ctx.strokeRect(-w*0.4, h*0.25, w*0.8, h*0.1);
-    
-    // Cabeça
+    // Cabeça e Capacete
     ctx.fillStyle = "#f1f5f9";
     ctx.beginPath(); ctx.arc(0, h*0.1, h*0.1, 0, Math.PI*2); ctx.fill();
-    
-    // Capacete
     ctx.fillStyle = "#e74c3c";
     ctx.beginPath(); ctx.arc(0, h*0.08, h*0.11, Math.PI, 0); ctx.fill();
     ctx.fillRect(-h*0.13, h*0.07, h*0.26, h*0.03);
