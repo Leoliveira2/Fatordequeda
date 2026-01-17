@@ -183,9 +183,9 @@
   <div class="scenario-section">
     <label>Cenário de Trabalho</label>
     <div class="scenario-cards">
-      <div class="scenario-card" onclick="selectScenario('obra', this)"><span>🏗️ Obra</span></div>
-      <div class="scenario-card" onclick="selectScenario('torre', this)"><span>🗼 Torre</span></div>
-      <div class="scenario-card active" onclick="selectScenario('galpao', this)"><span>🏭 Galpão</span></div>
+      <div class="scenario-card active" id="card-obra" onclick="selectScenario('obra', this)"><span>🏗️ Obra</span></div>
+      <div class="scenario-card" id="card-torre" onclick="selectScenario('torre', this)"><span>🗼 Torre</span></div>
+      <div class="scenario-card" id="card-galpao" onclick="selectScenario('galpao', this)"><span>🏭 Galpão</span></div>
     </div>
   </div>
 
@@ -253,7 +253,7 @@
   let running = false, crashed = false, finished = false;
   let pxPerMeter = 60;
   let groundY = 0;
-  let currentScenario = 'galpao';
+  let currentScenario = 'obra';
 
   const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0, rotation: 0 };
   const anchor = { x: 0, y: 0 };
@@ -434,7 +434,7 @@
     drawScenario();
     drawRope();
     drawAnchor();
-    drawWorker(); // Personagem desenhado por último (z-index maior)
+    drawWorker(); 
   }
 
   function drawRuler() {
@@ -480,7 +480,6 @@
     ctx.fillStyle = "#cbd5e1";
     for(let x=100; x<canvas.width; x+=400) {
       ctx.fillRect(x, 0, 40, groundY);
-      // Detalhes da coluna
       ctx.strokeStyle = "#94a3b8";
       ctx.strokeRect(x, 0, 40, groundY);
     }
@@ -506,7 +505,6 @@
     ctx.beginPath(); ctx.moveTo(0, fq1Y); ctx.lineTo(canvas.width, fq1Y); ctx.stroke();
     ctx.setLineDash([]);
     
-    // Suportes da linha de vida nas colunas
     ctx.fillStyle = "#475569";
     for(let x=100; x<canvas.width; x+=400) {
       ctx.fillRect(x-5, fq1Y-5, 50, 10);
@@ -514,25 +512,50 @@
   }
 
   function drawObra(platY) {
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 4;
+    // Vigas de Aço (Estrutura Metálica)
+    ctx.fillStyle = "#475569";
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2;
+
+    // Viga Superior (FQ0)
     const fq0Y = groundY - ((config.hM + 1.5 + config.lM) * pxPerMeter);
-    ctx.strokeRect(0, fq0Y - 10, canvas.width, 10);
-    ctx.fillStyle = "#e2e8f0"; ctx.fillRect(0, fq0Y - 10, canvas.width, 10);
+    ctx.fillRect(0, fq0Y - 15, canvas.width, 15);
+    ctx.strokeRect(0, fq0Y - 15, canvas.width, 15);
+
+    // Colunas de Aço (Vigas I)
     for(let x=150; x<canvas.width; x+=300) {
-      ctx.strokeRect(x, platY, 20, groundY - platY);
+      ctx.fillRect(x, 0, 25, groundY);
+      ctx.strokeRect(x, 0, 25, groundY);
+      // Detalhe da Viga I
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(x+8, 0, 9, groundY);
+      ctx.fillStyle = "#475569";
     }
+
+    // Viga de Ancoragem FQ1 (Altura do Peito)
+    const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
+    ctx.fillRect(0, fq1Y - 10, canvas.width, 10);
+    ctx.strokeRect(0, fq1Y - 10, canvas.width, 10);
   }
 
   function drawTorre(platY) {
-    ctx.strokeStyle = "#cbd5e1";
+    ctx.strokeStyle = "#94a3b8";
     ctx.lineWidth = 3;
+    const centerX = canvas.width / 2;
+    
     ctx.beginPath();
-    ctx.moveTo(canvas.width/2 - 40, groundY); ctx.lineTo(canvas.width/2 - 15, 0);
-    ctx.moveTo(canvas.width/2 + 40, groundY); ctx.lineTo(canvas.width/2 + 15, 0);
-    for(let i=0; i<=MAX_HEIGHT_M; i+=2) {
+    // Montantes principais
+    ctx.moveTo(centerX - 60, groundY); ctx.lineTo(centerX - 20, 0);
+    ctx.moveTo(centerX + 60, groundY); ctx.lineTo(centerX + 20, 0);
+    
+    // Travessas e Treliças
+    for (let i = 0; i <= MAX_HEIGHT_M; i += 1.5) {
       const y = groundY - (i * pxPerMeter);
-      ctx.moveTo(canvas.width/2 - 40, y); ctx.lineTo(canvas.width/2 + 40, y);
+      const w = 60 - (i * 4);
+      ctx.moveTo(centerX - w, y); ctx.lineTo(centerX + w, y);
+      if (i < MAX_HEIGHT_M) {
+        ctx.moveTo(centerX - w, y); ctx.lineTo(centerX + (w-4), y - 1.5*pxPerMeter);
+      }
     }
     ctx.stroke();
   }
@@ -570,58 +593,47 @@
     const h = worker.hPx;
     const w = worker.wPx;
 
-    // Pernas e Botas (Mais detalhadas)
+    // Pernas e Botas
     ctx.fillStyle = "#1a202c"; 
-    ctx.beginPath(); // Bota Esquerda
-    ctx.roundRect(-w*0.4, h*0.9, w*0.35, h*0.1, 2); ctx.fill();
-    ctx.beginPath(); // Bota Direita
-    ctx.roundRect(w*0.05, h*0.9, w*0.35, h*0.1, 2); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(-w*0.4, h*0.9, w*0.35, h*0.1, 2); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(w*0.05, h*0.9, w*0.35, h*0.1, 2); ctx.fill();
     
-    ctx.fillStyle = "#4a5568"; // Calças
+    ctx.fillStyle = "#4a5568"; 
     ctx.fillRect(-w*0.35, h*0.6, w*0.3, h*0.35);
     ctx.fillRect(w*0.05, h*0.6, w*0.3, h*0.35);
     
-    // Tronco (Macacão com curvas)
+    // Tronco
     ctx.fillStyle = "#2d3748";
-    ctx.beginPath();
-    ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 5);
-    ctx.fill();
+    ctx.beginPath(); ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 5); ctx.fill();
     
     // Faixas Refletivas
     ctx.fillStyle = "#e2e8f0";
     ctx.fillRect(-w*0.5, h*0.35, w, h*0.03);
     ctx.fillRect(-w*0.5, h*0.5, w, h*0.03);
     
-    // Cinto Tipo Paraquedista (Amarelo - Detalhado)
+    // Cinto Tipo Paraquedista (Amarelo)
     ctx.strokeStyle = "#f6e05e";
     ctx.lineWidth = 3;
-    // Alças ombro em V
     ctx.beginPath(); ctx.moveTo(-w*0.35, h*0.2); ctx.lineTo(-w*0.2, h*0.6); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(w*0.35, h*0.2); ctx.lineTo(w*0.2, h*0.6); ctx.stroke();
-    // Tira peitoral e cintura
     ctx.beginPath(); ctx.moveTo(-w*0.5, h*0.3); ctx.lineTo(w*0.5, h*0.3); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(-w*0.5, h*0.58); ctx.lineTo(w*0.5, h*0.58); ctx.stroke();
     
-    // Anel D (Ponto de ancoragem)
+    // Anel D
     ctx.fillStyle = "#718096";
     ctx.beginPath(); ctx.arc(0, h*0.3, 5, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = "#4a5568"; ctx.lineWidth = 1; ctx.stroke();
     
     // Cabeça
     ctx.fillStyle = "#f7fafc";
     ctx.beginPath(); ctx.arc(0, h*0.1, h*0.12, 0, Math.PI*2); ctx.fill();
-    // Olhos
     ctx.fillStyle = "#000";
     ctx.beginPath(); ctx.arc(-4, h*0.1, 2, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(4, h*0.1, 2, 0, Math.PI*2); ctx.fill();
     
-    // Capacete (Vermelho - Design Arredondado)
+    // Capacete
     ctx.fillStyle = "#e53e3e";
     ctx.beginPath(); ctx.arc(0, h*0.08, h*0.14, Math.PI, 0); ctx.fill();
-    ctx.fillRect(-h*0.16, h*0.07, h*0.32, h*0.04); // Aba
-    // Detalhe do capacete
-    ctx.strokeStyle = "#c53030"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(0, h*0.08, h*0.1, Math.PI, 0); ctx.stroke();
+    ctx.fillRect(-h*0.16, h*0.07, h*0.32, h*0.04); 
 
     ctx.restore();
   }
