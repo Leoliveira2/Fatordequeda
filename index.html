@@ -3,235 +3,210 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Simulador NR-35 | Engenharia de Queda</title>
+<title>NR-35 SafetyPro | Simulador de Queda</title>
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 
   :root {
-    --cor-primaria: #3498db;
-    --cor-primaria-escura: #2980b9;
-    --cor-seguro: #2ecc71;
-    --cor-alerta: #f1c40f;
-    --cor-perigo: #e74c3c;
-    --cor-fundo: #f4f7f6;
-    --cor-painel: #ffffff;
-    --cor-texto: #2c3e50;
-    --cor-texto-secundario: #7f8c8d;
-    --sombra: 0 10px 30px rgba(0,0,0,0.1);
-    --transicao: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --primary: #4F46E5;
+    --primary-hover: #4338CA;
+    --bg-main: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --text-main: #1E293B;
+    --text-muted: #64748B;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --border: #E2E8F0;
+    --radius: 16px;
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; background: var(--cor-fundo); }
   body {
-    font-family: 'Inter', sans-serif;
-    color: var(--cor-texto);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
     display: flex;
-    flex-direction: row;
+    overflow: hidden;
   }
 
   /* === SIDEBAR === */
   .sidebar {
-    width: 360px;
-    min-width: 360px;
-    background: var(--cor-painel);
-    padding: 25px;
+    width: 400px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    padding: 32px;
+    gap: 24px;
     overflow-y: auto;
-    box-shadow: 10px 0 30px rgba(0,0,0,0.05);
     z-index: 10;
   }
 
-  .header { margin-bottom: 5px; }
-  .header h1 { font-size: 1.4rem; font-weight: 900; color: var(--cor-primaria-escura); letter-spacing: -0.5px; }
-  .header p { font-size: 0.75rem; color: var(--cor-texto-secundario); font-weight: 500; }
+  .logo-area { margin-bottom: 8px; }
+  .logo-area h1 { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -0.025em; }
+  .logo-area p { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
 
-  .scenario-section label { font-size: 0.7rem; font-weight: 800; color: var(--cor-texto-secundario); text-transform: uppercase; display: block; margin-bottom: 8px; letter-spacing: 1px; }
-  .scenario-cards { display: flex; gap: 8px; }
-  .scenario-card {
-    flex: 1;
-    height: 50px;
-    border-radius: 10px;
+  .section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 12px; }
+
+  .scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .scenario-btn {
+    background: var(--bg-main);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 12px 8px;
     cursor: pointer;
-    border: 2px solid #edf2f7;
-    transition: var(--transicao);
+    transition: all 0.2s;
+    text-align: center;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8fafc;
     flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    gap: 4px;
   }
-  .scenario-card span { font-size: 0.6rem; font-weight: 700; }
-  .scenario-card.active { border-color: var(--cor-primaria); background: var(--cor-primaria); color: white; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3); }
+  .scenario-btn span { font-size: 0.75rem; font-weight: 600; }
+  .scenario-btn.active { border-color: var(--primary); background: #EEF2FF; color: var(--primary); }
 
-  .control-group { background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #edf2f7; }
-  .control-group label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--cor-texto);
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
+  .control-card {
+    background: var(--bg-main);
+    padding: 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
   }
-  .control-group label span { color: var(--cor-primaria-escura); font-size: 0.85rem; }
-  
+  .control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .control-header label { font-size: 0.875rem; font-weight: 600; }
+  .control-header .value-badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+
   input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 4px;
-    border-radius: 2px;
-    background: #e2e8f0;
-    outline: none;
+    -webkit-appearance: none; width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; outline: none;
   }
   input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: white;
-    border: 2px solid var(--cor-primaria);
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    -webkit-appearance: none; width: 20px; height: 20px; background: white; border: 2px solid var(--primary); border-radius: 50%; cursor: pointer; box-shadow: var(--shadow);
   }
 
-  .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--cor-primaria); cursor: pointer; }
-  .checkbox-group label { font-size: 0.8rem; font-weight: 600; color: var(--cor-texto); cursor: pointer; margin: 0; }
+  .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .kpi-box { background: var(--bg-main); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); text-align: center; }
+  .kpi-box .label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+  .kpi-box .value { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
 
-  .kpi-panel { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .kpi-item { background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #edf2f7; text-align: center; }
-  .kpi-item .label { font-size: 0.55rem; font-weight: 800; color: var(--cor-texto-secundario); text-transform: uppercase; margin-bottom: 2px; }
-  .kpi-item .value { font-size: 1rem; font-weight: 900; color: var(--cor-texto); }
+  .result-card {
+    padding: 20px;
+    border-radius: var(--radius);
+    text-align: center;
+    display: none;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+  }
+  .result-card.visible { display: block; animation: fadeInUp 0.4s ease-out; }
+  .result-card.safe { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
+  .result-card.warn { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
+  .result-card.danger { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
+  .result-card .margin-val { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
+  .result-card .status-text { font-size: 0.875rem; font-weight: 700; text-transform: uppercase; }
 
-  .result-box { margin-top: 5px; padding: 15px; border-radius: 12px; text-align: center; display: none; border: 2px solid transparent; }
-  .result-box.visible { display: block; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  .result-box .margin { font-size: 1.8rem; font-weight: 900; line-height: 1; }
-  .result-box .status { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-top: 6px; letter-spacing: 1px; }
-  
-  .result-box.safe { background: #f0fff4; border-color: #c6f6d5; color: #22543d; }
-  .result-box.warn { background: #fffaf0; border-color: #feebc8; color: #744210; }
-  .result-box.danger { background: #fff5f5; border-color: #fed7d7; color: #742a2a; }
-
-  .btn-group { display: flex; gap: 10px; margin-top: auto; padding-top: 10px; }
+  .actions { display: flex; gap: 12px; margin-top: auto; }
   .btn {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: var(--transicao);
-    text-transform: uppercase;
+    flex: 1; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; border: none;
   }
-  .btn-simular { background: var(--cor-primaria); color: white; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
-  .btn-simular:hover { background: var(--cor-primaria-escura); transform: translateY(-2px); }
-  .btn-reset { background: #edf2f7; color: #4a5568; }
+  .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39); }
+  .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+  .btn-secondary { background: #F1F5F9; color: #475569; }
+  .btn-secondary:hover { background: #E2E8F0; }
 
   /* === STAGE === */
-  .stage-container {
-    flex: 1;
-    position: relative;
-    background: #ffffff;
-    overflow: hidden;
+  .main-content { flex: 1; position: relative; background: #F1F5F9; padding: 32px; display: flex; align-items: center; justify-content: center; }
+  .canvas-container {
+    width: 100%; height: 100%; background: white; border-radius: 24px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; border: 8px solid white;
   }
+  canvas { width: 100%; height: 100%; display: block; }
 
-  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-  #result-overlay {
-    position: absolute;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.5);
-    padding: 20px 40px;
-    border-radius: 15px;
-    font-size: 1.5rem;
-    font-weight: 900;
-    text-align: center;
-    color: #fff;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 100;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  #overlay-msg {
+    position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+    padding: 12px 32px; border-radius: 40px; font-weight: 800; font-size: 1.125rem;
+    color: white; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
   }
-  #result-overlay.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  #result-overlay.safe { background: var(--cor-seguro); }
-  #result-overlay.warn { background: var(--cor-alerta); color: #000; }
-  #result-overlay.danger { background: var(--cor-perigo); }
+  #overlay-msg.visible { opacity: 1; transform: translateX(-50%) translateY(20px); }
 
-  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  @media (max-width: 1000px) {
+  @media (max-width: 1100px) {
     body { flex-direction: column; }
-    .sidebar { width: 100%; min-width: unset; max-height: 45vh; padding: 15px; gap: 10px; }
-    .stage-container { flex: 1; min-height: 55vh; }
+    .sidebar { width: 100%; height: 45vh; padding: 20px; }
+    .main-content { height: 55vh; padding: 16px; }
   }
 </style>
 </head>
 <body>
 
 <div class="sidebar">
-  <div class="header">
-    <h1>Simulador NR-35</h1>
-    <p>Análise Técnica de Zona Livre de Queda</p>
+  <div class="logo-area">
+    <h1>SafetyPro NR-35</h1>
+    <p>Módulo de Treinamento: Fator de Queda</p>
   </div>
 
-  <div class="scenario-section">
-    <label>Cenário de Trabalho</label>
-    <div class="scenario-cards">
-      <div class="scenario-card active" id="card-obra" onclick="selectScenario('obra', this)"><span>🏗️ Obra</span></div>
-      <div class="scenario-card" id="card-torre" onclick="selectScenario('torre', this)"><span>🗼 Torre</span></div>
-      <div class="scenario-card" id="card-galpao" onclick="selectScenario('galpao', this)"><span>🏭 Galpão</span></div>
+  <div>
+    <h3 class="section-title">Cenário de Trabalho</h3>
+    <div class="scenario-grid">
+      <button class="scenario-btn active" onclick="selectScenario('obra', this)"><span>🏗️</span><span>Obra</span></button>
+      <button class="scenario-btn" onclick="selectScenario('torre', this)"><span>🗼</span><span>Torre</span></button>
+      <button class="scenario-btn" onclick="selectScenario('galpao', this)"><span>🏭</span><span>Galpão</span></button>
     </div>
   </div>
 
-  <div class="control-group">
-    <label>Altura de Trabalho (H) <span id="val-height">3.0 m</span></label>
+  <div class="control-card">
+    <div class="control-header">
+      <label>Altura de Trabalho (H)</label>
+      <span class="value-badge" id="val-height">3.0m</span>
+    </div>
     <input type="range" id="input-height" min="2" max="8" step="0.5" value="3">
   </div>
 
-  <div class="control-group">
-    <label>Talabarte (L) <span id="val-l">1.5 m</span></label>
+  <div class="control-card">
+    <div class="control-header">
+      <label>Talabarte (L)</label>
+      <span class="value-badge" id="val-l">1.5m</span>
+    </div>
     <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
   </div>
 
-  <div class="control-group">
-    <div class="checkbox-group">
-      <input type="checkbox" id="chk-dec" checked>
-      <label for="chk-dec">Absorvedor de Energia</label>
+  <div class="control-card">
+    <div class="control-header">
+      <label>Fator de Queda (FQ)</label>
+      <span class="value-badge" id="val-fq">FQ 1</span>
     </div>
-    <label>Comprimento (DEC) <span id="val-dec">1.20 m</span></label>
-    <input type="range" id="input-dec" min="0.6" max="1.8" step="0.05" value="1.20">
-  </div>
-
-  <div class="control-group">
-    <label>Fator de Queda (FQ) <span id="val-fq">FQ 1</span></label>
     <input type="range" id="input-fq" min="0" max="2" step="1" value="1">
   </div>
 
-  <div class="kpi-panel">
-    <div class="kpi-item"><div class="label">DQ</div><div class="value" id="kpi-dq">1.50</div></div>
-    <div class="kpi-item"><div class="label">ZLQ Req.</div><div class="value" id="kpi-zlq">5.30</div></div>
+  <div class="kpi-row">
+    <div class="kpi-box">
+      <div class="label">Queda Livre (DQ)</div>
+      <div class="value" id="kpi-dq">1.50m</div>
+    </div>
+    <div class="kpi-box">
+      <div class="label">ZLQ Requerida</div>
+      <div class="value" id="kpi-zlq">5.30m</div>
+    </div>
   </div>
 
-  <div id="result-box" class="result-box">
-    <div class="margin" id="result-margin">+0.00 m</div>
-    <div class="status" id="result-status">SEGURO</div>
+  <div id="result-card" class="result-card">
+    <div class="margin-val" id="result-margin">+0.00m</div>
+    <div class="status-text" id="result-status">SEGURO</div>
   </div>
 
-  <div class="btn-group">
-    <button class="btn btn-simular" onclick="startSimulation()">Simular Queda</button>
-    <button class="btn btn-reset" onclick="resetSimulation()">Reset</button>
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="resetSimulation()">Resetar</button>
+    <button class="btn btn-primary" onclick="startSimulation()">Simular Queda</button>
   </div>
 </div>
 
-<div class="stage-container" id="stage">
-  <div id="result-overlay">QUEDA AMPARADA</div>
-  <canvas id="simCanvas"></canvas>
+<div class="main-content">
+  <div class="canvas-container" id="stage">
+    <div id="overlay-msg">QUEDA AMPARADA</div>
+    <canvas id="simCanvas"></canvas>
+  </div>
 </div>
 
 <script>
@@ -247,8 +222,8 @@
   const canvas = document.getElementById('simCanvas');
   const ctx = canvas.getContext('2d');
   const stage = document.getElementById('stage');
-  const resultOverlay = document.getElementById('result-overlay');
-  const resultBox = document.getElementById('result-box');
+  const overlayMsg = document.getElementById('overlay-msg');
+  const resultCard = document.getElementById('result-card');
 
   let running = false, crashed = false, finished = false;
   let pxPerMeter = 60;
@@ -257,58 +232,48 @@
 
   const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0, rotation: 0 };
   const anchor = { x: 0, y: 0 };
-  const config = { hM: 3.0, lM: 1.5, decM: 1.2, fq: 1, useDec: true };
+  const config = { hM: 3.0, lM: 1.5, decM: 1.2, fq: 1 };
   let lastMargin = 0;
 
-  // === INICIALIZAÇÃO ===
   function init() {
     resize();
     updateSettings();
     window.addEventListener('resize', resize);
     document.querySelectorAll('input').forEach(el => el.addEventListener('input', updateSettings));
-    document.getElementById('chk-dec').addEventListener('change', updateSettings);
   }
 
   function resize() {
     canvas.width = stage.offsetWidth;
     canvas.height = stage.offsetHeight;
-    groundY = canvas.height - 40;
+    groundY = canvas.height - 60;
     pxPerMeter = (groundY - 100) / MAX_HEIGHT_M;
     if (!running) updateSettings();
   }
 
   function selectScenario(type, el) {
-    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
     currentScenario = type;
-    
-    // Restrição específica do Galpão
     if (type === 'galpao' && config.fq === 0) {
       config.fq = 1;
       document.getElementById('input-fq').value = 1;
     }
-    
     if (!running) updateSettings();
   }
 
   function updateSettings() {
     config.hM = parseFloat(document.getElementById('input-height').value);
     config.lM = parseFloat(document.getElementById('input-l').value);
-    config.decM = parseFloat(document.getElementById('input-dec').value);
     config.fq = parseInt(document.getElementById('input-fq').value);
-    config.useDec = document.getElementById('chk-dec').checked;
 
-    // Bloqueio FQ0 no Galpão
     if (currentScenario === 'galpao' && config.fq === 0) {
       config.fq = 1;
       document.getElementById('input-fq').value = 1;
     }
 
-    document.getElementById('val-height').textContent = config.hM.toFixed(1) + ' m';
-    document.getElementById('val-l').textContent = config.lM.toFixed(1) + ' m';
-    document.getElementById('val-dec').textContent = config.decM.toFixed(2) + ' m';
-    document.getElementById('val-fq').textContent = 'FQ ' + config.fq + (currentScenario === 'galpao' && config.fq === 0 ? ' (N/A)' : '');
-    document.getElementById('input-dec').disabled = !config.useDec;
+    document.getElementById('val-height').textContent = config.hM.toFixed(1) + 'm';
+    document.getElementById('val-l').textContent = config.lM.toFixed(1) + 'm';
+    document.getElementById('val-fq').textContent = 'FQ ' + config.fq;
 
     worker.hPx = 1.75 * pxPerMeter;
     worker.wPx = worker.hPx * 0.35;
@@ -320,7 +285,6 @@
 
     const dRingHeightM = config.hM + 1.5; 
     let anchorHeightM;
-    
     if (config.fq === 0) anchorHeightM = dRingHeightM + config.lM;
     else if (config.fq === 1) anchorHeightM = dRingHeightM;
     else anchorHeightM = config.hM;
@@ -333,18 +297,14 @@
   }
 
   function calcKPIs() {
-    let dq;
-    if (config.fq === 0) dq = 0.1;
-    else if (config.fq === 1) dq = config.lM;
-    else dq = 2 * config.lM;
-
-    const dec = config.useDec ? config.decM : 0;
+    let dq = (config.fq === 0) ? 0.1 : (config.fq === 1 ? config.lM : 2 * config.lM);
+    const dec = 1.2; // Absorvedor padrão
     const el = (config.lM + dec) * ELASTICITY_PERC;
     const zlq = dq + dec + el + BODY_CONST + SAFETY_MARGIN;
     lastMargin = config.hM - zlq;
 
-    document.getElementById('kpi-dq').textContent = dq.toFixed(2);
-    document.getElementById('kpi-zlq').textContent = zlq.toFixed(2);
+    document.getElementById('kpi-dq').textContent = dq.toFixed(2) + 'm';
+    document.getElementById('kpi-zlq').textContent = zlq.toFixed(2) + 'm';
   }
 
   function startSimulation() {
@@ -352,15 +312,13 @@
     updateSettings();
     running = true; crashed = false; finished = false;
     worker.vx = 0; worker.vy = 0;
-    resultOverlay.className = '';
-    resultOverlay.style.opacity = 0;
-    resultBox.classList.remove('visible');
+    overlayMsg.className = '';
+    resultCard.classList.remove('visible');
     loop();
   }
 
   function loop() {
     if (!running) return;
-
     if (!crashed && !finished) {
       worker.vy += GRAVITY;
       worker.vx *= DAMPING;
@@ -368,37 +326,30 @@
       worker.x += worker.vx;
       worker.y += worker.vy;
     }
-
     if (worker.y + worker.hPx >= groundY && !crashed) {
       crashed = true;
       worker.y = groundY - worker.hPx;
-      worker.vy = 0; worker.vx = 0;
       worker.rotation = -Math.PI/2;
       showResult(false);
     }
-
     const dRingY = worker.y + (worker.hPx * 0.3);
     const dx = worker.x - anchor.x;
     const dy = dRingY - anchor.y;
     const dist = Math.hypot(dx, dy);
-    const maxDist = (config.lM + (config.useDec ? config.decM : 0)) * pxPerMeter;
+    const maxDist = (config.lM + 1.2) * pxPerMeter;
 
     if (dist > maxDist && !crashed) {
       const angle = Math.atan2(dy, dx);
       const pullX = Math.cos(angle) * maxDist + anchor.x;
       const pullY = Math.sin(angle) * maxDist + anchor.y;
-      const k = 0.15;
-      worker.vx -= (worker.x - pullX) * k;
-      worker.vy -= (dRingY - pullY) * k;
+      worker.vx -= (worker.x - pullX) * 0.15;
+      worker.vy -= (dRingY - pullY) * 0.15;
       worker.rotation = Math.max(-0.4, Math.min(0.4, worker.vx * 0.1));
-
       if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) {
         finished = true;
-        worker.vx = 0; worker.vy = 0;
         showResult(true);
       }
     }
-
     drawScene();
     requestAnimationFrame(loop);
   }
@@ -412,22 +363,23 @@
         else if (m >= 0) { status = 'warn'; txt = 'QUEDA AMPARADA (ALERTA)'; }
         else { status = 'danger'; txt = 'COLISÃO (ZLQ INSUFICIENTE)'; }
       }
-      resultOverlay.textContent = txt;
-      resultOverlay.className = 'visible ' + status;
-      document.getElementById('result-margin').textContent = (m >= 0 ? '+' : '') + m.toFixed(2) + ' m';
+      overlayMsg.textContent = txt;
+      overlayMsg.className = 'visible';
+      overlayMsg.style.backgroundColor = status === 'safe' ? '#10B981' : (status === 'warn' ? '#F59E0B' : '#EF4444');
+      
+      document.getElementById('result-margin').textContent = (m >= 0 ? '+' : '') + m.toFixed(2) + 'm';
       document.getElementById('result-status').textContent = m >= 1 ? 'SEGURO' : (m >= 0 ? 'ALERTA' : 'COLISÃO');
-      resultBox.className = 'result-box visible ' + (m >= 1 ? 'safe' : (m >= 0 ? 'warn' : 'danger'));
+      resultCard.className = 'result-card visible ' + status;
     }, 300);
   }
 
   function resetSimulation() {
     running = false; crashed = false; finished = false;
-    resultOverlay.className = '';
-    resultBox.classList.remove('visible');
+    overlayMsg.className = '';
+    resultCard.classList.remove('visible');
     updateSettings();
   }
 
-  // === DESENHO ===
   function drawScene() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawRuler();
@@ -438,124 +390,70 @@
   }
 
   function drawRuler() {
-    ctx.strokeStyle = "#e2e8f0";
+    ctx.strokeStyle = "#F1F5F9";
     ctx.lineWidth = 1;
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "600 11px Inter";
+    ctx.fillStyle = "#94A3B8";
+    ctx.font = "600 12px 'Plus Jakarta Sans'";
     for (let i = 0; i <= MAX_HEIGHT_M; i++) {
       const y = groundY - (i * pxPerMeter);
       ctx.beginPath(); ctx.moveTo(canvas.width - 60, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-      ctx.fillText(i + "m", canvas.width - 40, y + 4);
+      ctx.fillText(i + "m", canvas.width - 45, y + 4);
     }
   }
 
   function drawScenario() {
     const platY = groundY - (config.hM * pxPerMeter);
-    
-    // Solo
-    ctx.fillStyle = "#334155";
+    ctx.fillStyle = "#F8FAFC";
     ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-    ctx.fillText("SOLO (0m)", 10, groundY - 5);
+    ctx.fillStyle = "#64748B";
+    ctx.font = "700 12px 'Plus Jakarta Sans'";
+    ctx.fillText("SOLO (0m)", 20, groundY + 25);
 
-    // Plataforma
     ctx.setLineDash([8, 4]);
-    ctx.strokeStyle = "#64748b";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#CBD5E1";
     ctx.beginPath(); ctx.moveTo(0, platY); ctx.lineTo(canvas.width, platY); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = "#64748b";
-    ctx.fillText("PLATAFORMA (" + config.hM + "m)", 10, platY - 5);
+    ctx.fillText("PLATAFORMA (" + config.hM + "m)", 20, platY - 10);
 
-    if (currentScenario === 'galpao') {
-      drawGalpao(platY);
-    } else if (currentScenario === 'obra') {
-      drawObra(platY);
-    } else {
-      drawTorre(platY);
+    if (currentScenario === 'obra') drawObra(platY);
+    else if (currentScenario === 'galpao') drawGalpao(platY);
+    else drawTorre(platY);
+  }
+
+  function drawObra(platY) {
+    ctx.fillStyle = "#E2E8F0";
+    ctx.strokeStyle = "#CBD5E1";
+    ctx.lineWidth = 2;
+    const fq0Y = groundY - ((config.hM + 1.5 + config.lM) * pxPerMeter);
+    ctx.fillRect(0, fq0Y - 15, canvas.width, 15);
+    ctx.strokeRect(0, fq0Y - 15, canvas.width, 15);
+    for(let x=150; x<canvas.width; x+=300) {
+      ctx.fillRect(x, 0, 30, groundY);
+      ctx.strokeRect(x, 0, 30, groundY);
+      ctx.fillStyle = "#CBD5E1"; ctx.fillRect(x+12, 0, 6, groundY); ctx.fillStyle = "#E2E8F0";
     }
   }
 
   function drawGalpao(platY) {
-    // Colunas Industriais
-    ctx.fillStyle = "#cbd5e1";
-    for(let x=100; x<canvas.width; x+=400) {
-      ctx.fillRect(x, 0, 40, groundY);
-      ctx.strokeStyle = "#94a3b8";
-      ctx.strokeRect(x, 0, 40, groundY);
-    }
-
-    // Treliça de Telhado (Tesoura)
-    ctx.strokeStyle = "#64748b";
+    ctx.fillStyle = "#F1F5F9";
+    for(let x=100; x<canvas.width; x+=400) ctx.fillRect(x, 0, 40, groundY);
+    ctx.strokeStyle = "#CBD5E1";
     ctx.lineWidth = 3;
-    const roofY = 50;
-    ctx.beginPath();
-    ctx.moveTo(0, roofY);
-    ctx.lineTo(canvas.width, roofY);
-    for(let x=0; x<canvas.width; x+=60) {
-      ctx.lineTo(x+30, roofY+40);
-      ctx.lineTo(x+60, roofY);
-    }
+    ctx.beginPath(); ctx.moveTo(0, 50); ctx.lineTo(canvas.width, 50);
+    for(let x=0; x<canvas.width; x+=60) { ctx.lineTo(x+30, 90); ctx.lineTo(x+60, 50); }
     ctx.stroke();
-
-    // Linha de Vida (FQ1)
-    const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
-    ctx.strokeStyle = "#475569";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath(); ctx.moveTo(0, fq1Y); ctx.lineTo(canvas.width, fq1Y); ctx.stroke();
-    ctx.setLineDash([]);
-    
-    ctx.fillStyle = "#475569";
-    for(let x=100; x<canvas.width; x+=400) {
-      ctx.fillRect(x-5, fq1Y-5, 50, 10);
-    }
-  }
-
-  function drawObra(platY) {
-    // Vigas de Aço (Estrutura Metálica)
-    ctx.fillStyle = "#475569";
-    ctx.strokeStyle = "#1e293b";
-    ctx.lineWidth = 2;
-
-    // Viga Superior (FQ0)
-    const fq0Y = groundY - ((config.hM + 1.5 + config.lM) * pxPerMeter);
-    ctx.fillRect(0, fq0Y - 15, canvas.width, 15);
-    ctx.strokeRect(0, fq0Y - 15, canvas.width, 15);
-
-    // Colunas de Aço (Vigas I)
-    for(let x=150; x<canvas.width; x+=300) {
-      ctx.fillRect(x, 0, 25, groundY);
-      ctx.strokeRect(x, 0, 25, groundY);
-      // Detalhe da Viga I
-      ctx.fillStyle = "#334155";
-      ctx.fillRect(x+8, 0, 9, groundY);
-      ctx.fillStyle = "#475569";
-    }
-
-    // Viga de Ancoragem FQ1 (Altura do Peito)
-    const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
-    ctx.fillRect(0, fq1Y - 10, canvas.width, 10);
-    ctx.strokeRect(0, fq1Y - 10, canvas.width, 10);
   }
 
   function drawTorre(platY) {
-    ctx.strokeStyle = "#94a3b8";
-    ctx.lineWidth = 3;
-    const centerX = canvas.width / 2;
-    
+    ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 3;
+    const cx = canvas.width / 2;
     ctx.beginPath();
-    // Montantes principais
-    ctx.moveTo(centerX - 60, groundY); ctx.lineTo(centerX - 20, 0);
-    ctx.moveTo(centerX + 60, groundY); ctx.lineTo(centerX + 20, 0);
-    
-    // Travessas e Treliças
+    ctx.moveTo(cx - 60, groundY); ctx.lineTo(cx - 20, 0);
+    ctx.moveTo(cx + 60, groundY); ctx.lineTo(cx + 20, 0);
     for (let i = 0; i <= MAX_HEIGHT_M; i += 1.5) {
       const y = groundY - (i * pxPerMeter);
       const w = 60 - (i * 4);
-      ctx.moveTo(centerX - w, y); ctx.lineTo(centerX + w, y);
-      if (i < MAX_HEIGHT_M) {
-        ctx.moveTo(centerX - w, y); ctx.lineTo(centerX + (w-4), y - 1.5*pxPerMeter);
-      }
+      ctx.moveTo(cx - w, y); ctx.lineTo(cx + w, y);
     }
     ctx.stroke();
   }
@@ -566,75 +464,37 @@
     const dy = dRingY - anchor.y;
     const dist = Math.hypot(dx, dy);
     const ropePx = config.lM * pxPerMeter;
-
     ctx.beginPath();
     ctx.moveTo(anchor.x, anchor.y);
-    if (dist < ropePx && !crashed && !finished) {
-      ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + 20, worker.x, dRingY);
-    } else {
-      ctx.lineTo(worker.x, dRingY);
-    }
-    ctx.strokeStyle = dist > ropePx ? "#e74c3c" : "#f39c12";
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    if (dist < ropePx && !crashed && !finished) ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + 20, worker.x, dRingY);
+    else ctx.lineTo(worker.x, dRingY);
+    ctx.strokeStyle = dist > ropePx ? "#EF4444" : "#F59E0B";
+    ctx.lineWidth = 4; ctx.stroke();
   }
 
   function drawAnchor() {
-    ctx.beginPath(); ctx.arc(anchor.x, anchor.y, 6, 0, Math.PI*2);
-    ctx.fillStyle = "#3498db"; ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(anchor.x, anchor.y, 8, 0, Math.PI*2);
+    ctx.fillStyle = var(--primary); ctx.fill();
+    ctx.strokeStyle = "white"; ctx.lineWidth = 3; ctx.stroke();
   }
 
   function drawWorker() {
-    ctx.save();
-    ctx.translate(worker.x, worker.y);
-    ctx.rotate(worker.rotation);
-
-    const h = worker.hPx;
-    const w = worker.wPx;
-
-    // Pernas e Botas
-    ctx.fillStyle = "#1a202c"; 
-    ctx.beginPath(); ctx.roundRect(-w*0.4, h*0.9, w*0.35, h*0.1, 2); ctx.fill();
-    ctx.beginPath(); ctx.roundRect(w*0.05, h*0.9, w*0.35, h*0.1, 2); ctx.fill();
-    
-    ctx.fillStyle = "#4a5568"; 
-    ctx.fillRect(-w*0.35, h*0.6, w*0.3, h*0.35);
-    ctx.fillRect(w*0.05, h*0.6, w*0.3, h*0.35);
-    
-    // Tronco
-    ctx.fillStyle = "#2d3748";
-    ctx.beginPath(); ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 5); ctx.fill();
-    
-    // Faixas Refletivas
-    ctx.fillStyle = "#e2e8f0";
-    ctx.fillRect(-w*0.5, h*0.35, w, h*0.03);
-    ctx.fillRect(-w*0.5, h*0.5, w, h*0.03);
-    
-    // Cinto Tipo Paraquedista (Amarelo)
-    ctx.strokeStyle = "#f6e05e";
-    ctx.lineWidth = 3;
+    ctx.save(); ctx.translate(worker.x, worker.y); ctx.rotate(worker.rotation);
+    const h = worker.hPx, w = worker.wPx;
+    ctx.fillStyle = "#1E293B"; // Botas
+    ctx.beginPath(); ctx.roundRect(-w*0.4, h*0.9, w*0.35, h*0.1, 4); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(w*0.05, h*0.9, w*0.35, h*0.1, 4); ctx.fill();
+    ctx.fillStyle = "#475569"; // Calças
+    ctx.fillRect(-w*0.35, h*0.6, w*0.3, h*0.35); ctx.fillRect(w*0.05, h*0.6, w*0.3, h*0.35);
+    ctx.fillStyle = "#334155"; // Tronco
+    ctx.beginPath(); ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 8); ctx.fill();
+    ctx.strokeStyle = "#FACC15"; ctx.lineWidth = 3; // Cinturão
     ctx.beginPath(); ctx.moveTo(-w*0.35, h*0.2); ctx.lineTo(-w*0.2, h*0.6); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(w*0.35, h*0.2); ctx.lineTo(w*0.2, h*0.6); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-w*0.5, h*0.3); ctx.lineTo(w*0.5, h*0.3); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-w*0.5, h*0.58); ctx.lineTo(w*0.5, h*0.58); ctx.stroke();
-    
-    // Anel D
-    ctx.fillStyle = "#718096";
-    ctx.beginPath(); ctx.arc(0, h*0.3, 5, 0, Math.PI*2); ctx.fill();
-    
-    // Cabeça
-    ctx.fillStyle = "#f7fafc";
+    ctx.fillStyle = "#F8FAFC"; // Cabeça
     ctx.beginPath(); ctx.arc(0, h*0.1, h*0.12, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = "#000";
-    ctx.beginPath(); ctx.arc(-4, h*0.1, 2, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(4, h*0.1, 2, 0, Math.PI*2); ctx.fill();
-    
-    // Capacete
-    ctx.fillStyle = "#e53e3e";
+    ctx.fillStyle = "#EF4444"; // Capacete
     ctx.beginPath(); ctx.arc(0, h*0.08, h*0.14, Math.PI, 0); ctx.fill();
-    ctx.fillRect(-h*0.16, h*0.07, h*0.32, h*0.04); 
-
     ctx.restore();
   }
 
