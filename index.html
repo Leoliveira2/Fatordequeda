@@ -19,8 +19,8 @@
     --danger: #EF4444;
     --border: #E2E8F0;
     --radius: 16px;
-    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,107 +35,82 @@
 
   /* === SIDEBAR === */
   .sidebar {
-    width: 400px;
+    width: 380px;
+    min-width: 380px;
     background: var(--bg-card);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    padding: 32px;
-    gap: 24px;
+    padding: 24px;
+    gap: 20px;
     overflow-y: auto;
     z-index: 10;
   }
 
-  .logo-area { margin-bottom: 8px; }
-  .logo-area h1 { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -0.025em; }
-  .logo-area p { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
+  .logo-area h1 { font-size: 1.25rem; font-weight: 800; color: var(--primary); letter-spacing: -0.025em; }
+  .logo-area p { font-size: 0.75rem; color: var(--text-muted); }
 
-  .section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 12px; }
+  .section-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 8px; }
 
-  .scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .scenario-btn {
-    background: var(--bg-main);
-    border: 2px solid transparent;
-    border-radius: 12px;
-    padding: 12px 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
+    background: var(--bg-main); border: 2px solid transparent; border-radius: 12px; padding: 10px 4px;
+    cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px;
   }
-  .scenario-btn span { font-size: 0.75rem; font-weight: 600; }
+  .scenario-btn span { font-size: 0.7rem; font-weight: 600; }
   .scenario-btn.active { border-color: var(--primary); background: #EEF2FF; color: var(--primary); }
 
-  .control-card {
-    background: var(--bg-main);
-    padding: 16px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-  }
-  .control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .control-header label { font-size: 0.875rem; font-weight: 600; }
-  .control-header .value-badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .control-card { background: var(--bg-main); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
+  .control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .control-header label { font-size: 0.8rem; font-weight: 600; }
+  .control-header .value-badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
 
-  input[type="range"] {
-    -webkit-appearance: none; width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; outline: none;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 20px; height: 20px; background: white; border: 2px solid var(--primary); border-radius: 50%; cursor: pointer; box-shadow: var(--shadow);
-  }
+  input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: #E2E8F0; border-radius: 2px; outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: white; border: 2px solid var(--primary); border-radius: 50%; cursor: pointer; }
 
-  .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .kpi-box { background: var(--bg-main); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); text-align: center; }
-  .kpi-box .label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-  .kpi-box .value { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
+  /* Gráfico de ZLQ */
+  .zlq-chart { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+  .chart-bar { height: 24px; border-radius: 6px; display: flex; overflow: hidden; background: #E2E8F0; }
+  .bar-segment { height: 100%; transition: width 0.3s ease; }
+  .chart-labels { display: flex; justify-content: space-between; font-size: 0.6rem; font-weight: 700; color: var(--text-muted); }
 
-  .result-card {
-    padding: 20px;
-    border-radius: var(--radius);
-    text-align: center;
-    display: none;
-    border: 2px solid transparent;
-    transition: all 0.3s;
-  }
+  .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .kpi-box { background: var(--bg-main); padding: 12px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+  .kpi-box .label { font-size: 0.6rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+  .kpi-box .value { font-size: 1.1rem; font-weight: 800; }
+
+  .result-card { padding: 16px; border-radius: 12px; text-align: center; display: none; border: 2px solid transparent; }
   .result-card.visible { display: block; animation: fadeInUp 0.4s ease-out; }
   .result-card.safe { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
   .result-card.warn { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
   .result-card.danger { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
-  .result-card .margin-val { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
-  .result-card .status-text { font-size: 0.875rem; font-weight: 700; text-transform: uppercase; }
+  .result-card .margin-val { font-size: 1.5rem; font-weight: 800; }
 
-  .actions { display: flex; gap: 12px; margin-top: auto; }
-  .btn {
-    flex: 1; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; border: none;
-  }
-  .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39); }
-  .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+  .actions { display: flex; gap: 8px; margin-top: auto; }
+  .btn { flex: 1; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer; border: none; }
+  .btn-primary { background: var(--primary); color: white; }
   .btn-secondary { background: #F1F5F9; color: #475569; }
-  .btn-secondary:hover { background: #E2E8F0; }
 
   /* === STAGE === */
-  .main-content { flex: 1; position: relative; background: #F1F5F9; padding: 32px; display: flex; align-items: center; justify-content: center; }
-  .canvas-container {
-    width: 100%; height: 100%; background: white; border-radius: 24px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; border: 8px solid white;
-  }
+  .main-content { flex: 1; position: relative; background: #F1F5F9; padding: 24px; display: flex; flex-direction: column; }
+  .canvas-container { flex: 1; background: white; border-radius: 20px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; border: 6px solid white; }
   canvas { width: 100%; height: 100%; display: block; }
 
   #overlay-msg {
-    position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
-    padding: 12px 32px; border-radius: 40px; font-weight: 800; font-size: 1.125rem;
-    color: white; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100;
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+    padding: 10px 24px; border-radius: 30px; font-weight: 800; font-size: 1rem;
+    color: white; opacity: 0; transition: all 0.4s; z-index: 100;
   }
-  #overlay-msg.visible { opacity: 1; transform: translateX(-50%) translateY(20px); }
+  #overlay-msg.visible { opacity: 1; transform: translateX(-50%) translateY(10px); }
 
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  @media (max-width: 1100px) {
-    body { flex-direction: column; }
-    .sidebar { width: 100%; height: 45vh; padding: 20px; }
-    .main-content { height: 55vh; padding: 16px; }
+  /* RESPONSIVIDADE CORRIGIDA */
+  @media (max-width: 1024px) {
+    body { flex-direction: column; overflow-y: auto; height: auto; }
+    .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 20px; }
+    .main-content { height: 600px; padding: 15px; }
+    .actions { margin-top: 20px; }
   }
 </style>
 </head>
@@ -144,11 +119,11 @@
 <div class="sidebar">
   <div class="logo-area">
     <h1>SafetyPro NR-35</h1>
-    <p>Módulo de Treinamento: Fator de Queda</p>
+    <p>Simulador de Zona Livre de Queda</p>
   </div>
 
   <div>
-    <h3 class="section-title">Cenário de Trabalho</h3>
+    <h3 class="section-title">Cenário</h3>
     <div class="scenario-grid">
       <button class="scenario-btn active" onclick="selectScenario('obra', this)"><span>🏗️</span><span>Obra</span></button>
       <button class="scenario-btn" onclick="selectScenario('torre', this)"><span>🗼</span><span>Torre</span></button>
@@ -157,38 +132,38 @@
   </div>
 
   <div class="control-card">
-    <div class="control-header">
-      <label>Altura de Trabalho (H)</label>
-      <span class="value-badge" id="val-height">3.0m</span>
-    </div>
-    <input type="range" id="input-height" min="2" max="8" step="0.5" value="3">
+    <div class="control-header"><label>Altura (H)</label><span class="value-badge" id="val-height">3.0m</span></div>
+    <input type="range" id="input-height" min="2" max="10" step="0.5" value="3">
   </div>
 
   <div class="control-card">
-    <div class="control-header">
-      <label>Talabarte (L)</label>
-      <span class="value-badge" id="val-l">1.5m</span>
-    </div>
+    <div class="control-header"><label>Talabarte (L)</label><span class="value-badge" id="val-l">1.5m</span></div>
     <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
   </div>
 
   <div class="control-card">
-    <div class="control-header">
-      <label>Fator de Queda (FQ)</label>
-      <span class="value-badge" id="val-fq">FQ 1</span>
-    </div>
+    <div class="control-header"><label>Fator de Queda (FQ)</label><span class="value-badge" id="val-fq">FQ 1</span></div>
     <input type="range" id="input-fq" min="0" max="2" step="1" value="1">
   </div>
 
+  <div>
+    <h3 class="section-title">Composição da ZLQ</h3>
+    <div class="zlq-chart">
+      <div class="chart-bar">
+        <div id="bar-dq" class="bar-segment" style="background: #6366F1; width: 30%;"></div>
+        <div id="bar-dec" class="bar-segment" style="background: #8B5CF6; width: 25%;"></div>
+        <div id="bar-body" class="bar-segment" style="background: #EC4899; width: 25%;"></div>
+        <div id="bar-safe" class="bar-segment" style="background: #10B981; width: 20%;"></div>
+      </div>
+      <div class="chart-labels">
+        <span>DQ</span><span>DEC</span><span>CORPO</span><span>SEG.</span>
+      </div>
+    </div>
+  </div>
+
   <div class="kpi-row">
-    <div class="kpi-box">
-      <div class="label">Queda Livre (DQ)</div>
-      <div class="value" id="kpi-dq">1.50m</div>
-    </div>
-    <div class="kpi-box">
-      <div class="label">ZLQ Requerida</div>
-      <div class="value" id="kpi-zlq">5.30m</div>
-    </div>
+    <div class="kpi-box"><div class="label">ZLQ Req.</div><div class="value" id="kpi-zlq">5.30m</div></div>
+    <div class="kpi-box"><div class="label">H Disponível</div><div class="value" id="kpi-h">3.00m</div></div>
   </div>
 
   <div id="result-card" class="result-card">
@@ -197,7 +172,7 @@
   </div>
 
   <div class="actions">
-    <button class="btn btn-secondary" onclick="resetSimulation()">Resetar</button>
+    <button class="btn btn-secondary" onclick="resetSimulation()">Reset</button>
     <button class="btn btn-primary" onclick="startSimulation()">Simular Queda</button>
   </div>
 </div>
@@ -210,54 +185,30 @@
 </div>
 
 <script>
-  // === CONFIGURAÇÕES TÉCNICAS ===
-  const GRAVITY = 0.4;
-  const DAMPING = 0.98;
-  const SAFETY_MARGIN = 1.0;
-  const BODY_CONST = 1.50; 
-  const ELASTICITY_PERC = 0.10;
-  const MAX_HEIGHT_M = 10.0;
+  const GRAVITY = 0.4, DAMPING = 0.98, SAFETY_MARGIN = 1.0, BODY_CONST = 1.50, ELASTICITY_PERC = 0.10, MAX_HEIGHT_M = 12.0;
+  const canvas = document.getElementById('simCanvas'), ctx = canvas.getContext('2d'), stage = document.getElementById('stage');
+  const overlayMsg = document.getElementById('overlay-msg'), resultCard = document.getElementById('result-card');
 
-  // === ESTADO GLOBAL ===
-  const canvas = document.getElementById('simCanvas');
-  const ctx = canvas.getContext('2d');
-  const stage = document.getElementById('stage');
-  const overlayMsg = document.getElementById('overlay-msg');
-  const resultCard = document.getElementById('result-card');
-
-  let running = false, crashed = false, finished = false;
-  let pxPerMeter = 60;
-  let groundY = 0;
-  let currentScenario = 'obra';
-
-  const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0, rotation: 0 };
-  const anchor = { x: 0, y: 0 };
-  const config = { hM: 3.0, lM: 1.5, decM: 1.2, fq: 1 };
+  let running = false, crashed = false, finished = false, pxPerMeter = 60, groundY = 0, currentScenario = 'obra';
+  const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0, rotation: 0 }, anchor = { x: 0, y: 0 }, config = { hM: 3.0, lM: 1.5, fq: 1 };
   let lastMargin = 0;
 
   function init() {
-    resize();
-    updateSettings();
+    resize(); updateSettings();
     window.addEventListener('resize', resize);
     document.querySelectorAll('input').forEach(el => el.addEventListener('input', updateSettings));
   }
 
   function resize() {
-    canvas.width = stage.offsetWidth;
-    canvas.height = stage.offsetHeight;
-    groundY = canvas.height - 60;
-    pxPerMeter = (groundY - 100) / MAX_HEIGHT_M;
+    canvas.width = stage.offsetWidth; canvas.height = stage.offsetHeight;
+    groundY = canvas.height - 60; pxPerMeter = (groundY - 100) / MAX_HEIGHT_M;
     if (!running) updateSettings();
   }
 
   function selectScenario(type, el) {
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    currentScenario = type;
-    if (type === 'galpao' && config.fq === 0) {
-      config.fq = 1;
-      document.getElementById('input-fq').value = 1;
-    }
+    el.classList.add('active'); currentScenario = type;
+    if (type === 'galpao' && config.fq === 0) { config.fq = 1; document.getElementById('input-fq').value = 1; }
     if (!running) updateSettings();
   }
 
@@ -265,32 +216,19 @@
     config.hM = parseFloat(document.getElementById('input-height').value);
     config.lM = parseFloat(document.getElementById('input-l').value);
     config.fq = parseInt(document.getElementById('input-fq').value);
-
-    if (currentScenario === 'galpao' && config.fq === 0) {
-      config.fq = 1;
-      document.getElementById('input-fq').value = 1;
-    }
+    if (currentScenario === 'galpao' && config.fq === 0) { config.fq = 1; document.getElementById('input-fq').value = 1; }
 
     document.getElementById('val-height').textContent = config.hM.toFixed(1) + 'm';
     document.getElementById('val-l').textContent = config.lM.toFixed(1) + 'm';
     document.getElementById('val-fq').textContent = 'FQ ' + config.fq;
 
-    worker.hPx = 1.75 * pxPerMeter;
-    worker.wPx = worker.hPx * 0.35;
-    
+    worker.hPx = 1.75 * pxPerMeter; worker.wPx = worker.hPx * 0.35;
     const platformY = groundY - (config.hM * pxPerMeter);
-    worker.x = canvas.width / 2;
-    worker.y = platformY - worker.hPx;
-    worker.rotation = 0;
+    worker.x = canvas.width / 2; worker.y = platformY - worker.hPx; worker.rotation = 0;
 
     const dRingHeightM = config.hM + 1.5; 
-    let anchorHeightM;
-    if (config.fq === 0) anchorHeightM = dRingHeightM + config.lM;
-    else if (config.fq === 1) anchorHeightM = dRingHeightM;
-    else anchorHeightM = config.hM;
-    
-    anchor.x = worker.x - 30;
-    anchor.y = groundY - (anchorHeightM * pxPerMeter);
+    let anchorHeightM = (config.fq === 0) ? dRingHeightM + config.lM : (config.fq === 1 ? dRingHeightM : config.hM);
+    anchor.x = worker.x - 30; anchor.y = groundY - (anchorHeightM * pxPerMeter);
 
     calcKPIs();
     if (!running) drawScene();
@@ -298,102 +236,73 @@
 
   function calcKPIs() {
     let dq = (config.fq === 0) ? 0.1 : (config.fq === 1 ? config.lM : 2 * config.lM);
-    const dec = 1.2; // Absorvedor padrão
-    const el = (config.lM + dec) * ELASTICITY_PERC;
+    const dec = 1.2, el = (config.lM + dec) * ELASTICITY_PERC;
     const zlq = dq + dec + el + BODY_CONST + SAFETY_MARGIN;
     lastMargin = config.hM - zlq;
 
-    document.getElementById('kpi-dq').textContent = dq.toFixed(2) + 'm';
     document.getElementById('kpi-zlq').textContent = zlq.toFixed(2) + 'm';
+    document.getElementById('kpi-h').textContent = config.hM.toFixed(2) + 'm';
+
+    // Atualiza Gráfico
+    const total = dq + dec + BODY_CONST + SAFETY_MARGIN;
+    document.getElementById('bar-dq').style.width = (dq/total*100) + '%';
+    document.getElementById('bar-dec').style.width = (dec/total*100) + '%';
+    document.getElementById('bar-body').style.width = (BODY_CONST/total*100) + '%';
+    document.getElementById('bar-safe').style.width = (SAFETY_MARGIN/total*100) + '%';
   }
 
   function startSimulation() {
-    if (running) return;
-    updateSettings();
+    if (running) return; updateSettings();
     running = true; crashed = false; finished = false;
-    worker.vx = 0; worker.vy = 0;
-    overlayMsg.className = '';
-    resultCard.classList.remove('visible');
+    overlayMsg.className = ''; resultCard.classList.remove('visible');
     loop();
   }
 
   function loop() {
     if (!running) return;
     if (!crashed && !finished) {
-      worker.vy += GRAVITY;
-      worker.vx *= DAMPING;
-      worker.vy *= DAMPING;
-      worker.x += worker.vx;
-      worker.y += worker.vy;
+      worker.vy += GRAVITY; worker.vx *= DAMPING; worker.vy *= DAMPING;
+      worker.x += worker.vx; worker.y += worker.vy;
     }
     if (worker.y + worker.hPx >= groundY && !crashed) {
-      crashed = true;
-      worker.y = groundY - worker.hPx;
-      worker.rotation = -Math.PI/2;
-      showResult(false);
+      crashed = true; worker.y = groundY - worker.hPx; worker.rotation = -Math.PI/2; showResult(false);
     }
-    const dRingY = worker.y + (worker.hPx * 0.3);
-    const dx = worker.x - anchor.x;
-    const dy = dRingY - anchor.y;
-    const dist = Math.hypot(dx, dy);
+    const dRingY = worker.y + (worker.hPx * 0.3), dx = worker.x - anchor.x, dy = dRingY - anchor.y, dist = Math.hypot(dx, dy);
     const maxDist = (config.lM + 1.2) * pxPerMeter;
-
     if (dist > maxDist && !crashed) {
-      const angle = Math.atan2(dy, dx);
-      const pullX = Math.cos(angle) * maxDist + anchor.x;
-      const pullY = Math.sin(angle) * maxDist + anchor.y;
-      worker.vx -= (worker.x - pullX) * 0.15;
-      worker.vy -= (dRingY - pullY) * 0.15;
+      const angle = Math.atan2(dy, dx), pullX = Math.cos(angle) * maxDist + anchor.x, pullY = Math.sin(angle) * maxDist + anchor.y;
+      worker.vx -= (worker.x - pullX) * 0.15; worker.vy -= (dRingY - pullY) * 0.15;
       worker.rotation = Math.max(-0.4, Math.min(0.4, worker.vx * 0.1));
-      if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) {
-        finished = true;
-        showResult(true);
-      }
+      if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) { finished = true; showResult(true); }
     }
-    drawScene();
-    requestAnimationFrame(loop);
+    drawScene(); requestAnimationFrame(loop);
   }
 
   function showResult(safe) {
     setTimeout(() => {
-      const m = lastMargin;
-      let status = 'danger', txt = 'COLISÃO NO SOLO';
+      const m = lastMargin; let status = 'danger', txt = 'COLISÃO NO SOLO';
       if (safe) {
         if (m >= 1) { status = 'safe'; txt = 'QUEDA AMPARADA (SEGURO)'; }
         else if (m >= 0) { status = 'warn'; txt = 'QUEDA AMPARADA (ALERTA)'; }
         else { status = 'danger'; txt = 'COLISÃO (ZLQ INSUFICIENTE)'; }
       }
-      overlayMsg.textContent = txt;
-      overlayMsg.className = 'visible';
+      overlayMsg.textContent = txt; overlayMsg.className = 'visible';
       overlayMsg.style.backgroundColor = status === 'safe' ? '#10B981' : (status === 'warn' ? '#F59E0B' : '#EF4444');
-      
       document.getElementById('result-margin').textContent = (m >= 0 ? '+' : '') + m.toFixed(2) + 'm';
       document.getElementById('result-status').textContent = m >= 1 ? 'SEGURO' : (m >= 0 ? 'ALERTA' : 'COLISÃO');
       resultCard.className = 'result-card visible ' + status;
     }, 300);
   }
 
-  function resetSimulation() {
-    running = false; crashed = false; finished = false;
-    overlayMsg.className = '';
-    resultCard.classList.remove('visible');
-    updateSettings();
-  }
+  function resetSimulation() { running = false; crashed = false; finished = false; overlayMsg.className = ''; resultCard.classList.remove('visible'); updateSettings(); }
 
   function drawScene() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawRuler();
-    drawScenario();
-    drawRope();
-    drawAnchor();
-    drawWorker(); 
+    drawRuler(); drawScenario(); drawRope(); drawAnchor(); drawWorker(); 
   }
 
   function drawRuler() {
-    ctx.strokeStyle = "#F1F5F9";
-    ctx.lineWidth = 1;
-    ctx.fillStyle = "#94A3B8";
-    ctx.font = "600 12px 'Plus Jakarta Sans'";
+    ctx.strokeStyle = "#F1F5F9"; ctx.lineWidth = 1; ctx.fillStyle = "#94A3B8"; ctx.font = "600 12px 'Plus Jakarta Sans'";
     for (let i = 0; i <= MAX_HEIGHT_M; i++) {
       const y = groundY - (i * pxPerMeter);
       ctx.beginPath(); ctx.moveTo(canvas.width - 60, y); ctx.lineTo(canvas.width, y); ctx.stroke();
@@ -403,98 +312,78 @@
 
   function drawScenario() {
     const platY = groundY - (config.hM * pxPerMeter);
-    ctx.fillStyle = "#F8FAFC";
-    ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-    ctx.fillStyle = "#64748B";
-    ctx.font = "700 12px 'Plus Jakarta Sans'";
-    ctx.fillText("SOLO (0m)", 20, groundY + 25);
-
-    ctx.setLineDash([8, 4]);
-    ctx.strokeStyle = "#CBD5E1";
-    ctx.beginPath(); ctx.moveTo(0, platY); ctx.lineTo(canvas.width, platY); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText("PLATAFORMA (" + config.hM + "m)", 20, platY - 10);
-
+    ctx.fillStyle = "#F8FAFC"; ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+    ctx.fillStyle = "#64748B"; ctx.font = "700 12px 'Plus Jakarta Sans'"; ctx.fillText("SOLO (0m)", 20, groundY + 25);
+    ctx.setLineDash([8, 4]); ctx.strokeStyle = "#CBD5E1"; ctx.beginPath(); ctx.moveTo(0, platY); ctx.lineTo(canvas.width, platY); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillText("PLATAFORMA (" + config.hM + "m)", 20, platY - 10);
     if (currentScenario === 'obra') drawObra(platY);
     else if (currentScenario === 'galpao') drawGalpao(platY);
     else drawTorre(platY);
   }
 
   function drawObra(platY) {
-    ctx.fillStyle = "#E2E8F0";
-    ctx.strokeStyle = "#CBD5E1";
-    ctx.lineWidth = 2;
+    ctx.fillStyle = "#E2E8F0"; ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 2;
     const fq0Y = groundY - ((config.hM + 1.5 + config.lM) * pxPerMeter);
-    ctx.fillRect(0, fq0Y - 15, canvas.width, 15);
-    ctx.strokeRect(0, fq0Y - 15, canvas.width, 15);
+    ctx.fillRect(0, fq0Y - 15, canvas.width, 15); ctx.strokeRect(0, fq0Y - 15, canvas.width, 15);
     for(let x=150; x<canvas.width; x+=300) {
-      ctx.fillRect(x, 0, 30, groundY);
-      ctx.strokeRect(x, 0, 30, groundY);
+      ctx.fillRect(x, 0, 30, groundY); ctx.strokeRect(x, 0, 30, groundY);
       ctx.fillStyle = "#CBD5E1"; ctx.fillRect(x+12, 0, 6, groundY); ctx.fillStyle = "#E2E8F0";
     }
   }
 
   function drawGalpao(platY) {
-    ctx.fillStyle = "#F1F5F9";
-    for(let x=100; x<canvas.width; x+=400) ctx.fillRect(x, 0, 40, groundY);
-    ctx.strokeStyle = "#CBD5E1";
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(0, 50); ctx.lineTo(canvas.width, 50);
+    ctx.fillStyle = "#F1F5F9"; for(let x=100; x<canvas.width; x+=400) ctx.fillRect(x, 0, 40, groundY);
+    ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 50); ctx.lineTo(canvas.width, 50);
     for(let x=0; x<canvas.width; x+=60) { ctx.lineTo(x+30, 90); ctx.lineTo(x+60, 50); }
     ctx.stroke();
   }
 
   function drawTorre(platY) {
-    ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 3;
+    ctx.strokeStyle = "#94A3B8"; ctx.lineWidth = 2;
     const cx = canvas.width / 2;
+    // Montantes principais (Treliça)
     ctx.beginPath();
-    ctx.moveTo(cx - 60, groundY); ctx.lineTo(cx - 20, 0);
-    ctx.moveTo(cx + 60, groundY); ctx.lineTo(cx + 20, 0);
+    ctx.moveTo(cx - 50, groundY); ctx.lineTo(cx - 20, 0);
+    ctx.moveTo(cx + 50, groundY); ctx.lineTo(cx + 20, 0);
+    // Travessas e Diagonais
     for (let i = 0; i <= MAX_HEIGHT_M; i += 1.5) {
       const y = groundY - (i * pxPerMeter);
-      const w = 60 - (i * 4);
+      const w = 50 - (i * 3);
       ctx.moveTo(cx - w, y); ctx.lineTo(cx + w, y);
+      if (i < MAX_HEIGHT_M) { ctx.moveTo(cx - w, y); ctx.lineTo(cx + (w-3), y - 1.5*pxPerMeter); }
     }
+    ctx.stroke();
+    // Escada Marinheiro (Detalhe)
+    ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 1;
+    ctx.strokeRect(cx - 10, 0, 20, groundY);
+    for(let y=0; y<groundY; y+=15) { ctx.moveTo(cx-10, y); ctx.lineTo(cx+10, y); }
     ctx.stroke();
   }
 
   function drawRope() {
-    const dRingY = worker.y + (worker.hPx * 0.3);
-    const dx = worker.x - anchor.x;
-    const dy = dRingY - anchor.y;
-    const dist = Math.hypot(dx, dy);
-    const ropePx = config.lM * pxPerMeter;
-    ctx.beginPath();
-    ctx.moveTo(anchor.x, anchor.y);
+    const dRingY = worker.y + (worker.hPx * 0.3), dx = worker.x - anchor.x, dy = dRingY - anchor.y, dist = Math.hypot(dx, dy), ropePx = config.lM * pxPerMeter;
+    ctx.beginPath(); ctx.moveTo(anchor.x, anchor.y);
     if (dist < ropePx && !crashed && !finished) ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + 20, worker.x, dRingY);
     else ctx.lineTo(worker.x, dRingY);
-    ctx.strokeStyle = dist > ropePx ? "#EF4444" : "#F59E0B";
-    ctx.lineWidth = 4; ctx.stroke();
+    ctx.strokeStyle = dist > ropePx ? "#EF4444" : "#F59E0B"; ctx.lineWidth = 4; ctx.stroke();
   }
 
   function drawAnchor() {
     ctx.beginPath(); ctx.arc(anchor.x, anchor.y, 8, 0, Math.PI*2);
-    ctx.fillStyle = var(--primary); ctx.fill();
-    ctx.strokeStyle = "white"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = "#4F46E5"; ctx.fill(); ctx.strokeStyle = "white"; ctx.lineWidth = 3; ctx.stroke();
   }
 
   function drawWorker() {
     ctx.save(); ctx.translate(worker.x, worker.y); ctx.rotate(worker.rotation);
     const h = worker.hPx, w = worker.wPx;
-    ctx.fillStyle = "#1E293B"; // Botas
-    ctx.beginPath(); ctx.roundRect(-w*0.4, h*0.9, w*0.35, h*0.1, 4); ctx.fill();
+    ctx.fillStyle = "#1E293B"; ctx.beginPath(); ctx.roundRect(-w*0.4, h*0.9, w*0.35, h*0.1, 4); ctx.fill();
     ctx.beginPath(); ctx.roundRect(w*0.05, h*0.9, w*0.35, h*0.1, 4); ctx.fill();
-    ctx.fillStyle = "#475569"; // Calças
-    ctx.fillRect(-w*0.35, h*0.6, w*0.3, h*0.35); ctx.fillRect(w*0.05, h*0.6, w*0.3, h*0.35);
-    ctx.fillStyle = "#334155"; // Tronco
-    ctx.beginPath(); ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 8); ctx.fill();
-    ctx.strokeStyle = "#FACC15"; ctx.lineWidth = 3; // Cinturão
-    ctx.beginPath(); ctx.moveTo(-w*0.35, h*0.2); ctx.lineTo(-w*0.2, h*0.6); ctx.stroke();
+    ctx.fillStyle = "#475569"; ctx.fillRect(-w*0.35, h*0.6, w*0.3, h*0.35); ctx.fillRect(w*0.05, h*0.6, w*0.3, h*0.35);
+    ctx.fillStyle = "#334155"; ctx.beginPath(); ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 8); ctx.fill();
+    ctx.strokeStyle = "#FACC15"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-w*0.35, h*0.2); ctx.lineTo(-w*0.2, h*0.6); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(w*0.35, h*0.2); ctx.lineTo(w*0.2, h*0.6); ctx.stroke();
-    ctx.fillStyle = "#F8FAFC"; // Cabeça
-    ctx.beginPath(); ctx.arc(0, h*0.1, h*0.12, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = "#EF4444"; // Capacete
-    ctx.beginPath(); ctx.arc(0, h*0.08, h*0.14, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = "#F8FAFC"; ctx.beginPath(); ctx.arc(0, h*0.1, h*0.12, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#EF4444"; ctx.beginPath(); ctx.arc(0, h*0.08, h*0.14, Math.PI, 0); ctx.fill();
     ctx.restore();
   }
 
