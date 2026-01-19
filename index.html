@@ -71,7 +71,6 @@
   input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: #E2E8F0; border-radius: 2px; outline: none; }
   input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: white; border: 2px solid var(--primary); border-radius: 50%; cursor: pointer; }
 
-  /* Gráfico de ZLQ */
   .zlq-chart { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
   .chart-bar { height: 24px; border-radius: 6px; display: flex; overflow: hidden; background: #E2E8F0; }
   .bar-segment { height: 100%; transition: width 0.3s ease; }
@@ -108,24 +107,10 @@
 
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* RESPONSIVIDADE CORRIGIDA */
-  /* Forçando layout vertical em tablets e celulares para evitar sobreposição */
   @media (max-width: 1180px) {
     body { flex-direction: column; overflow-y: auto; height: 100vh; }
-    .sidebar { 
-      width: 100%; 
-      min-width: 100%; 
-      height: 45%; /* Ocupa 45% da altura */
-      min-height: 350px;
-      border-right: none; 
-      border-bottom: 1px solid var(--border); 
-      padding: 20px; 
-    }
-    .main-content { 
-      height: 55%; /* Ocupa 55% da altura */
-      min-height: 400px;
-      padding: 10px; 
-    }
+    .sidebar { width: 100%; min-width: 100%; height: 45%; min-height: 350px; border-right: none; border-bottom: 1px solid var(--border); padding: 20px; }
+    .main-content { height: 55%; min-height: 400px; padding: 10px; }
     .actions { margin-top: 10px; }
     .canvas-container { border-radius: 12px; }
   }
@@ -245,7 +230,17 @@
 
     const dRingHeightM = config.hM + 1.5; 
     let anchorHeightM = (config.fq === 0) ? dRingHeightM + config.lM : (config.fq === 1 ? dRingHeightM : config.hM);
-    anchor.x = worker.x - 30; anchor.y = groundY - (anchorHeightM * pxPerMeter);
+    
+    // Sincronização Horizontal da Ancoragem com a Estrutura
+    if (currentScenario === 'obra') {
+      anchor.x = worker.x - 30; // Alinhado com a coluna da esquerda
+    } else if (currentScenario === 'torre') {
+      anchor.x = worker.x - 25; // Alinhado com o montante da torre
+    } else {
+      anchor.x = worker.x - 30; // Alinhado com a coluna industrial
+    }
+    
+    anchor.y = groundY - (anchorHeightM * pxPerMeter);
 
     calcKPIs();
     if (!running) drawScene();
@@ -260,7 +255,6 @@
     document.getElementById('kpi-zlq').textContent = zlq.toFixed(2) + 'm';
     document.getElementById('kpi-h').textContent = config.hM.toFixed(2) + 'm';
 
-    // Atualiza Gráfico
     const total = dq + dec + BODY_CONST + SAFETY_MARGIN;
     document.getElementById('bar-dq').style.width = (dq/total*100) + '%';
     document.getElementById('bar-dec').style.width = (dec/total*100) + '%';
@@ -284,10 +278,9 @@
     if (worker.y + worker.hPx >= groundY && !crashed) {
       crashed = true; worker.y = groundY - worker.hPx; worker.rotation = -Math.PI/2; showResult(false);
     }
-    const dRingY = worker.y + (worker.hPx * 0.3), dx = worker.x - anchor.x, dy = dRingY - anchor.y, dist = Math.hypot(dx, dy);
-    const maxDist = (config.lM + 1.2) * pxPerMeter;
-    if (dist > maxDist && !crashed) {
-      const angle = Math.atan2(dy, dx), pullX = Math.cos(angle) * maxDist + anchor.x, pullY = Math.sin(angle) * maxDist + anchor.y;
+    const dRingY = worker.y + (worker.hPx * 0.3), dx = worker.x - anchor.x, dy = dRingY - anchor.y, dist = Math.hypot(dx, dy), ropePx = (config.lM + 1.2) * pxPerMeter;
+    if (dist > ropePx && !crashed) {
+      const angle = Math.atan2(dy, dx), pullX = Math.cos(angle) * ropePx + anchor.x, pullY = Math.sin(angle) * ropePx + anchor.y;
       worker.vx -= (worker.x - pullX) * 0.15; worker.vy -= (dRingY - pullY) * 0.15;
       worker.rotation = Math.max(-0.4, Math.min(0.4, worker.vx * 0.1));
       if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) { finished = true; showResult(true); }
@@ -340,40 +333,43 @@
 
   function drawObra(platY) {
     ctx.fillStyle = "#E2E8F0"; ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 2;
+    // Viga Superior (FQ0)
     const fq0Y = groundY - ((config.hM + 1.5 + config.lM) * pxPerMeter);
     ctx.fillRect(0, fq0Y - 15, canvas.width, 15); ctx.strokeRect(0, fq0Y - 15, canvas.width, 15);
-    for(let x=150; x<canvas.width; x+=300) {
-      ctx.fillRect(x, 0, 30, groundY); ctx.strokeRect(x, 0, 30, groundY);
-      ctx.fillStyle = "#CBD5E1"; ctx.fillRect(x+12, 0, 6, groundY); ctx.fillStyle = "#E2E8F0";
+    // Viga FQ1 (Altura do Peito)
+    const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
+    ctx.fillRect(0, fq1Y - 10, canvas.width, 10); ctx.strokeRect(0, fq1Y - 10, canvas.width, 10);
+    // Colunas
+    for(let x=worker.x-30; x<canvas.width; x+=300) {
+      ctx.fillRect(x-15, 0, 30, groundY); ctx.strokeRect(x-15, 0, 30, groundY);
+      ctx.fillStyle = "#CBD5E1"; ctx.fillRect(x-3, 0, 6, groundY); ctx.fillStyle = "#E2E8F0";
     }
   }
 
   function drawGalpao(platY) {
-    ctx.fillStyle = "#F1F5F9"; for(let x=100; x<canvas.width; x+=400) ctx.fillRect(x, 0, 40, groundY);
+    ctx.fillStyle = "#F1F5F9"; 
+    for(let x=worker.x-30; x<canvas.width; x+=400) ctx.fillRect(x-20, 0, 40, groundY);
     ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 50); ctx.lineTo(canvas.width, 50);
     for(let x=0; x<canvas.width; x+=60) { ctx.lineTo(x+30, 90); ctx.lineTo(x+60, 50); }
     ctx.stroke();
+    // Linha de Vida FQ1
+    const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
+    ctx.strokeStyle = "#475569"; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+    ctx.beginPath(); ctx.moveTo(0, fq1Y); ctx.lineTo(canvas.width, fq1Y); ctx.stroke(); ctx.setLineDash([]);
   }
 
   function drawTorre(platY) {
     ctx.strokeStyle = "#94A3B8"; ctx.lineWidth = 2;
-    const cx = canvas.width / 2;
-    // Montantes principais (Treliça)
+    const cx = worker.x - 25;
     ctx.beginPath();
-    ctx.moveTo(cx - 50, groundY); ctx.lineTo(cx - 20, 0);
-    ctx.moveTo(cx + 50, groundY); ctx.lineTo(cx + 20, 0);
-    // Travessas e Diagonais
+    ctx.moveTo(cx - 40, groundY); ctx.lineTo(cx - 10, 0);
+    ctx.moveTo(cx + 40, groundY); ctx.lineTo(cx + 10, 0);
     for (let i = 0; i <= MAX_HEIGHT_M; i += 1.5) {
       const y = groundY - (i * pxPerMeter);
-      const w = 50 - (i * 3);
+      const w = 40 - (i * 2);
       ctx.moveTo(cx - w, y); ctx.lineTo(cx + w, y);
-      if (i < MAX_HEIGHT_M) { ctx.moveTo(cx - w, y); ctx.lineTo(cx + (w-3), y - 1.5*pxPerMeter); }
+      if (i < MAX_HEIGHT_M) { ctx.moveTo(cx - w, y); ctx.lineTo(cx + (w-2), y - 1.5*pxPerMeter); }
     }
-    ctx.stroke();
-    // Escada Marinheiro (Detalhe)
-    ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 1;
-    ctx.strokeRect(cx - 10, 0, 20, groundY);
-    for(let y=0; y<groundY; y+=15) { ctx.moveTo(cx-10, y); ctx.lineTo(cx+10, y); }
     ctx.stroke();
   }
 
@@ -386,8 +382,17 @@
   }
 
   function drawAnchor() {
-    ctx.beginPath(); ctx.arc(anchor.x, anchor.y, 8, 0, Math.PI*2);
-    ctx.fillStyle = "#4F46E5"; ctx.fill(); ctx.strokeStyle = "white"; ctx.lineWidth = 3; ctx.stroke();
+    // Desenho de um Olhal/Conector Realista
+    ctx.save();
+    ctx.translate(anchor.x, anchor.y);
+    ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI*2);
+    ctx.fillStyle = "#475569"; ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI*2);
+    ctx.fillStyle = "white"; ctx.fill();
+    // Ponto de conexão do talabarte
+    ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2);
+    ctx.fillStyle = "#4F46E5"; ctx.fill();
+    ctx.restore();
   }
 
   function drawWorker() {
