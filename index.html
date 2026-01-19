@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>NR-35 SafetyPro | Simulador de Queda</title>
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
@@ -106,11 +109,25 @@
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
   /* RESPONSIVIDADE CORRIGIDA */
-  @media (max-width: 1024px) {
-    body { flex-direction: column; overflow-y: auto; height: auto; }
-    .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 20px; }
-    .main-content { height: 600px; padding: 15px; }
-    .actions { margin-top: 20px; }
+  /* Forçando layout vertical em tablets e celulares para evitar sobreposição */
+  @media (max-width: 1180px) {
+    body { flex-direction: column; overflow-y: auto; height: 100vh; }
+    .sidebar { 
+      width: 100%; 
+      min-width: 100%; 
+      height: 45%; /* Ocupa 45% da altura */
+      min-height: 350px;
+      border-right: none; 
+      border-bottom: 1px solid var(--border); 
+      padding: 20px; 
+    }
+    .main-content { 
+      height: 55%; /* Ocupa 55% da altura */
+      min-height: 400px;
+      padding: 10px; 
+    }
+    .actions { margin-top: 10px; }
+    .canvas-container { border-radius: 12px; }
   }
 </style>
 </head>
