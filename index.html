@@ -71,7 +71,6 @@
   input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: #E2E8F0; border-radius: 2px; outline: none; }
   input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: white; border: 2px solid var(--primary); border-radius: 50%; cursor: pointer; }
 
-  /* Detalhamento Técnico */
   .tech-details { background: #F1F5F9; padding: 12px; border-radius: 12px; font-size: 0.75rem; }
   .tech-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #E2E8F0; }
   .tech-row:last-child { border-bottom: none; font-weight: 700; color: var(--primary); }
@@ -81,15 +80,9 @@
   .bar-segment { height: 100%; transition: width 0.3s ease; }
   .chart-labels { display: flex; justify-content: space-between; font-size: 0.6rem; font-weight: 700; color: var(--text-muted); }
 
-  .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .kpi-box { background: var(--bg-main); padding: 12px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-  .kpi-box .label { font-size: 0.6rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-  .kpi-box .value { font-size: 1.1rem; font-weight: 800; }
-
   .result-card { padding: 16px; border-radius: 12px; text-align: center; display: none; border: 2px solid transparent; }
   .result-card.visible { display: block; animation: fadeInUp 0.4s ease-out; }
   .result-card.safe { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
-  .result-card.warn { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
   .result-card.danger { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
   .result-card .margin-val { font-size: 1.5rem; font-weight: 800; }
 
@@ -191,9 +184,10 @@
   const canvas = document.getElementById('simCanvas'), ctx = canvas.getContext('2d'), stage = document.getElementById('stage');
   const overlayMsg = document.getElementById('overlay-msg'), resultCard = document.getElementById('result-card');
 
-  let running = false, crashed = false, finished = false, pxPerMeter = 60, groundY = 0, currentScenario = 'obra';
+  let running = false, crashed = false, finished = false, pxPerMeter = 180, groundY = 0, currentScenario = 'obra';
   const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0, rotation: 0 }, anchor = { x: 0, y: 0 }, config = { hM: 3.0, lM: 1.5, fq: 1 };
   let lastMargin = 0, lastZLQ = 0;
+  let cameraY = 0; // Posição da câmera para o zoom dinâmico
 
   function init() {
     resize(); updateSettings();
@@ -203,7 +197,8 @@
 
   function resize() {
     canvas.width = stage.offsetWidth; canvas.height = stage.offsetHeight;
-    groundY = canvas.height - 60; pxPerMeter = (groundY - 100) / MAX_HEIGHT_M;
+    // Aumentamos o pxPerMeter para dar o zoom de 3x (antes era ~60, agora 180)
+    pxPerMeter = 180; 
     if (!running) updateSettings();
   }
 
@@ -223,38 +218,29 @@
     document.getElementById('val-fq').textContent = 'FQ ' + config.fq;
 
     worker.hPx = 1.75 * pxPerMeter; worker.wPx = worker.hPx * 0.35;
-    const platformY = groundY - (config.hM * pxPerMeter);
-    worker.x = canvas.width / 2; worker.y = platformY - worker.hPx; worker.rotation = 0;
+    
+    // Posição real em metros (Y cresce para baixo no canvas, então invertemos)
+    // O solo está em 0m. A plataforma em config.hM.
+    worker.x = canvas.width / 2;
+    worker.y = -config.hM; // Metros em relação ao solo (0)
+    worker.rotation = 0;
 
     const dRingHeightM = config.hM + 1.5; 
-    let anchorHeightM;
-    if (config.fq === 0) anchorHeightM = dRingHeightM + config.lM;
-    else if (config.fq === 1) anchorHeightM = dRingHeightM;
-    else anchorHeightM = config.hM;
+    let anchorHeightM = (config.fq === 0) ? dRingHeightM + config.lM : (config.fq === 1 ? dRingHeightM : config.hM);
     
-    anchor.x = worker.x - 30;
-    anchor.y = groundY - (anchorHeightM * pxPerMeter);
+    anchor.x = worker.x - 60; // Afastado proporcionalmente ao zoom
+    anchor.y = -anchorHeightM; // Metros
+
+    // Centraliza a câmera no trabalhador inicialmente
+    cameraY = worker.y + 0.8; 
 
     calcKPIs();
     if (!running) drawScene();
   }
 
   function calcKPIs() {
-    // CÁLCULOS TÉCNICOS NR-35 CORRIGIDOS
-    let dq = 0;
-    let dec = 0;
-
-    if (config.fq === 0) {
-      dq = 0.1; // Queda mínima
-      dec = 0.1; // Absorvedor quase não abre
-    } else if (config.fq === 1) {
-      dq = config.lM;
-      dec = 1.2; // Abertura padrão
-    } else {
-      dq = 2 * config.lM;
-      dec = 1.2; // Abertura máxima
-    }
-
+    let dq = (config.fq === 0) ? 0.1 : (config.fq === 1 ? config.lM : 2 * config.lM);
+    let dec = (config.fq === 0) ? 0.1 : 1.2;
     const zlq = dq + dec + BODY_CONST + SAFETY_MARGIN;
     lastZLQ = zlq;
     lastMargin = config.hM - zlq;
@@ -280,25 +266,37 @@
   function loop() {
     if (!running) return;
     if (!crashed && !finished) {
-      worker.vy += GRAVITY; worker.vx *= DAMPING; worker.vy *= DAMPING;
+      worker.vy += (GRAVITY / pxPerMeter); // Gravidade ajustada para metros
+      worker.vx *= DAMPING; worker.vy *= DAMPING;
       worker.x += worker.vx; worker.y += worker.vy;
     }
-    if (worker.y + worker.hPx >= groundY && !crashed) {
-      crashed = true; worker.y = groundY - worker.hPx; worker.rotation = -Math.PI/2; showResult(false);
-    }
-    const dRingY = worker.y + (worker.hPx * 0.3), dx = worker.x - anchor.x, dy = dRingY - anchor.y, dist = Math.hypot(dx, dy);
-    
-    // Distância máxima baseada no cálculo técnico (Talabarte + Absorvedor que abriu)
-    let dq = (config.fq === 0) ? 0.1 : (config.fq === 1 ? config.lM : 2 * config.lM);
-    let dec = (config.fq === 0) ? 0.1 : 1.2;
-    const maxDistPx = (config.lM + dec) * pxPerMeter;
 
-    if (dist > maxDistPx && !crashed) {
-      const angle = Math.atan2(dy, dx), pullX = Math.cos(angle) * maxDistPx + anchor.x, pullY = Math.sin(angle) * maxDistPx + anchor.y;
-      worker.vx -= (worker.x - pullX) * 0.15; worker.vy -= (dRingY - pullY) * 0.15;
-      worker.rotation = Math.max(-0.4, Math.min(0.4, worker.vx * 0.1));
-      if (Math.abs(worker.vy) < 0.1 && Math.abs(worker.vx) < 0.1 && !finished) { finished = true; showResult(true); }
+    // Colisão com o solo (y >= 0 em metros)
+    if (worker.y + 1.75 >= 0 && !crashed) {
+      crashed = true; worker.y = -1.75; worker.rotation = -Math.PI/2; showResult(false);
     }
+
+    const dRingY = worker.y - 1.5; // Posição do D-Ring em metros
+    const dx = (worker.x - anchor.x) / pxPerMeter;
+    const dy = dRingY - anchor.y;
+    const dist = Math.hypot(dx, dy);
+    
+    let dec = (config.fq === 0) ? 0.1 : 1.2;
+    const maxDistM = config.lM + dec;
+
+    if (dist > maxDistM && !crashed) {
+      const angle = Math.atan2(dy, dx);
+      const pullX = Math.cos(angle) * maxDistM + (anchor.x / pxPerMeter);
+      const pullY = Math.sin(angle) * maxDistM + anchor.y;
+      worker.vx -= (worker.x/pxPerMeter - pullX) * 0.15 * pxPerMeter;
+      worker.vy -= (dRingY - pullY) * 0.15;
+      worker.rotation = Math.max(-0.4, Math.min(0.4, worker.vx * 0.05));
+      if (Math.abs(worker.vy) < 0.001 && Math.abs(worker.vx) < 0.1 && !finished) { finished = true; showResult(true); }
+    }
+
+    // Câmera segue o trabalhador suavemente
+    cameraY += (worker.y - cameraY + 1) * 0.1;
+
     drawScene(); requestAnimationFrame(loop);
   }
 
@@ -319,95 +317,126 @@
 
   function resetSimulation() { running = false; crashed = false; finished = false; overlayMsg.className = ''; resultCard.classList.remove('visible'); updateSettings(); }
 
+  // Função auxiliar para converter metros para pixels de tela baseado na câmera
+  function mToPx(m) {
+    return (m - cameraY) * pxPerMeter + (canvas.height / 2);
+  }
+
   function drawScene() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawRuler(); drawScenario(); drawRope(); drawAnchor(); drawWorker(); 
   }
 
   function drawRuler() {
-    ctx.strokeStyle = "#F1F5F9"; ctx.lineWidth = 1; ctx.fillStyle = "#94A3B8"; ctx.font = "600 12px 'Plus Jakarta Sans'";
+    ctx.strokeStyle = "#F1F5F9"; ctx.lineWidth = 1; ctx.fillStyle = "#94A3B8"; ctx.font = "600 14px 'Plus Jakarta Sans'";
     for (let i = 0; i <= MAX_HEIGHT_M; i++) {
-      const y = groundY - (i * pxPerMeter);
-      ctx.beginPath(); ctx.moveTo(canvas.width - 60, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-      ctx.fillText(i + "m", canvas.width - 45, y + 4);
+      const y = mToPx(-i);
+      if (y < 0 || y > canvas.height) continue;
+      ctx.beginPath(); ctx.moveTo(canvas.width - 80, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      ctx.fillText(i + "m", canvas.width - 60, y + 5);
     }
   }
 
   function drawScenario() {
-    const platY = groundY - (config.hM * pxPerMeter);
-    ctx.fillStyle = "#F8FAFC"; ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-    ctx.fillStyle = "#64748B"; ctx.font = "700 12px 'Plus Jakarta Sans'"; ctx.fillText("SOLO (0m)", 20, groundY + 25);
-    ctx.setLineDash([8, 4]); ctx.strokeStyle = "#CBD5E1"; ctx.beginPath(); ctx.moveTo(0, platY); ctx.lineTo(canvas.width, platY); ctx.stroke();
-    ctx.setLineDash([]); ctx.fillText("PLATAFORMA (" + config.hM + "m)", 20, platY - 10);
-    if (currentScenario === 'obra') drawObra(platY);
-    else if (currentScenario === 'galpao') drawGalpao(platY);
-    else drawTorre(platY);
+    const platY = mToPx(-config.hM);
+    const groundY_px = mToPx(0);
+
+    // Solo
+    if (groundY_px < canvas.height) {
+      ctx.fillStyle = "#F1F5F9"; ctx.fillRect(0, groundY_px, canvas.width, canvas.height - groundY_px);
+      ctx.fillStyle = "#64748B"; ctx.font = "700 14px 'Plus Jakarta Sans'"; ctx.fillText("SOLO (0m)", 20, groundY_px + 30);
+    }
+
+    // Plataforma
+    ctx.setLineDash([10, 5]); ctx.strokeStyle = "#CBD5E1"; ctx.beginPath(); ctx.moveTo(0, platY); ctx.lineTo(canvas.width, platY); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle = "#64748B"; ctx.fillText("PLATAFORMA (" + config.hM + "m)", 20, platY - 15);
+
+    if (currentScenario === 'obra') drawObra();
+    else if (currentScenario === 'galpao') drawGalpao();
+    else drawTorre();
   }
 
-  function drawObra(platY) {
-    ctx.fillStyle = "#E2E8F0"; ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 2;
-    const fq0Y = groundY - ((config.hM + 1.5 + config.lM) * pxPerMeter);
-    ctx.fillRect(0, fq0Y - 15, canvas.width, 15); ctx.strokeRect(0, fq0Y - 15, canvas.width, 15);
-    const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
-    ctx.fillRect(0, fq1Y - 10, canvas.width, 10); ctx.strokeRect(0, fq1Y - 10, canvas.width, 10);
-    for(let x=worker.x-30; x<canvas.width; x+=300) {
-      ctx.fillRect(x-15, 0, 30, groundY); ctx.strokeRect(x-15, 0, 30, groundY);
-      ctx.fillStyle = "#CBD5E1"; ctx.fillRect(x-3, 0, 6, groundY); ctx.fillStyle = "#E2E8F0";
+  function drawObra() {
+    ctx.fillStyle = "#E2E8F0"; ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 4;
+    const dRingHeightM = config.hM + 1.5;
+    const fq0Y = mToPx(-(dRingHeightM + config.lM));
+    const fq1Y = mToPx(-dRingHeightM);
+    
+    // Vigas
+    ctx.fillRect(0, fq0Y - 20, canvas.width, 20); ctx.strokeRect(0, fq0Y - 20, canvas.width, 20);
+    ctx.fillRect(0, fq1Y - 15, canvas.width, 15); ctx.strokeRect(0, fq1Y - 15, canvas.width, 15);
+    
+    // Colunas
+    for(let x=worker.x-120; x<canvas.width+200; x+=600) {
+      ctx.fillRect(x-30, 0, 60, canvas.height); ctx.strokeRect(x-30, 0, 60, canvas.height);
+      ctx.fillStyle = "#CBD5E1"; ctx.fillRect(x-6, 0, 12, canvas.height); ctx.fillStyle = "#E2E8F0";
     }
   }
 
-  function drawGalpao(platY) {
+  function drawGalpao() {
     ctx.fillStyle = "#F1F5F9"; 
-    for(let x=worker.x-30; x<canvas.width; x+=400) ctx.fillRect(x-20, 0, 40, groundY);
-    ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 50); ctx.lineTo(canvas.width, 50);
-    for(let x=0; x<canvas.width; x+=60) { ctx.lineTo(x+30, 90); ctx.lineTo(x+60, 50); }
-    ctx.stroke();
-    const fq1Y = groundY - ((config.hM + 1.5) * pxPerMeter);
-    ctx.strokeStyle = "#475569"; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+    for(let x=worker.x-120; x<canvas.width+200; x+=800) ctx.fillRect(x-40, 0, 80, canvas.height);
+    
+    const fq1Y = mToPx(-(config.hM + 1.5));
+    ctx.strokeStyle = "#475569"; ctx.lineWidth = 4; ctx.setLineDash([10, 10]);
     ctx.beginPath(); ctx.moveTo(0, fq1Y); ctx.lineTo(canvas.width, fq1Y); ctx.stroke(); ctx.setLineDash([]);
   }
 
-  function drawTorre(platY) {
-    ctx.strokeStyle = "#94A3B8"; ctx.lineWidth = 2;
-    const cx = worker.x - 25;
+  function drawTorre() {
+    ctx.strokeStyle = "#94A3B8"; ctx.lineWidth = 4;
+    const cx = worker.x - 100;
     ctx.beginPath();
-    ctx.moveTo(cx - 40, groundY); ctx.lineTo(cx - 10, 0);
-    ctx.moveTo(cx + 40, groundY); ctx.lineTo(cx + 10, 0);
-    for (let i = 0; i <= MAX_HEIGHT_M; i += 1.5) {
-      const y = groundY - (i * pxPerMeter);
-      const w = 40 - (i * 2);
-      ctx.moveTo(cx - w, y); ctx.lineTo(cx + w, y);
-      if (i < MAX_HEIGHT_M) { ctx.moveTo(cx - w, y); ctx.lineTo(cx + (w-2), y - 1.5*pxPerMeter); }
+    // Montantes
+    ctx.moveTo(cx - 80, 0); ctx.lineTo(cx - 80, canvas.height);
+    ctx.moveTo(cx + 80, 0); ctx.lineTo(cx + 80, canvas.height);
+    // Travessas
+    for (let i = 0; i <= 20; i += 2) {
+      const y = mToPx(-i);
+      ctx.moveTo(cx - 80, y); ctx.lineTo(cx + 80, y);
+      ctx.moveTo(cx - 80, y); ctx.lineTo(cx + 80, y + 2*pxPerMeter);
     }
     ctx.stroke();
   }
 
   function drawRope() {
-    const dRingY = worker.y + (worker.hPx * 0.3), dx = worker.x - anchor.x, dy = dRingY - anchor.y, dist = Math.hypot(dx, dy), ropePx = config.lM * pxPerMeter;
-    ctx.beginPath(); ctx.moveTo(anchor.x, anchor.y);
-    if (dist < ropePx && !crashed && !finished) ctx.quadraticCurveTo(anchor.x + dx/2, anchor.y + dy + 20, worker.x, dRingY);
-    else ctx.lineTo(worker.x, dRingY);
-    ctx.strokeStyle = dist > ropePx ? "#EF4444" : "#F59E0B"; ctx.lineWidth = 4; ctx.stroke();
+    const dRingY_px = mToPx(worker.y - 1.5);
+    const anchorY_px = mToPx(anchor.y);
+    const dx = worker.x - anchor.x, dy = dRingY_px - anchorY_px, dist = Math.hypot(dx, dy), ropePx = config.lM * pxPerMeter;
+    
+    ctx.beginPath(); ctx.moveTo(anchor.x, anchorY_px);
+    if (dist < ropePx && !crashed && !finished) ctx.quadraticCurveTo(anchor.x + dx/2, anchorY_px + dy + 40, worker.x, dRingY_px);
+    else ctx.lineTo(worker.x, dRingY_px);
+    ctx.strokeStyle = dist > ropePx ? "#EF4444" : "#F59E0B"; ctx.lineWidth = 8; ctx.stroke();
   }
 
   function drawAnchor() {
-    ctx.save(); ctx.translate(anchor.x, anchor.y);
-    ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI*2); ctx.fillStyle = "#475569"; ctx.fill();
-    ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI*2); ctx.fillStyle = "white"; ctx.fill();
-    ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2); ctx.fillStyle = "#4F46E5"; ctx.fill();
+    const anchorY_px = mToPx(anchor.y);
+    ctx.save(); ctx.translate(anchor.x, anchorY_px);
+    ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI*2); ctx.fillStyle = "#475569"; ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI*2); ctx.fillStyle = "white"; ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI*2); ctx.fillStyle = "#4F46E5"; ctx.fill();
     ctx.restore();
   }
 
   function drawWorker() {
-    ctx.save(); ctx.translate(worker.x, worker.y); ctx.rotate(worker.rotation);
+    ctx.save(); 
+    ctx.translate(worker.x, mToPx(worker.y)); 
+    ctx.rotate(worker.rotation);
     const h = worker.hPx, w = worker.wPx;
+    
+    // Botas
     ctx.fillStyle = "#1E293B"; ctx.beginPath(); ctx.roundRect(-w*0.4, h*0.9, w*0.35, h*0.1, 4); ctx.fill();
     ctx.beginPath(); ctx.roundRect(w*0.05, h*0.9, w*0.35, h*0.1, 4); ctx.fill();
+    // Calças
     ctx.fillStyle = "#475569"; ctx.fillRect(-w*0.35, h*0.6, w*0.3, h*0.35); ctx.fillRect(w*0.05, h*0.6, w*0.3, h*0.35);
-    ctx.fillStyle = "#334155"; ctx.beginPath(); ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 8); ctx.fill();
-    ctx.strokeStyle = "#FACC15"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-w*0.35, h*0.2); ctx.lineTo(-w*0.2, h*0.6); ctx.stroke();
+    // Tronco
+    ctx.fillStyle = "#334155"; ctx.beginPath(); ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 12); ctx.fill();
+    // Cinturão (Amarelo Segurança)
+    ctx.strokeStyle = "#FACC15"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-w*0.35, h*0.2); ctx.lineTo(-w*0.2, h*0.6); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(w*0.35, h*0.2); ctx.lineTo(w*0.2, h*0.6); ctx.stroke();
+    // Cabeça
     ctx.fillStyle = "#F8FAFC"; ctx.beginPath(); ctx.arc(0, h*0.1, h*0.12, 0, Math.PI*2); ctx.fill();
+    // Capacete
     ctx.fillStyle = "#EF4444"; ctx.beginPath(); ctx.arc(0, h*0.08, h*0.14, Math.PI, 0); ctx.fill();
     ctx.restore();
   }
