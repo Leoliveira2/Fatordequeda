@@ -21,202 +21,285 @@
     --success: #10B981;
     --success-light: #ECFDF5;
     --warning: #F59E0B;
-    --warning-light: #FFFBEB;
     --danger: #EF4444;
     --danger-light: #FEF2F2;
     --border: #E2E8F0;
-    --radius: 16px;
-    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-    --transition-fast: 150ms ease-in-out;
-    --transition-normal: 300ms ease-in-out;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
-  body {
+  html, body {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background: linear-gradient(135deg, var(--bg-main) 0%, #F1F5F9 100%);
+    background: var(--bg-main);
     color: var(--text-main);
-    height: 100vh;
-    display: flex;
-    overflow: hidden;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
   }
 
-  /* === SIDEBAR === */
-  .sidebar {
-    width: 380px;
-    min-width: 380px;
-    background: var(--bg-card);
-    border-right: 1px solid var(--border);
+  /* === MOBILE-FIRST LAYOUT === */
+  .app-container {
     display: flex;
     flex-direction: column;
-    padding: 28px;
-    gap: 18px;
-    overflow-y: auto;
-    z-index: 10;
-    box-shadow: inset -1px 0 0 var(--border);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
   }
 
-  .logo-area { margin-bottom: 8px; }
-  .logo-area h1 { font-size: 1.35rem; font-weight: 800; color: var(--primary); letter-spacing: -0.03em; line-height: 1.2; }
-  .logo-area p { font-size: 0.7rem; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+  /* === SIMULATION AREA (FIRST ON MOBILE) === */
+  .simulation-area {
+    width: 100%;
+    height: 45vh;
+    min-height: 280px;
+    background: linear-gradient(135deg, #F1F5F9 0%, #E8EEF7 100%);
+    padding: 12px;
+    position: relative;
+    order: 1;
+  }
 
-  .section-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 10px; }
+  .canvas-container {
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
 
-  .scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  #overlay-msg {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: white;
+    opacity: 0;
+    transition: opacity 300ms ease;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+
+  #overlay-msg.visible { opacity: 1; }
+
+  /* === CONTROLS AREA === */
+  .controls-area {
+    flex: 1;
+    background: var(--bg-card);
+    padding: 16px;
+    overflow-y: auto;
+    order: 2;
+    border-top: 1px solid var(--border);
+  }
+
+  .logo-area {
+    text-align: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-area h1 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+  }
+
+  .logo-area p {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .section-title {
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  /* === SCENARIO BUTTONS === */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
   .scenario-btn {
     background: var(--bg-main);
     border: 2px solid transparent;
-    border-radius: 12px;
-    padding: 12px 6px;
+    border-radius: 10px;
+    padding: 10px 4px;
     cursor: pointer;
-    transition: all var(--transition-fast);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    font-size: 0.7rem;
+    gap: 2px;
+    font-size: 0.65rem;
     font-weight: 600;
     color: var(--text-muted);
+    transition: all 150ms ease;
   }
-  
-  .scenario-btn:hover { background: #F1F5F9; transform: translateY(-1px); }
-  .scenario-btn.active { 
+
+  .scenario-btn.active {
     border-color: var(--primary);
     background: var(--primary-light);
     color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
   }
 
+  /* === CONTROL CARDS === */
   .control-card {
     background: var(--bg-main);
-    padding: 14px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
     border: 1px solid var(--border);
-    transition: all var(--transition-fast);
   }
-  
-  .control-card:hover { border-color: #CBD5E1; }
 
-  .control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .control-header label { font-size: 0.8rem; font-weight: 700; color: var(--text-main); }
-  .control-header .value-badge {
+  .control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .control-header label {
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .value-badge {
     background: linear-gradient(135deg, var(--primary), var(--primary-hover));
     color: white;
-    padding: 4px 10px;
+    padding: 3px 10px;
     border-radius: 20px;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 800;
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
   }
 
   input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
-    height: 5px;
+    height: 6px;
     background: linear-gradient(to right, var(--primary), var(--primary-hover));
     border-radius: 3px;
     outline: none;
-    cursor: pointer;
-    transition: box-shadow var(--transition-fast);
   }
 
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     background: white;
-    border: 2px solid var(--primary);
+    border: 3px solid var(--primary);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
-    transition: all var(--transition-fast);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
-  input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
-  }
-
-  input[type="range"]::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: white;
-    border: 2px solid var(--primary);
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
-    transition: all var(--transition-fast);
-  }
-
+  /* === TECH DETAILS === */
   .tech-details {
-    background: linear-gradient(135deg, var(--bg-main), #F1F5F9);
-    padding: 14px;
-    border-radius: 12px;
+    background: var(--bg-main);
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    margin-bottom: 10px;
     border: 1px solid var(--border);
-    font-size: 0.75rem;
   }
 
   .tech-row {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
+    padding: 4px 0;
     border-bottom: 1px solid var(--border);
-    transition: all var(--transition-fast);
   }
 
-  .tech-row:last-child { border-bottom: none; font-weight: 800; color: var(--primary); }
-  .tech-row:hover { background: rgba(79, 70, 229, 0.05); padding-left: 4px; }
+  .tech-row:last-child {
+    border-bottom: none;
+    font-weight: 800;
+    color: var(--primary);
+  }
 
-  .zlq-chart { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
-  .chart-bar { height: 24px; border-radius: 8px; display: flex; overflow: hidden; background: var(--border); box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); }
-  .bar-segment { height: 100%; transition: width var(--transition-normal); }
-  .chart-labels { display: flex; justify-content: space-between; font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
+  /* === ZLQ CHART === */
+  .zlq-chart {
+    margin-bottom: 12px;
+  }
 
+  .chart-bar {
+    height: 20px;
+    border-radius: 6px;
+    display: flex;
+    overflow: hidden;
+    background: var(--border);
+    margin-bottom: 4px;
+  }
+
+  .bar-segment {
+    height: 100%;
+    transition: width 300ms ease;
+  }
+
+  .chart-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  /* === RESULT CARD === */
   .result-card {
-    padding: 18px;
-    border-radius: 12px;
+    padding: 14px;
+    border-radius: 10px;
     text-align: center;
     display: none;
+    margin-bottom: 12px;
     border: 2px solid transparent;
-    animation: slideInUp 300ms ease-out;
-    transition: all var(--transition-normal);
   }
 
   .result-card.visible { display: block; }
   .result-card.safe { background: var(--success-light); border-color: #A7F3D0; color: #065F46; }
   .result-card.danger { background: var(--danger-light); border-color: #FECACA; color: #991B1B; }
-  .result-card .margin-val { font-size: 1.75rem; font-weight: 800; margin-bottom: 4px; }
-  .result-card .status-text { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .result-card .margin-val { font-size: 1.5rem; font-weight: 800; }
+  .result-card .status-text { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
 
-  .actions { display: flex; gap: 10px; margin-top: auto; }
+  /* === ACTION BUTTONS === */
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 10px;
+    padding-bottom: 20px;
+  }
+
   .btn {
-    flex: 1;
-    padding: 16px;
-    border-radius: 12px;
+    padding: 14px;
+    border-radius: 10px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     cursor: pointer;
     border: none;
-    transition: all var(--transition-fast);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
   }
 
   .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-hover));
     color: white;
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
   }
-
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-  }
-
-  .btn-primary:active { transform: translateY(0); }
 
   .btn-secondary {
     background: var(--bg-main);
@@ -224,148 +307,151 @@
     border: 1px solid var(--border);
   }
 
-  .btn-secondary:hover { background: #F1F5F9; border-color: #CBD5E1; transform: translateY(-1px); }
-
-  /* === STAGE === */
-  .main-content { flex: 1; position: relative; background: linear-gradient(135deg, #F1F5F9 0%, #E8EEF7 100%); padding: 28px; display: flex; flex-direction: column; }
-  .canvas-container { flex: 1; background: white; border-radius: 20px; box-shadow: var(--shadow-xl); position: relative; overflow: hidden; border: 1px solid var(--border); }
-  canvas { width: 100%; height: 100%; display: block; }
-
-  #overlay-msg {
-    position: absolute;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 32px;
-    border-radius: 40px;
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: white;
-    opacity: 0;
-    transition: all 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 100;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    letter-spacing: 0.05em;
-  }
-
-  #overlay-msg.visible { opacity: 1; transform: translateX(-50%) translateY(0px); }
-
-  @keyframes slideInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @media (max-width: 1180px) {
-    body { flex-direction: column; overflow-y: auto; height: 100vh; }
-    .sidebar {
-      width: 100%;
-      min-width: 100%;
-      height: auto;
-      border-right: none;
-      border-bottom: 1px solid var(--border);
-      padding: 20px;
-      gap: 14px;
+  /* === TABLET AND DESKTOP === */
+  @media (min-width: 768px) {
+    .app-container {
+      flex-direction: row;
+      height: 100vh;
     }
-    .main-content { height: 500px; padding: 15px; }
-    .actions { margin-top: 10px; }
+
+    .simulation-area {
+      flex: 1;
+      height: 100%;
+      order: 2;
+      padding: 24px;
+    }
+
+    .controls-area {
+      width: 360px;
+      min-width: 360px;
+      height: 100%;
+      order: 1;
+      border-top: none;
+      border-right: 1px solid var(--border);
+      padding: 24px;
+    }
+
+    .logo-area { text-align: left; }
+    .logo-area h1 { font-size: 1.25rem; }
+  }
+
+  @media (min-width: 1024px) {
+    .controls-area {
+      width: 400px;
+      min-width: 400px;
+      padding: 28px;
+    }
+
+    .simulation-area { padding: 28px; }
   }
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo-area">
-    <h1>SafetyPro NR-35</h1>
-    <p>Simulador de Zona Livre de Queda</p>
+<div class="app-container">
+  <!-- SIMULATION AREA - Appears first on mobile -->
+  <div class="simulation-area">
+    <div class="canvas-container" id="stage">
+      <div id="overlay-msg">QUEDA AMPARADA</div>
+      <canvas id="simCanvas"></canvas>
+    </div>
   </div>
 
-  <div>
+  <!-- CONTROLS AREA -->
+  <div class="controls-area">
+    <div class="logo-area">
+      <h1>SafetyPro NR-35</h1>
+      <p>Simulador de Zona Livre de Queda</p>
+    </div>
+
     <h3 class="section-title">Cenário</h3>
     <div class="scenario-grid">
       <button class="scenario-btn active" onclick="selectScenario('obra', this)"><span>🏗️</span><span>Obra</span></button>
       <button class="scenario-btn" onclick="selectScenario('torre', this)"><span>🗼</span><span>Torre</span></button>
       <button class="scenario-btn" onclick="selectScenario('galpao', this)"><span>🏭</span><span>Galpão</span></button>
     </div>
-  </div>
 
-  <div class="control-card">
-    <div class="control-header"><label>Altura (H)</label><span class="value-badge" id="val-height">3.0m</span></div>
-    <input type="range" id="input-height" min="2" max="10" step="0.5" value="3">
-  </div>
-
-  <div class="control-card">
-    <div class="control-header"><label>Talabarte (L)</label><span class="value-badge" id="val-l">1.5m</span></div>
-    <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
-  </div>
-
-  <div class="control-card">
-    <div class="control-header"><label>Fator de Queda (FQ)</label><span class="value-badge" id="val-fq">FQ 1</span></div>
-    <input type="range" id="input-fq" min="0" max="2" step="1" value="1">
-  </div>
-
-  <div class="tech-details">
-    <h3 class="section-title">Cálculo NR-35</h3>
-    <div class="tech-row"><span>Queda Livre (DQ)</span><span id="det-dq">1.50m</span></div>
-    <div class="tech-row"><span>Absorvedor (DEC)</span><span id="det-dec">1.20m</span></div>
-    <div class="tech-row"><span>Corpo + Conectores</span><span>1.50m</span></div>
-    <div class="tech-row"><span>Margem Segurança</span><span>1.00m</span></div>
-    <div class="tech-row"><span>ZLQ Requerida</span><span id="det-zlq">5.20m</span></div>
-  </div>
-
-  <div class="zlq-chart">
-    <div class="chart-bar">
-      <div id="bar-dq" class="bar-segment" style="background: linear-gradient(90deg, #6366F1, #8B5CF6); width: 30%;"></div>
-      <div id="bar-dec" class="bar-segment" style="background: linear-gradient(90deg, #8B5CF6, #EC4899); width: 25%;"></div>
-      <div id="bar-body" class="bar-segment" style="background: linear-gradient(90deg, #EC4899, #F97316); width: 25%;"></div>
-      <div id="bar-safe" class="bar-segment" style="background: linear-gradient(90deg, #F97316, #10B981); width: 20%;"></div>
+    <div class="control-card">
+      <div class="control-header"><label>Altura (H)</label><span class="value-badge" id="val-height">3.0m</span></div>
+      <input type="range" id="input-height" min="2" max="10" step="0.5" value="3">
     </div>
-    <div class="chart-labels">
-      <span>DQ</span><span>DEC</span><span>CORPO</span><span>SEG.</span>
+
+    <div class="control-card">
+      <div class="control-header"><label>Talabarte (L)</label><span class="value-badge" id="val-l">1.5m</span></div>
+      <input type="range" id="input-l" min="1.0" max="2.0" step="0.1" value="1.5">
     </div>
-  </div>
 
-  <div id="result-card" class="result-card">
-    <div class="margin-val" id="result-margin">+0.00m</div>
-    <div class="status-text" id="result-status">SEGURO</div>
-  </div>
+    <div class="control-card">
+      <div class="control-header"><label>Fator de Queda (FQ)</label><span class="value-badge" id="val-fq">FQ 1</span></div>
+      <input type="range" id="input-fq" min="0" max="2" step="1" value="1">
+    </div>
 
-  <div class="actions">
-    <button class="btn btn-secondary" onclick="resetSimulation()">Reset</button>
-    <button class="btn btn-primary" onclick="startSimulation()">Simular Queda</button>
-  </div>
-</div>
+    <div class="tech-details">
+      <h3 class="section-title">Cálculo NR-35</h3>
+      <div class="tech-row"><span>Queda Livre (DQ)</span><span id="det-dq">1.50m</span></div>
+      <div class="tech-row"><span>Absorvedor (DEC)</span><span id="det-dec">1.20m</span></div>
+      <div class="tech-row"><span>Corpo + Conectores</span><span>1.50m</span></div>
+      <div class="tech-row"><span>Margem Segurança</span><span>1.00m</span></div>
+      <div class="tech-row"><span>ZLQ Requerida</span><span id="det-zlq">5.20m</span></div>
+    </div>
 
-<div class="main-content">
-  <div class="canvas-container" id="stage">
-    <div id="overlay-msg">QUEDA AMPARADA</div>
-    <canvas id="simCanvas"></canvas>
+    <div class="zlq-chart">
+      <div class="chart-bar">
+        <div id="bar-dq" class="bar-segment" style="background: #6366F1; width: 30%;"></div>
+        <div id="bar-dec" class="bar-segment" style="background: #8B5CF6; width: 25%;"></div>
+        <div id="bar-body" class="bar-segment" style="background: #EC4899; width: 25%;"></div>
+        <div id="bar-safe" class="bar-segment" style="background: #10B981; width: 20%;"></div>
+      </div>
+      <div class="chart-labels">
+        <span>DQ</span><span>DEC</span><span>CORPO</span><span>SEG.</span>
+      </div>
+    </div>
+
+    <div id="result-card" class="result-card">
+      <div class="margin-val" id="result-margin">+0.00m</div>
+      <div class="status-text" id="result-status">SEGURO</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="resetSimulation()">Reset</button>
+      <button class="btn btn-primary" onclick="startSimulation()">Simular Queda</button>
+    </div>
   </div>
 </div>
 
 <script>
-  const GRAVITY = 0.4, DAMPING = 0.98, SAFETY_MARGIN = 1.0, BODY_CONST = 1.50, MAX_HEIGHT_M = 12.0;
+  const GRAVITY = 0.5, DAMPING = 0.97, SAFETY_MARGIN = 1.0, BODY_CONST = 1.50, MAX_HEIGHT_M = 12.0;
   const canvas = document.getElementById('simCanvas'), ctx = canvas.getContext('2d'), stage = document.getElementById('stage');
   const overlayMsg = document.getElementById('overlay-msg'), resultCard = document.getElementById('result-card');
 
-  let running = false, crashed = false, finished = false, pxPerMeter = 180, groundY = 0, currentScenario = 'obra';
-  const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0, rotation: 0 }, anchor = { x: 0, y: 0 }, config = { hM: 3.0, lM: 1.5, fq: 1 };
+  let running = false, crashed = false, finished = false, pxPerMeter = 60, currentScenario = 'obra';
+  const worker = { x: 0, y: 0, vx: 0, vy: 0, hPx: 0, wPx: 0, rotation: 0 };
+  const anchor = { x: 0, y: 0 };
+  const config = { hM: 3.0, lM: 1.5, fq: 1 };
   let lastMargin = 0, lastZLQ = 0, cameraY = 0;
 
   function init() {
-    resize(); updateSettings();
+    resize();
+    updateSettings();
     window.addEventListener('resize', resize);
     document.querySelectorAll('input').forEach(el => el.addEventListener('input', updateSettings));
   }
 
   function resize() {
-    canvas.width = stage.offsetWidth; canvas.height = stage.offsetHeight;
-    pxPerMeter = 180;
+    canvas.width = stage.offsetWidth;
+    canvas.height = stage.offsetHeight;
+    
+    // Ajusta pxPerMeter baseado no tamanho do canvas para garantir visibilidade
+    const minDim = Math.min(canvas.width, canvas.height);
+    pxPerMeter = Math.max(40, Math.min(80, minDim / 8));
+    
     if (!running) updateSettings();
   }
 
   function selectScenario(type, el) {
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active'); currentScenario = type;
+    el.classList.add('active');
+    currentScenario = type;
     updateSettings();
   }
 
@@ -378,13 +464,29 @@
     document.getElementById('val-l').textContent = config.lM.toFixed(1) + 'm';
     document.getElementById('val-fq').textContent = 'FQ ' + config.fq;
 
-    worker.hPx = 1.75 * pxPerMeter; worker.wPx = worker.hPx * 0.35;
-    worker.x = canvas.width / 2; worker.y = -config.hM; worker.rotation = 0;
+    // Tamanho do trabalhador proporcional ao canvas
+    worker.hPx = 1.75 * pxPerMeter;
+    worker.wPx = worker.hPx * 0.4;
+    
+    // Posição inicial do trabalhador
+    worker.x = canvas.width / 2;
+    worker.y = -config.hM;
+    worker.vx = 0;
+    worker.vy = 0;
+    worker.rotation = 0;
 
+    // Posição da ancoragem baseada no FQ
     const dRingHeightM = config.hM + 1.5;
-    let anchorHeightM = (config.fq === 0) ? dRingHeightM + config.lM : (config.fq === 1 ? dRingHeightM : config.hM);
-    anchor.x = worker.x - 60; anchor.y = -anchorHeightM;
-    cameraY = worker.y + 0.8;
+    let anchorHeightM;
+    if (config.fq === 0) anchorHeightM = dRingHeightM + config.lM;
+    else if (config.fq === 1) anchorHeightM = dRingHeightM;
+    else anchorHeightM = config.hM;
+    
+    anchor.x = worker.x - 40;
+    anchor.y = -anchorHeightM;
+    
+    // Câmera centralizada no trabalhador
+    cameraY = worker.y + 1;
 
     calcKPIs();
     if (!running) drawScene();
@@ -394,128 +496,237 @@
     let dq = (config.fq === 0) ? 0.1 : (config.fq === 1 ? config.lM : 2 * config.lM);
     let dec = (config.fq === 0) ? 0.1 : 1.2;
     const zlq = dq + dec + BODY_CONST + SAFETY_MARGIN;
-    lastZLQ = zlq; lastMargin = config.hM - zlq;
+    lastZLQ = zlq;
+    lastMargin = config.hM - zlq;
 
     document.getElementById('det-dq').textContent = dq.toFixed(2) + 'm';
     document.getElementById('det-dec').textContent = dec.toFixed(2) + 'm';
     document.getElementById('det-zlq').textContent = zlq.toFixed(2) + 'm';
 
     const total = dq + dec + BODY_CONST + SAFETY_MARGIN;
-    document.getElementById('bar-dq').style.width = (dq/total*100) + '%';
-    document.getElementById('bar-dec').style.width = (dec/total*100) + '%';
-    document.getElementById('bar-body').style.width = (BODY_CONST/total*100) + '%';
-    document.getElementById('bar-safe').style.width = (SAFETY_MARGIN/total*100) + '%';
+    document.getElementById('bar-dq').style.width = (dq / total * 100) + '%';
+    document.getElementById('bar-dec').style.width = (dec / total * 100) + '%';
+    document.getElementById('bar-body').style.width = (BODY_CONST / total * 100) + '%';
+    document.getElementById('bar-safe').style.width = (SAFETY_MARGIN / total * 100) + '%';
   }
 
   function startSimulation() {
-    if (running) return; updateSettings();
-    running = true; crashed = false; finished = false;
-    overlayMsg.className = ''; resultCard.classList.remove('visible');
+    if (running) return;
+    updateSettings();
+    running = true;
+    crashed = false;
+    finished = false;
+    overlayMsg.classList.remove('visible');
+    resultCard.classList.remove('visible');
     loop();
   }
 
   function loop() {
     if (!running) return;
+    
     if (!crashed && !finished) {
-      worker.vy += (GRAVITY / pxPerMeter); worker.vx *= DAMPING; worker.vy *= DAMPING;
-      worker.x += worker.vx; worker.y += worker.vy;
+      // Aplica gravidade
+      worker.vy += GRAVITY / pxPerMeter;
+      worker.vx *= DAMPING;
+      worker.vy *= DAMPING;
+      worker.x += worker.vx;
+      worker.y += worker.vy;
     }
+
+    // Verifica colisão com o solo
     if (worker.y + 1.75 >= 0 && !crashed) {
-      crashed = true; worker.y = -1.75; worker.rotation = -Math.PI/2; showResult(false);
+      crashed = true;
+      worker.y = -1.75;
+      worker.rotation = -Math.PI / 2;
+      showResult(false);
     }
-    const dRingY = worker.y - 1.5, dx = (worker.x - anchor.x) / pxPerMeter, dy = dRingY - anchor.y, dist = Math.hypot(dx, dy);
+
+    // Física do talabarte
+    const dRingY = worker.y - 1.5;
+    const dx = (worker.x - anchor.x) / pxPerMeter;
+    const dy = dRingY - anchor.y;
+    const dist = Math.hypot(dx, dy);
+    
     let dec = (config.fq === 0) ? 0.1 : 1.2;
     const maxDistM = config.lM + dec;
+
     if (dist > maxDistM && !crashed) {
-      const angle = Math.atan2(dy, dx), pullX = Math.cos(angle) * maxDistM + (anchor.x / pxPerMeter), pullY = Math.sin(angle) * maxDistM + anchor.y;
-      worker.vx -= (worker.x/pxPerMeter - pullX) * 0.15 * pxPerMeter;
-      worker.vy -= (dRingY - pullY) * 0.15;
-      worker.rotation = Math.max(-0.4, Math.min(0.4, worker.vx * 0.05));
-      if (Math.abs(worker.vy) < 0.001 && Math.abs(worker.vx) < 0.1 && !finished) { finished = true; showResult(true); }
+      const angle = Math.atan2(dy, dx);
+      const pullX = Math.cos(angle) * maxDistM + (anchor.x / pxPerMeter);
+      const pullY = Math.sin(angle) * maxDistM + anchor.y;
+      
+      worker.vx -= (worker.x / pxPerMeter - pullX) * 0.2 * pxPerMeter;
+      worker.vy -= (dRingY - pullY) * 0.2;
+      worker.rotation = Math.max(-0.4, Math.min(0.4, worker.vx * 0.03));
+      
+      if (Math.abs(worker.vy) < 0.002 && Math.abs(worker.vx) < 0.15 && !finished) {
+        finished = true;
+        showResult(true);
+      }
     }
-    cameraY += (worker.y - cameraY + 1) * 0.1;
-    drawScene(); requestAnimationFrame(loop);
+
+    // Câmera segue o trabalhador
+    cameraY += (worker.y - cameraY + 1) * 0.08;
+
+    drawScene();
+    requestAnimationFrame(loop);
   }
 
   function showResult(safe) {
     setTimeout(() => {
-      const m = lastMargin; let status = 'danger', txt = 'COLISÃO NO SOLO';
+      const m = lastMargin;
+      let status = 'danger';
+      let txt = 'COLISÃO NO SOLO';
+      
       if (safe) {
-        if (m >= 0) { status = 'safe'; txt = 'QUEDA AMPARADA (SEGURO)'; }
-        else { status = 'danger'; txt = 'COLISÃO (ZLQ INSUFICIENTE)'; }
+        if (m >= 0) {
+          status = 'safe';
+          txt = 'QUEDA AMPARADA';
+        } else {
+          status = 'danger';
+          txt = 'COLISÃO (ZLQ INSUFICIENTE)';
+        }
       }
-      overlayMsg.textContent = txt; overlayMsg.className = 'visible';
+      
+      overlayMsg.textContent = txt;
+      overlayMsg.classList.add('visible');
       overlayMsg.style.backgroundColor = status === 'safe' ? '#10B981' : '#EF4444';
+      
       document.getElementById('result-margin').textContent = (m >= 0 ? '+' : '') + m.toFixed(2) + 'm';
       document.getElementById('result-status').textContent = m >= 0 ? 'SEGURO' : 'COLISÃO';
       resultCard.className = 'result-card visible ' + status;
-    }, 300);
+    }, 200);
   }
 
-  function resetSimulation() { running = false; crashed = false; finished = false; overlayMsg.className = ''; resultCard.classList.remove('visible'); updateSettings(); }
+  function resetSimulation() {
+    running = false;
+    crashed = false;
+    finished = false;
+    overlayMsg.classList.remove('visible');
+    resultCard.classList.remove('visible');
+    updateSettings();
+  }
 
-  function mToPx(m) { return (m - cameraY) * pxPerMeter + (canvas.height / 2); }
+  function mToPx(m) {
+    return (m - cameraY) * pxPerMeter + (canvas.height / 2);
+  }
 
   function drawScene() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawRuler(); drawScenario(); drawRope(); drawAnchor(); drawWorker();
+    drawRuler();
+    drawScenario();
+    drawRope();
+    drawAnchor();
+    drawWorker();
   }
 
   function drawRuler() {
-    ctx.strokeStyle = "#F1F5F9"; ctx.lineWidth = 1; ctx.fillStyle = "#94A3B8"; ctx.font = "600 14px 'Plus Jakarta Sans'";
+    ctx.strokeStyle = "#E2E8F0";
+    ctx.lineWidth = 1;
+    ctx.fillStyle = "#94A3B8";
+    ctx.font = "600 12px 'Plus Jakarta Sans'";
+    
     for (let i = 0; i <= MAX_HEIGHT_M; i++) {
       const y = mToPx(-i);
-      if (y < 0 || y > canvas.height) continue;
-      ctx.beginPath(); ctx.moveTo(canvas.width - 80, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-      ctx.fillText(i + "m", canvas.width - 60, y + 5);
+      if (y < -20 || y > canvas.height + 20) continue;
+      
+      ctx.beginPath();
+      ctx.moveTo(canvas.width - 50, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+      ctx.fillText(i + "m", canvas.width - 40, y + 4);
     }
   }
 
   function drawScenario() {
     const platY = mToPx(-config.hM);
     const groundY_px = mToPx(0);
-    if (groundY_px < canvas.height) {
-      ctx.fillStyle = "#F1F5F9"; ctx.fillRect(0, groundY_px, canvas.width, canvas.height - groundY_px);
-      ctx.fillStyle = "#64748B"; ctx.font = "700 14px 'Plus Jakarta Sans'"; ctx.fillText("SOLO (0m)", 20, groundY_px + 30);
+
+    // Solo
+    if (groundY_px < canvas.height + 50) {
+      ctx.fillStyle = "#F1F5F9";
+      ctx.fillRect(0, groundY_px, canvas.width, canvas.height - groundY_px + 50);
+      ctx.fillStyle = "#64748B";
+      ctx.font = "700 11px 'Plus Jakarta Sans'";
+      ctx.fillText("SOLO (0m)", 10, Math.min(groundY_px + 20, canvas.height - 10));
     }
-    ctx.setLineDash([10, 5]); ctx.strokeStyle = "#CBD5E1"; ctx.beginPath(); ctx.moveTo(0, platY); ctx.lineTo(canvas.width, platY); ctx.stroke();
-    ctx.setLineDash([]); ctx.fillStyle = "#64748B"; ctx.fillText("PLATAFORMA (" + config.hM + "m)", 20, platY - 15);
+
+    // Plataforma
+    ctx.setLineDash([8, 4]);
+    ctx.strokeStyle = "#CBD5E1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, platY);
+    ctx.lineTo(canvas.width, platY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#64748B";
+    ctx.fillText("PLATAFORMA (" + config.hM + "m)", 10, platY - 8);
+
     if (currentScenario === 'obra') drawObra();
     else if (currentScenario === 'galpao') drawGalpao();
     else drawTorre();
   }
 
   function drawObra() {
-    ctx.fillStyle = "#E2E8F0"; ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 4;
+    ctx.fillStyle = "#E2E8F0";
+    ctx.strokeStyle = "#CBD5E1";
+    ctx.lineWidth = 3;
+    
     const dRingHeightM = config.hM + 1.5;
     const fq0Y = mToPx(-(dRingHeightM + config.lM));
     const fq1Y = mToPx(-dRingHeightM);
-    ctx.fillRect(0, fq0Y - 20, canvas.width, 20); ctx.strokeRect(0, fq0Y - 20, canvas.width, 20);
-    ctx.fillRect(0, fq1Y - 15, canvas.width, 15); ctx.strokeRect(0, fq1Y - 15, canvas.width, 15);
-    for(let x=worker.x-120; x<canvas.width+200; x+=600) {
-      ctx.fillRect(x-30, 0, 60, canvas.height); ctx.strokeRect(x-30, 0, 60, canvas.height);
-      ctx.fillStyle = "#CBD5E1"; ctx.fillRect(x-6, 0, 12, canvas.height); ctx.fillStyle = "#E2E8F0";
+    
+    // Vigas horizontais
+    ctx.fillRect(0, fq0Y - 15, canvas.width, 15);
+    ctx.strokeRect(0, fq0Y - 15, canvas.width, 15);
+    ctx.fillRect(0, fq1Y - 12, canvas.width, 12);
+    ctx.strokeRect(0, fq1Y - 12, canvas.width, 12);
+    
+    // Colunas
+    const colWidth = 40;
+    for (let x = worker.x - 80; x < canvas.width + 100; x += 300) {
+      ctx.fillRect(x - colWidth/2, 0, colWidth, canvas.height);
+      ctx.strokeRect(x - colWidth/2, 0, colWidth, canvas.height);
     }
   }
 
   function drawGalpao() {
     ctx.fillStyle = "#F1F5F9";
-    for(let x=worker.x-120; x<canvas.width+200; x+=800) ctx.fillRect(x-40, 0, 80, canvas.height);
+    
+    for (let x = worker.x - 100; x < canvas.width + 100; x += 400) {
+      ctx.fillRect(x - 30, 0, 60, canvas.height);
+    }
+    
     const fq1Y = mToPx(-(config.hM + 1.5));
-    ctx.strokeStyle = "#475569"; ctx.lineWidth = 4; ctx.setLineDash([10, 10]);
-    ctx.beginPath(); ctx.moveTo(0, fq1Y); ctx.lineTo(canvas.width, fq1Y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 8]);
+    ctx.beginPath();
+    ctx.moveTo(0, fq1Y);
+    ctx.lineTo(canvas.width, fq1Y);
+    ctx.stroke();
+    ctx.setLineDash([]);
   }
 
   function drawTorre() {
-    ctx.strokeStyle = "#94A3B8"; ctx.lineWidth = 4;
-    const cx = worker.x - 100;
+    ctx.strokeStyle = "#94A3B8";
+    ctx.lineWidth = 3;
+    
+    const cx = worker.x - 60;
+    const towerWidth = 60;
+    
     ctx.beginPath();
-    ctx.moveTo(cx - 80, 0); ctx.lineTo(cx - 80, canvas.height);
-    ctx.moveTo(cx + 80, 0); ctx.lineTo(cx + 80, canvas.height);
-    for (let i = 0; i <= 20; i += 2) {
+    ctx.moveTo(cx - towerWidth, 0);
+    ctx.lineTo(cx - towerWidth, canvas.height);
+    ctx.moveTo(cx + towerWidth, 0);
+    ctx.lineTo(cx + towerWidth, canvas.height);
+    
+    for (let i = 0; i <= 20; i += 1.5) {
       const y = mToPx(-i);
-      ctx.moveTo(cx - 80, y); ctx.lineTo(cx + 80, y);
-      ctx.moveTo(cx - 80, y); ctx.lineTo(cx + 80, y + 2*pxPerMeter);
+      if (y < -50 || y > canvas.height + 50) continue;
+      ctx.moveTo(cx - towerWidth, y);
+      ctx.lineTo(cx + towerWidth, y);
     }
     ctx.stroke();
   }
@@ -523,37 +734,113 @@
   function drawRope() {
     const dRingY_px = mToPx(worker.y - 1.5);
     const anchorY_px = mToPx(anchor.y);
-    const dx = worker.x - anchor.x, dy = dRingY_px - anchorY_px, dist = Math.hypot(dx, dy), ropePx = config.lM * pxPerMeter;
-    ctx.beginPath(); ctx.moveTo(anchor.x, anchorY_px);
-    if (dist < ropePx && !crashed && !finished) ctx.quadraticCurveTo(anchor.x + dx/2, anchorY_px + dy + 40, worker.x, dRingY_px);
-    else ctx.lineTo(worker.x, dRingY_px);
-    ctx.strokeStyle = dist > ropePx ? "#EF4444" : "#F59E0B"; ctx.lineWidth = 8; ctx.stroke();
+    const dx = worker.x - anchor.x;
+    const dy = dRingY_px - anchorY_px;
+    const dist = Math.hypot(dx, dy);
+    const ropePx = config.lM * pxPerMeter;
+    
+    ctx.beginPath();
+    ctx.moveTo(anchor.x, anchorY_px);
+    
+    if (dist < ropePx && !crashed && !finished) {
+      ctx.quadraticCurveTo(anchor.x + dx/2, anchorY_px + dy + 25, worker.x, dRingY_px);
+    } else {
+      ctx.lineTo(worker.x, dRingY_px);
+    }
+    
+    ctx.strokeStyle = dist > ropePx ? "#EF4444" : "#F59E0B";
+    ctx.lineWidth = 6;
+    ctx.stroke();
   }
 
   function drawAnchor() {
     const anchorY_px = mToPx(anchor.y);
-    ctx.save(); ctx.translate(anchor.x, anchorY_px);
-    ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI*2); ctx.fillStyle = "#475569"; ctx.fill();
-    ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI*2); ctx.fillStyle = "white"; ctx.fill();
-    ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI*2); ctx.fillStyle = "#4F46E5"; ctx.fill();
+    
+    ctx.save();
+    ctx.translate(anchor.x, anchorY_px);
+    
+    // Olhal externo
+    ctx.beginPath();
+    ctx.arc(0, 0, 16, 0, Math.PI * 2);
+    ctx.fillStyle = "#475569";
+    ctx.fill();
+    
+    // Olhal interno
+    ctx.beginPath();
+    ctx.arc(0, 0, 8, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.fill();
+    
+    // Centro
+    ctx.beginPath();
+    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+    ctx.fillStyle = "#4F46E5";
+    ctx.fill();
+    
     ctx.restore();
   }
 
   function drawWorker() {
-    ctx.save(); ctx.translate(worker.x, mToPx(worker.y)); ctx.rotate(worker.rotation);
-    const h = worker.hPx, w = worker.wPx;
-    ctx.fillStyle = "#1E293B"; ctx.beginPath(); ctx.roundRect(-w*0.4, h*0.9, w*0.35, h*0.1, 4); ctx.fill();
-    ctx.beginPath(); ctx.roundRect(w*0.05, h*0.9, w*0.35, h*0.1, 4); ctx.fill();
-    ctx.fillStyle = "#475569"; ctx.fillRect(-w*0.35, h*0.6, w*0.3, h*0.35); ctx.fillRect(w*0.05, h*0.6, w*0.3, h*0.35);
-    ctx.fillStyle = "#334155"; ctx.beginPath(); ctx.roundRect(-w*0.5, h*0.2, w, h*0.45, 12); ctx.fill();
-    ctx.strokeStyle = "#FACC15"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-w*0.35, h*0.2); ctx.lineTo(-w*0.2, h*0.6); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(w*0.35, h*0.2); ctx.lineTo(w*0.2, h*0.6); ctx.stroke();
-    ctx.fillStyle = "#F8FAFC"; ctx.beginPath(); ctx.arc(0, h*0.1, h*0.12, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = "#EF4444"; ctx.beginPath(); ctx.arc(0, h*0.08, h*0.14, Math.PI, 0); ctx.fill();
+    ctx.save();
+    ctx.translate(worker.x, mToPx(worker.y));
+    ctx.rotate(worker.rotation);
+    
+    const h = worker.hPx;
+    const w = worker.wPx;
+    
+    // Botas
+    ctx.fillStyle = "#1E293B";
+    ctx.beginPath();
+    ctx.roundRect(-w * 0.4, h * 0.88, w * 0.35, h * 0.12, 3);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(w * 0.05, h * 0.88, w * 0.35, h * 0.12, 3);
+    ctx.fill();
+    
+    // Calças
+    ctx.fillStyle = "#475569";
+    ctx.fillRect(-w * 0.35, h * 0.55, w * 0.32, h * 0.38);
+    ctx.fillRect(w * 0.03, h * 0.55, w * 0.32, h * 0.38);
+    
+    // Tronco
+    ctx.fillStyle = "#334155";
+    ctx.beginPath();
+    ctx.roundRect(-w * 0.5, h * 0.18, w, h * 0.42, 8);
+    ctx.fill();
+    
+    // Cinturão de segurança (amarelo)
+    ctx.strokeStyle = "#FACC15";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.35, h * 0.18);
+    ctx.lineTo(-w * 0.2, h * 0.55);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(w * 0.35, h * 0.18);
+    ctx.lineTo(w * 0.2, h * 0.55);
+    ctx.stroke();
+    
+    // Cabeça
+    ctx.fillStyle = "#F8FAFC";
+    ctx.beginPath();
+    ctx.arc(0, h * 0.08, h * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Capacete
+    ctx.fillStyle = "#EF4444";
+    ctx.beginPath();
+    ctx.arc(0, h * 0.06, h * 0.12, Math.PI, 0);
+    ctx.fill();
+    
     ctx.restore();
   }
 
-  setTimeout(init, 100);
+  // Inicializa após o DOM carregar
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    setTimeout(init, 50);
+  }
 </script>
 </body>
 </html>
