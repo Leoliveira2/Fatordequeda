@@ -733,9 +733,14 @@
 
   function drawRope() {
     // Ponto de conexão no cinto (argola D) - nas costas, altura do peito
-    const dRingY_px = mToPx(worker.y - 1.5);
+    // A argola D está a -36% da altura do trabalhador (h * 0.36) a partir do topo da cabeça
+    const h = worker.hPx;
+    const dRingOffsetY = -h * 0.36; // Mesma posição da argola D desenhada
+    const dRingY_px = mToPx(worker.y) + dRingOffsetY;
+    const dRingX_px = worker.x; // Centro do trabalhador
+    
     const anchorY_px = mToPx(anchor.y);
-    const dx = worker.x - anchor.x;
+    const dx = dRingX_px - anchor.x;
     const dy = dRingY_px - anchorY_px;
     const dist = Math.hypot(dx, dy);
     const ropePx = config.lM * pxPerMeter;
@@ -744,9 +749,9 @@
     ctx.moveTo(anchor.x, anchorY_px);
     
     if (dist < ropePx && !crashed && !finished) {
-      ctx.quadraticCurveTo(anchor.x + dx/2, anchorY_px + dy + 25, worker.x, dRingY_px);
+      ctx.quadraticCurveTo(anchor.x + dx/2, anchorY_px + dy + 25, dRingX_px, dRingY_px);
     } else {
-      ctx.lineTo(worker.x, dRingY_px);
+      ctx.lineTo(dRingX_px, dRingY_px);
     }
     
     ctx.strokeStyle = dist > ropePx ? "#EF4444" : "#F59E0B";
@@ -837,22 +842,25 @@
     const dRingX = 0;
     const dRingY = -h * 0.36; // Altura do peito (entre omoplatas)
     
-    // Anel metálico externo
+    // Anel metálico externo (maior para melhor visibilidade)
     ctx.beginPath();
-    ctx.arc(dRingX, dRingY, h * 0.04, 0, Math.PI * 2);
-    ctx.fillStyle = "#94A3B8";
+    ctx.arc(dRingX, dRingY, h * 0.06, 0, Math.PI * 2);
+    ctx.fillStyle = "#64748B";
     ctx.fill();
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 2;
+    ctx.stroke();
     
     // Anel interno (vazio)
     ctx.beginPath();
-    ctx.arc(dRingX, dRingY, h * 0.025, 0, Math.PI * 2);
+    ctx.arc(dRingX, dRingY, h * 0.035, 0, Math.PI * 2);
     ctx.fillStyle = "#334155";
     ctx.fill();
     
     // Destaque metálico
     ctx.beginPath();
-    ctx.arc(dRingX - h * 0.015, dRingY - h * 0.015, h * 0.01, 0, Math.PI * 2);
-    ctx.fillStyle = "#E2E8F0";
+    ctx.arc(dRingX - h * 0.02, dRingY - h * 0.02, h * 0.015, 0, Math.PI * 2);
+    ctx.fillStyle = "#F1F5F9";
     ctx.fill();
     
     ctx.restore();
