@@ -732,6 +732,7 @@
   }
 
   function drawRope() {
+    // Ponto de conexão no cinto (argola D) - nas costas, altura do peito
     const dRingY_px = mToPx(worker.y - 1.5);
     const anchorY_px = mToPx(anchor.y);
     const dx = worker.x - anchor.x;
@@ -830,6 +831,28 @@
     ctx.fillStyle = "#EF4444";
     ctx.beginPath();
     ctx.arc(0, h * 0.06, h * 0.12, Math.PI, 0);
+    ctx.fill();
+    
+    // Argola D (ponto de conexão dorsal) - nas costas, altura do peito
+    const dRingX = 0;
+    const dRingY = -h * 0.36; // Altura do peito (entre omoplatas)
+    
+    // Anel metálico externo
+    ctx.beginPath();
+    ctx.arc(dRingX, dRingY, h * 0.04, 0, Math.PI * 2);
+    ctx.fillStyle = "#94A3B8";
+    ctx.fill();
+    
+    // Anel interno (vazio)
+    ctx.beginPath();
+    ctx.arc(dRingX, dRingY, h * 0.025, 0, Math.PI * 2);
+    ctx.fillStyle = "#334155";
+    ctx.fill();
+    
+    // Destaque metálico
+    ctx.beginPath();
+    ctx.arc(dRingX - h * 0.015, dRingY - h * 0.015, h * 0.01, 0, Math.PI * 2);
+    ctx.fillStyle = "#E2E8F0";
     ctx.fill();
     
     ctx.restore();
